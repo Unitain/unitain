@@ -35,14 +35,6 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
         }
       };
 
-      console.log('Submitting contact form with data:', {
-        ...submissionData,
-        metadata: {
-          ...submissionData.metadata,
-          userId: user?.id ? '[REDACTED]' : undefined
-        }
-      });
-
       const success = await submitContactForm(submissionData);
 
       if (success) {
