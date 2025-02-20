@@ -38,19 +38,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
-  // Use refs to track initialization and prevent unnecessary updates
   const isInitialized = useRef(false);
   const lastTimezoneCheck = useRef(Date.now());
   const timezoneCheckInterval = useRef<number>();
-  const timezoneCheckThreshold = 1000; // 1 second between checks
+  const timezoneCheckThreshold = 1000;
 
   const updateDocumentLang = useCallback((lang: string) => {
     try {
-      if (document?.documentElement) {
-        document.documentElement.lang = lang;
-        document.documentElement.setAttribute('data-language', lang);
-        document.documentElement.setAttribute('data-timezone', timezone);
+      // Ensure we have access to document and it's ready
+      if (!document || !document.documentElement) {
+        return;
       }
+
+      const htmlElement = document.documentElement;
+      htmlElement.lang = lang;
+      htmlElement.setAttribute('data-language', lang);
+      htmlElement.setAttribute('data-timezone', timezone);
     } catch (error) {
       console.warn('Failed to update document language:', error);
     }
@@ -58,7 +61,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const detectTimezone = useCallback(() => {
     try {
-      // Prevent rapid consecutive checks
       const now = Date.now();
       if (now - lastTimezoneCheck.current < timezoneCheckThreshold) {
         return;
@@ -68,6 +70,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const newTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (newTimezone && newTimezone !== timezone) {
         setTimezone(newTimezone);
+        
+        // Only update DOM if document is ready
         if (document?.documentElement) {
           document.documentElement.setAttribute('data-timezone', newTimezone);
         }
@@ -83,9 +87,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
     isInitialized.current = true;
 
-    const detectLanguageAndTimezone = async () => {
+    const detectLanguageAndTimezone = () => {
       try {
-        // Only attempt detection if no preference is stored
         if (!localStorage.getItem('preferred_language')) {
           let detectedLanguage: Language = defaultLanguage;
 
@@ -98,7 +101,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             console.warn('Browser language detection failed:', error);
           }
 
-          // Set and save the detected language
           setCurrentLanguage(detectedLanguage);
           try {
             localStorage.setItem('preferred_language', detectedLanguage);
@@ -107,7 +109,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             console.warn('Failed to save language preference:', error);
           }
         } else {
-          // Update document language for stored preference
           updateDocumentLang(currentLanguage);
         }
 
@@ -117,19 +118,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    detectLanguageAndTimezone();
+    // Run detection when document is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', detectLanguageAndTimezone, { once: true });
+    } else {
+      detectLanguageAndTimezone();
+    }
 
-    // Create a more robust timezone change detection
     const handleTimezoneChange = () => {
       if (document.hidden) return;
       detectTimezone();
     };
 
-    // Listen for timezone changes
     window.addEventListener('timezoneset', handleTimezoneChange);
     document.addEventListener('visibilitychange', handleTimezoneChange);
 
-    // Create a MutationObserver to watch for timezone-related DOM changes
     let observer: MutationObserver | null = null;
     try {
       observer = new MutationObserver((mutations) => {
@@ -141,7 +144,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
-      // Observe the document body for changes
       if (document.body) {
         observer.observe(document.body, {
           childList: true,
@@ -152,15 +154,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       console.warn('Failed to create MutationObserver:', error);
     }
 
-    // Create an interval to periodically check for timezone changes
     timezoneCheckInterval.current = window.setInterval(() => {
       if (document.hidden) return;
       handleTimezoneChange();
-    }, 60000); // Check every minute
+    }, 60000);
 
     return () => {
       window.removeEventListener('timezoneset', handleTimezoneChange);
       document.removeEventListener('visibilitychange', handleTimezoneChange);
+      document.removeEventListener('DOMContentLoaded', detectLanguageAndTimezone);
       if (observer) {
         observer.disconnect();
       }
@@ -168,7 +170,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         window.clearInterval(timezoneCheckInterval.current);
       }
     };
-  }, [timezone, updateDocumentLang, detectTimezone, currentLanguage]);
+  }, [currentLanguage, updateDocumentLang, detectTimezone]);
 
   const setLanguage = useCallback((lang: Language) => {
     try {
@@ -177,10 +179,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('preferred_language', lang);
         updateDocumentLang(lang);
         
-        // Force re-render of translated content
         window.dispatchEvent(new Event('languagechange'));
         
-        // Show success message
         toast.success(`Language changed to ${languages.find(l => l.language === lang)?.name}`);
       }
     } catch (error) {

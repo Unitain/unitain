@@ -24,6 +24,49 @@ const CHANGE_TYPES = {
 } as const;
 
 const changelog: ChangelogEntry[] = [
+  // Version 1.7.3
+  {
+    type: 'performance',
+    description: 'Improved DOM handling and error recovery in language system',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
+  {
+    type: 'performance',
+    description: 'Enhanced timezone detection reliability',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
+  {
+    type: 'performance',
+    description: 'Optimized document ready state handling',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
+  {
+    type: 'fix',
+    description: 'Fixed potential null reference errors in DOM operations',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
+  {
+    type: 'fix',
+    description: 'Improved error handling in language context',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
+  {
+    type: 'fix',
+    description: 'Fixed timing issues with document ready state',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
+  {
+    type: 'fix',
+    description: 'Resolved race conditions in timezone detection',
+    version: '1.7.3',
+    date: '2025-02-19'
+  },
   // Version 1.7.0
   {
     type: 'feature',

@@ -1,4 +1,4 @@
-import { Language, Translation, languages, defaultLanguage } from './translations';
+import { Language, Translation } from './translations';
 
 export type Language = 'en' | 'de' | 'nl';
 
@@ -96,12 +96,32 @@ export const languages: LanguageConfig[] = [
       'payment.cancelled': 'Payment was cancelled. Please try again when you\'re ready.',
       'payment.systemError': 'The payment system encountered an error. Please try again later.',
 
-      // Cookie Consent
-      'cookies.title': 'Cookie Settings',
-      'cookies.description': 'We use cookies to enhance your browsing experience and analyze our traffic. Please choose your preferences below.',
-      'cookies.accept': 'Accept All',
-      'cookies.decline': 'Decline Optional',
-      'cookies.privacyLink': 'Privacy Policy',
+      // Contact Form Translations
+      'contact.title': 'Contact Us',
+      'contact.subtitle': 'Get in touch with our experts for personalized assistance',
+      
+      // Contact Form Features
+      'contact.features.consultation.title': 'Expert Consultation',
+      'contact.features.consultation.description': 'Get personalized advice from our tax experts',
+      'contact.features.response.title': 'Quick Response',
+      'contact.features.response.description': 'Receive a response within 24 hours',
+      'contact.features.security.title': 'Secure Communication',
+      'contact.features.security.description': 'Your information is protected with enterprise-grade security',
+      
+      // Form Fields
+      'contact.form.name': 'Name',
+      'contact.form.namePlaceholder': 'Enter your full name',
+      'contact.form.email': 'Email',
+      'contact.form.emailPlaceholder': 'Enter your email address',
+      'contact.form.message': 'Message',
+      'contact.form.messagePlaceholder': 'How can we help you?',
+      'contact.form.send': 'Send Message',
+      'contact.form.sending': 'Sending...',
+      'contact.form.usingAccountEmail': 'Using email from your account',
+      
+      // Footer
+      'contact.footer.terms': 'By submitting this form, you agree to our terms of service and privacy policy.',
+      'contact.footer.response': 'We typically respond within 24 hours during business days.',
 
       // Eligibility Checker
       'eligibility.title': 'Check Your Eligibility',
@@ -225,12 +245,32 @@ export const languages: LanguageConfig[] = [
       'payment.cancelled': 'Zahlung abgebrochen. Bitte versuchen Sie es erneut, wenn Sie bereit sind.',
       'payment.systemError': 'Das Zahlungssystem hat einen Fehler festgestellt. Bitte versuchen Sie es später erneut.',
 
-      // Cookie Consent
-      'cookies.title': 'Cookie-Einstellungen',
-      'cookies.description': 'Wir verwenden Cookies, um Ihr Browsing-Erlebnis zu verbessern und unseren Verkehr zu analysieren. Bitte wählen Sie unten Ihre Präferenzen.',
-      'cookies.accept': 'Alle akzeptieren',
-      'cookies.decline': 'Optionale ablehnen',
-      'cookies.privacyLink': 'Datenschutzerklärung',
+      // Contact Form Translations
+      'contact.title': 'Kontakt',
+      'contact.subtitle': 'Kontaktieren Sie unsere Experten für persönliche Unterstützung',
+      
+      // Contact Form Features
+      'contact.features.consultation.title': 'Expertenberatung',
+      'contact.features.consultation.description': 'Erhalten Sie persönliche Beratung von unseren Steuerexperten',
+      'contact.features.response.title': 'Schnelle Antwort',
+      'contact.features.response.description': 'Erhalten Sie innerhalb von 24 Stunden eine Antwort',
+      'contact.features.security.title': 'Sichere Kommunikation',
+      'contact.features.security.description': 'Ihre Daten sind durch Enterprise-Grade-Sicherheit geschützt',
+      
+      // Form Fields
+      'contact.form.name': 'Name',
+      'contact.form.namePlaceholder': 'Geben Sie Ihren vollständigen Namen ein',
+      'contact.form.email': 'E-Mail',
+      'contact.form.emailPlaceholder': 'Geben Sie Ihre E-Mail-Adresse ein',
+      'contact.form.message': 'Nachricht',
+      'contact.form.messagePlaceholder': 'Wie können wir Ihnen helfen?',
+      'contact.form.send': 'Nachricht senden',
+      'contact.form.sending': 'Wird gesendet...',
+      'contact.form.usingAccountEmail': 'E-Mail aus Ihrem Konto wird verwendet',
+      
+      // Footer
+      'contact.footer.terms': 'Mit dem Absenden dieses Formulars stimmen Sie unseren Nutzungsbedingungen und der Datenschutzerklärung zu.',
+      'contact.footer.response': 'Wir antworten normalerweise innerhalb von 24 Stunden an Werktagen.',
 
       // Eligibility Checker
       'eligibility.title': 'Prüfen Sie Ihre Berechtigung',
@@ -354,12 +394,32 @@ export const languages: LanguageConfig[] = [
       'payment.cancelled': 'Betaling geannuleerd. Probeer het opnieuw wanneer je er klaar voor bent.',
       'payment.systemError': 'Het betalingssysteem heeft een fout aangetroffen. Probeer het later opnieuw.',
 
-      // Cookie Consent
-      'cookies.title': 'Cookie-instellingen',
-      'cookies.description': 'We gebruiken cookies om je browse-ervaring te verbeteren en ons verkeer te analyseren. Kies hieronder je voorkeuren.',
-      'cookies.accept': 'Alles Accepteren',
-      'cookies.decline': 'Optionele Weigeren',
-      'cookies.privacyLink': 'Privacybeleid',
+      // Contact Form Translations
+      'contact.title': 'Contact',
+      'contact.subtitle': 'Neem contact op met onze experts voor persoonlijke assistentie',
+      
+      // Contact Form Features
+      'contact.features.consultation.title': 'Expert Consultatie',
+      'contact.features.consultation.description': 'Krijg persoonlijk advies van onze belastingexperts',
+      'contact.features.response.title': 'Snelle Reactie',
+      'contact.features.response.description': 'Ontvang binnen 24 uur een reactie',
+      'contact.features.security.title': 'Veilige Communicatie',
+      'contact.features.security.description': 'Uw gegevens worden beschermd met enterprise-grade beveiliging',
+      
+      // Form Fields
+      'contact.form.name': 'Naam',
+      'contact.form.namePlaceholder': 'Voer uw volledige naam in',
+      'contact.form.email': 'E-mail',
+      'contact.form.emailPlaceholder': 'Voer uw e-mailadres in',
+      'contact.form.message': 'Bericht',
+      'contact.form.messagePlaceholder': 'Hoe kunnen we u helpen?',
+      'contact.form.send': 'Bericht versturen',
+      'contact.form.sending': 'Versturen...',
+      'contact.form.usingAccountEmail': 'E-mail van uw account wordt gebruikt',
+      
+      // Footer
+      'contact.footer.terms': 'Door dit formulier te versturen gaat u akkoord met onze gebruiksvoorwaarden en privacybeleid.',
+      'contact.footer.response': 'We reageren meestal binnen 24 uur op werkdagen.',
 
       // Eligibility Checker
       'eligibility.title': 'Check Je Kwalificatie',
@@ -400,8 +460,7 @@ export const languages: LanguageConfig[] = [
       'eligibility.results.steps.documents': 'Bereid alle vereiste documentatie voor',
       'eligibility.results.steps.consultation': 'Plan een consult met onze experts',
       'eligibility.results.steps.application': 'Start je aanvraagproces',
-      'eligibility.results.notEligible': 'Op basis van je antwoorden kom je mogelijk niet in aanmerking voor belastingvrijstelling.',
-      'eligibility.results.consultRecommended': 'We raden aan om met onze experts te overleggen om je opties te bespreken.'
+      'eligibility.results.notEligible': 'Op basis van je antwoorden kom je mogelijk niet in aanmerking voor belastingvrijstelling.', 'eligibility.results.consultRecommended': 'We raden aan om met onze experts te overleggen om je opties te bespreken.'
     }
   }
 ];
