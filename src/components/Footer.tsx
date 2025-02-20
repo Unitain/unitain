@@ -69,10 +69,12 @@ export function Footer() {
             Version: {currentVersion}
           </button>
           <a 
-            href="/privacy"
+            href="https://test.unitain.net/terms"
             className="text-sm text-white/80 hover:text-white transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Privacy Policy
+            Terms of Use
           </a>
         </div>
         <button

@@ -40,9 +40,9 @@ export const languages: LanguageConfig[] = [
       'common.cancel': 'Cancel',
 
       // Hero Section
-      'hero.title': '🚗 Avoid High Import Taxes – See If You Qualify in Minutes!',
+      'hero.title': 'Avoid High Import Taxes – See If You Qualify in Minutes!',
       'hero.subtitle': 'Most expats pay thousands in unnecessary car import taxes. Find out if you can skip them with our quick and hassle-free tax check.',
-      'hero.cta': '🟢 Start Your Tax Check Now',
+      'hero.cta': 'Start Your Tax Check Now',
 
       // Benefits Section
       'benefits.tax.title': '✅ Save Thousands on Import Taxes',
@@ -63,11 +63,45 @@ export const languages: LanguageConfig[] = [
       'process.step4.title': 'Get Approved',
       'process.step4.description': 'Receive your tax exemption confirmation',
 
+      // Testimonials Section
+      'testimonials.title': 'What Our Clients Say',
+
       // CTA Section
       'cta.title': 'Ready to Check Your Tax Exemption Eligibility?',
       'cta.subtitle': 'Start your application today and let our experts handle the rest.',
       'cta.contact': 'Contact Us',
       'cta.privacy': 'Privacy Policy',
+
+      // Payment Page
+      'payment.title': 'Complete Your Payment',
+      'payment.subtitle': 'Secure payment processing with PayPal',
+      'payment.oneTime': 'One-Time Payment',
+      'payment.amount': '€99',
+      'payment.noHiddenFees': 'No hidden fees or recurring charges',
+      'payment.loading': 'Loading payment system...',
+      'payment.back': 'Back',
+      'payment.signInRequired': 'Sign In Required',
+      'payment.signInMessage': 'Please sign in to continue with your payment.',
+      'payment.signIn': 'Sign In',
+      'payment.features.secure': 'Secure Payment',
+      'payment.features.support': '24/7 Support',
+      'payment.features.encrypted': 'SSL Encrypted',
+      'payment.features.verified': 'Verified Service',
+      'payment.legal': 'By proceeding with the payment, you agree to our',
+      'payment.termsLink': 'Terms of Service',
+      'payment.andText': 'and',
+      'payment.privacyLink': 'Privacy Policy',
+      'payment.success': 'Payment successful! You can now proceed with your application.',
+      'payment.error': 'Payment failed. Please try again or contact support.',
+      'payment.cancelled': 'Payment was cancelled. Please try again when you\'re ready.',
+      'payment.systemError': 'The payment system encountered an error. Please try again later.',
+
+      // Cookie Consent
+      'cookies.title': 'Cookie Settings',
+      'cookies.description': 'We use cookies to enhance your browsing experience and analyze our traffic. Please choose your preferences below.',
+      'cookies.accept': 'Accept All',
+      'cookies.decline': 'Decline Optional',
+      'cookies.privacyLink': 'Privacy Policy',
 
       // Eligibility Checker
       'eligibility.title': 'Check Your Eligibility',
@@ -109,62 +143,7 @@ export const languages: LanguageConfig[] = [
       'eligibility.results.steps.consultation': 'Schedule a consultation with our experts',
       'eligibility.results.steps.application': 'Begin your application process',
       'eligibility.results.notEligible': 'Based on your responses, you may not be eligible for tax exemption.',
-      'eligibility.results.consultRecommended': 'We recommend consulting with our experts to explore your options.',
-
-      // Contact Form
-      'contact.title': 'Contact Our Tax Experts',
-      'contact.subtitle': 'Get professional advice about your vehicle tax exemption case. Our experts are here to help you navigate the process.',
-      
-      'contact.features.consultation.title': 'Expert Consultation',
-      'contact.features.consultation.description': 'Get personalized advice from our tax specialists',
-      'contact.features.response.title': 'Quick Response',
-      'contact.features.response.description': 'We\'ll get back to you within 24 hours',
-      'contact.features.security.title': 'Secure Process',
-      'contact.features.security.description': 'Your information is protected and confidential',
-
-      'contact.form.name': 'Name',
-      'contact.form.namePlaceholder': 'Your name',
-      'contact.form.email': 'Email',
-      'contact.form.emailPlaceholder': 'your.email@example.com',
-      'contact.form.message': 'Message',
-      'contact.form.messagePlaceholder': 'How can we help you?',
-      'contact.form.usingAccountEmail': 'Using your account email',
-      'contact.form.send': 'Send Message',
-      'contact.form.sending': 'Sending...',
-
-      'contact.footer.terms': 'By submitting, you agree to our Terms of Service and Privacy Policy.',
-      'contact.footer.response': 'We typically respond within 24 business hours.',
-
-      // Payment Page
-      'payment.title': 'Complete Your Payment',
-      'payment.subtitle': 'Secure payment processing with PayPal',
-      'payment.oneTime': 'One-Time Payment',
-      'payment.amount': '€99',
-      'payment.noHiddenFees': 'No hidden fees or recurring charges',
-      'payment.loading': 'Loading payment system...',
-      'payment.back': 'Back',
-      'payment.signInRequired': 'Sign In Required',
-      'payment.signInMessage': 'Please sign in to continue with your payment.',
-      'payment.signIn': 'Sign In',
-      'payment.features.secure': 'Secure Payment',
-      'payment.features.support': '24/7 Support',
-      'payment.features.encrypted': 'SSL Encrypted',
-      'payment.features.verified': 'Verified Service',
-      'payment.legal': 'By proceeding with the payment, you agree to our',
-      'payment.termsLink': 'Terms of Service',
-      'payment.andText': 'and',
-      'payment.privacyLink': 'Privacy Policy',
-      'payment.success': 'Payment successful! You can now proceed with your application.',
-      'payment.error': 'Payment failed. Please try again or contact support.',
-      'payment.cancelled': 'Payment was cancelled. Please try again when you\'re ready.',
-      'payment.systemError': 'The payment system encountered an error. Please try again later.',
-
-      // Cookie Consent
-      'cookies.title': 'Cookie Settings',
-      'cookies.description': 'We use cookies to enhance your browsing experience and analyze our traffic. Please choose your preferences below.',
-      'cookies.accept': 'Accept All',
-      'cookies.decline': 'Decline Optional',
-      'cookies.privacyLink': 'Privacy Policy'
+      'eligibility.results.consultRecommended': 'We recommend consulting with our experts to explore your options.'
     }
   },
   {
@@ -190,9 +169,9 @@ export const languages: LanguageConfig[] = [
       'common.cancel': 'Abbrechen',
 
       // Hero Section
-      'hero.title': '🚗 Vermeiden Sie hohe Einfuhrsteuern – Prüfen Sie Ihre Berechtigung in wenigen Minuten!',
+      'hero.title': 'Vermeiden Sie hohe Einfuhrsteuern – Prüfen Sie Ihre Berechtigung in wenigen Minuten!',
       'hero.subtitle': 'Die meisten Expats zahlen tausende Euro an unnötigen Kfz-Einfuhrsteuern. Finden Sie heraus, ob Sie diese mit unserer schnellen und unkomplizierten Steuerprüfung vermeiden können.',
-      'hero.cta': '🟢 Jetzt Berechtigung prüfen',
+      'hero.cta': 'Jetzt Berechtigung prüfen',
 
       // Benefits Section
       'benefits.tax.title': '✅ Tausende Euro Einfuhrsteuern sparen',
@@ -213,11 +192,45 @@ export const languages: LanguageConfig[] = [
       'process.step4.title': 'Genehmigung erhalten',
       'process.step4.description': 'Erhalten Sie Ihre Steuerbefreiungsbestätigung',
 
+      // Testimonials Section
+      'testimonials.title': 'Was unsere Kunden sagen',
+
       // CTA Section
       'cta.title': 'Bereit, Ihre Steuerbefreiung zu prüfen?',
       'cta.subtitle': 'Starten Sie heute Ihren Antrag und überlassen Sie den Rest unseren Experten.',
       'cta.contact': 'Kontakt aufnehmen',
       'cta.privacy': 'Datenschutzerklärung',
+
+      // Payment Page
+      'payment.title': 'Zahlung abschließen',
+      'payment.subtitle': 'Sichere Zahlungsabwicklung mit PayPal',
+      'payment.oneTime': 'Einmalige Zahlung',
+      'payment.amount': '€99',
+      'payment.noHiddenFees': 'Keine versteckten Gebühren oder wiederkehrenden Kosten',
+      'payment.loading': 'Zahlungssystem wird geladen...',
+      'payment.back': 'Zurück',
+      'payment.signInRequired': 'Anmeldung erforderlich',
+      'payment.signInMessage': 'Bitte melden Sie sich an, um mit der Zahlung fortzufahren.',
+      'payment.signIn': 'Anmelden',
+      'payment.features.secure': 'Sichere Zahlung',
+      'payment.features.support': '24/7 Support',
+      'payment.features.encrypted': 'SSL-verschlüsselt',
+      'payment.features.verified': 'Verifizierter Service',
+      'payment.legal': 'Mit der Zahlung stimmen Sie unseren',
+      'payment.termsLink': 'Nutzungsbedingungen',
+      'payment.andText': 'und der',
+      'payment.privacyLink': 'Datenschutzerklärung zu',
+      'payment.success': 'Zahlung erfolgreich! Sie können nun mit Ihrem Antrag fortfahren.',
+      'payment.error': 'Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.',
+      'payment.cancelled': 'Zahlung abgebrochen. Bitte versuchen Sie es erneut, wenn Sie bereit sind.',
+      'payment.systemError': 'Das Zahlungssystem hat einen Fehler festgestellt. Bitte versuchen Sie es später erneut.',
+
+      // Cookie Consent
+      'cookies.title': 'Cookie-Einstellungen',
+      'cookies.description': 'Wir verwenden Cookies, um Ihr Browsing-Erlebnis zu verbessern und unseren Verkehr zu analysieren. Bitte wählen Sie unten Ihre Präferenzen.',
+      'cookies.accept': 'Alle akzeptieren',
+      'cookies.decline': 'Optionale ablehnen',
+      'cookies.privacyLink': 'Datenschutzerklärung',
 
       // Eligibility Checker
       'eligibility.title': 'Prüfen Sie Ihre Berechtigung',
@@ -259,62 +272,7 @@ export const languages: LanguageConfig[] = [
       'eligibility.results.steps.consultation': 'Vereinbaren Sie eine Beratung mit unseren Experten',
       'eligibility.results.steps.application': 'Beginnen Sie Ihren Antragsprozess',
       'eligibility.results.notEligible': 'Basierend auf Ihren Antworten sind Sie möglicherweise nicht für eine Steuerbefreiung berechtigt.',
-      'eligibility.results.consultRecommended': 'Wir empfehlen Ihnen, sich von unseren Experten beraten zu lassen, um Ihre Optionen zu prüfen.',
-
-      // Contact Form
-      'contact.title': 'Kontaktieren Sie unsere Steuerexperten',
-      'contact.subtitle': 'Erhalten Sie professionelle Beratung zu Ihrer Kfz-Steuerbefreiung. Unsere Experten unterstützen Sie bei jedem Schritt.',
-      
-      'contact.features.consultation.title': 'Expertenberatung',
-      'contact.features.consultation.description': 'Erhalten Sie individuelle Beratung von unseren Steuerspezialisten',
-      'contact.features.response.title': 'Schnelle Antwort',
-      'contact.features.response.description': 'Wir antworten innerhalb von 24 Stunden',
-      'contact.features.security.title': 'Sicherer Prozess',
-      'contact.features.security.description': 'Ihre Daten sind geschützt und vertraulich',
-
-      'contact.form.name': 'Name',
-      'contact.form.namePlaceholder': 'Ihr Name',
-      'contact.form.email': 'E-Mail',
-      'contact.form.emailPlaceholder': 'ihre.email@beispiel.de',
-      'contact.form.message': 'Nachricht',
-      'contact.form.messagePlaceholder': 'Wie können wir Ihnen helfen?',
-      'contact.form.usingAccountEmail': 'Ihre Account-E-Mail wird verwendet',
-      'contact.form.send': 'Nachricht senden',
-      'contact.form.sending': 'Wird gesendet...',
-
-      'contact.footer.terms': 'Mit dem Absenden stimmen Sie unseren Nutzungsbedingungen und der Datenschutzerklärung zu.',
-      'contact.footer.response': 'Wir antworten in der Regel innerhalb von 24 Geschäftsstunden.',
-
-      // Payment Page
-      'payment.title': 'Zahlung abschließen',
-      'payment.subtitle': 'Sichere Zahlungsabwicklung mit PayPal',
-      'payment.oneTime': 'Einmalige Zahlung',
-      'payment.amount': '€99',
-      'payment.noHiddenFees': 'Keine versteckten Gebühren oder wiederkehrenden Kosten',
-      'payment.loading': 'Zahlungssystem wird geladen...',
-      'payment.back': 'Zurück',
-      'payment.signInRequired': 'Anmeldung erforderlich',
-      'payment.signInMessage': 'Bitte melden Sie sich an, um mit der Zahlung fortzufahren.',
-      'payment.signIn': 'Anmelden',
-      'payment.features.secure': 'Sichere Zahlung',
-      'payment.features.support': '24/7 Support',
-      'payment.features.encrypted': 'SSL-verschlüsselt',
-      'payment.features.verified': 'Verifizierter Service',
-      'payment.legal': 'Mit der Zahlung stimmen Sie unseren',
-      'payment.termsLink': 'Nutzungsbedingungen',
-      'payment.andText': 'und der',
-      'payment.privacyLink': 'Datenschutzerklärung zu',
-      'payment.success': 'Zahlung erfolgreich! Sie können nun mit Ihrem Antrag fortfahren.',
-      'payment.error': 'Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.',
-      'payment.cancelled': 'Zahlung abgebrochen. Bitte versuchen Sie es erneut, wenn Sie bereit sind.',
-      'payment.systemError': 'Das Zahlungssystem hat einen Fehler festgestellt. Bitte versuchen Sie es später erneut.',
-
-      // Cookie Consent
-      'cookies.title': 'Cookie-Einstellungen',
-      'cookies.description': 'Wir verwenden Cookies, um Ihr Browsing-Erlebnis zu verbessern und unseren Verkehr zu analysieren. Bitte wählen Sie unten Ihre Präferenzen.',
-      'cookies.accept': 'Alle akzeptieren',
-      'cookies.decline': 'Optionale ablehnen',
-      'cookies.privacyLink': 'Datenschutzerklärung'
+      'eligibility.results.consultRecommended': 'Wir empfehlen Ihnen, sich von unseren Experten beraten zu lassen, um Ihre Optionen zu prüfen.'
     }
   },
   {
@@ -340,9 +298,9 @@ export const languages: LanguageConfig[] = [
       'common.cancel': 'Annuleren',
 
       // Hero Section
-      'hero.title': '🚗 Vermijd Hoge Importbelastingen – Check Je Kwalificatie in Minuten!',
+      'hero.title': 'Vermijd Hoge Importbelastingen – Check Je Kwalificatie in Minuten!',
       'hero.subtitle': 'De meeste expats betalen duizenden euro\'s aan onnodige auto-importbelastingen. Ontdek of je deze kunt vermijden met onze snelle en eenvoudige belastingcheck.',
-      'hero.cta': '🟢 Start Je Belastingcheck Nu',
+      'hero.cta': 'Start Je Belastingcheck Nu',
 
       // Benefits Section
       'benefits.tax.title': '✅ Bespaar Duizenden op Importbelasting',
@@ -363,11 +321,45 @@ export const languages: LanguageConfig[] = [
       'process.step4.title': 'Goedkeuring Ontvangen',
       'process.step4.description': 'Ontvang je belastingvrijstellingsbevestiging',
 
+      // Testimonials Section
+      'testimonials.title': 'Wat Onze Klanten Zeggen',
+
       // CTA Section
       'cta.title': 'Klaar om Je Belastingvrijstelling te Checken?',
       'cta.subtitle': 'Start vandaag je aanvraag en laat onze experts de rest regelen.',
       'cta.contact': 'Contact Opnemen',
       'cta.privacy': 'Privacybeleid',
+
+      // Payment Page
+      'payment.title': 'Voltooi Je Betaling',
+      'payment.subtitle': 'Veilige betalingsverwerking met PayPal',
+      'payment.oneTime': 'Eenmalige Betaling',
+      'payment.amount': '€99',
+      'payment.noHiddenFees': 'Geen verborgen kosten of terugkerende betalingen',
+      'payment.loading': 'Betalingssysteem laden...',
+      'payment.back': 'Terug',
+      'payment.signInRequired': 'Inloggen Vereist',
+      'payment.signInMessage': 'Log in om door te gaan met je betaling.',
+      'payment.signIn': 'Inloggen',
+      'payment.features.secure': 'Veilige Betaling',
+      'payment.features.support': '24/7 Support',
+      'payment.features.encrypted': 'SSL Versleuteld',
+      'payment.features.verified': 'Geverifieerde Service',
+      'payment.legal': 'Door verder te gaan met de betaling ga je akkoord met onze',
+      'payment.termsLink': 'Servicevoorwaarden',
+      'payment.andText': 'en',
+      'payment.privacyLink': 'Privacybeleid',
+      'payment.success': 'Betaling geslaagd! Je kunt nu doorgaan met je aanvraag.',
+      'payment.error': 'Betaling mislukt. Probeer het opnieuw of neem contact op met support.',
+      'payment.cancelled': 'Betaling geannuleerd. Probeer het opnieuw wanneer je er klaar voor bent.',
+      'payment.systemError': 'Het betalingssysteem heeft een fout aangetroffen. Probeer het later opnieuw.',
+
+      // Cookie Consent
+      'cookies.title': 'Cookie-instellingen',
+      'cookies.description': 'We gebruiken cookies om je browse-ervaring te verbeteren en ons verkeer te analyseren. Kies hieronder je voorkeuren.',
+      'cookies.accept': 'Alles Accepteren',
+      'cookies.decline': 'Optionele Weigeren',
+      'cookies.privacyLink': 'Privacybeleid',
 
       // Eligibility Checker
       'eligibility.title': 'Check Je Kwalificatie',
@@ -409,62 +401,7 @@ export const languages: LanguageConfig[] = [
       'eligibility.results.steps.consultation': 'Plan een consult met onze experts',
       'eligibility.results.steps.application': 'Start je aanvraagproces',
       'eligibility.results.notEligible': 'Op basis van je antwoorden kom je mogelijk niet in aanmerking voor belastingvrijstelling.',
-      'eligibility.results.consultRecommended': 'We raden aan om met onze experts te overleggen om je opties te bespreken.',
-
-      // Contact Form
-      'contact.title': 'Contact Onze Belastingexperts',
-      'contact.subtitle': 'Krijg professioneel advies over je voertuigbelastingvrijstelling. Onze experts staan klaar om je door het proces te begeleiden.',
-      
-      'contact.features.consultation.title': 'Expertconsultatie',
-      'contact.features.consultation.description': 'Ontvang persoonlijk advies van onze belastingspecialisten',
-      'contact.features.response.title': 'Snelle Reactie',
-      'contact.features.response.description': 'We reageren binnen 24 uur',
-      'contact.features.security.title': 'Veilig Proces',
-      'contact.features.security.description': 'Je informatie is beschermd en vertrouwelijk',
-
-      'contact.form.name': 'Naam',
-      'contact.form.namePlaceholder': 'Jouw naam',
-      'contact.form.email': 'E-mail',
-      'contact.form.emailPlaceholder': 'jouw.email@voorbeeld.nl',
-      'contact.form.message': 'Bericht',
-      'contact.form.messagePlaceholder': 'Hoe kunnen we je helpen?',
-      'contact.form.usingAccountEmail': 'Je account e-mail wordt gebruikt',
-      'contact.form.send': 'Bericht Versturen',
-      'contact.form.sending': 'Versturen...',
-
-      'contact.footer.terms': 'Door te versturen ga je akkoord met onze Servicevoorwaarden en Privacybeleid.',
-      'contact.footer.response': 'We reageren meestal binnen 24 werkuren.',
-
-      // Payment Page
-      'payment.title': 'Voltooi Je Betaling',
-      'payment.subtitle': 'Veilige betalingsverwerking met PayPal',
-      'payment.oneTime': 'Eenmalige Betaling',
-      'payment.amount': '€99',
-      'payment.noHiddenFees': 'Geen verborgen kosten of terugkerende betalingen',
-      'payment.loading': 'Betalingssysteem laden...',
-      'payment.back': 'Terug',
-      'payment.signInRequired': 'Inloggen Vereist',
-      'payment.signInMessage': 'Log in om door te gaan met je betaling.',
-      'payment.signIn': 'Inloggen',
-      'payment.features.secure': 'Veilige Betaling',
-      'payment.features.support': '24/7 Support',
-      'payment.features.encrypted': 'SSL Versleuteld',
-      'payment.features.verified': 'Geverifieerde Service',
-      'payment.legal': 'Door verder te gaan met de betaling ga je akkoord met onze',
-      'payment.termsLink': 'Servicevoorwaarden',
-      'payment.andText': 'en',
-      'payment.privacyLink': 'Privacybeleid',
-      'payment.success': 'Betaling geslaagd! Je kunt nu doorgaan met je aanvraag.',
-      'payment.error': 'Betaling mislukt. Probeer het opnieuw of neem contact op met support.',
-      'payment.cancelled': 'Betaling geannuleerd. Probeer het opnieuw wanneer je er klaar voor bent.',
-      'payment.systemError': 'Het betalingssysteem heeft een fout aangetroffen. Probeer het later opnieuw.',
-
-      // Cookie Consent
-      'cookies.title': 'Cookie-instellingen',
-      'cookies.description': 'We gebruiken cookies om je browse-ervaring te verbeteren en ons verkeer te analyseren. Kies hieronder je voorkeuren.',
-      'cookies.accept': 'Alles Accepteren',
-      'cookies.decline': 'Optionele Weigeren',
-      'cookies.privacyLink': 'Privacybeleid'
+      'eligibility.results.consultRecommended': 'We raden aan om met onze experts te overleggen om je opties te bespreken.'
     }
   }
 ];
