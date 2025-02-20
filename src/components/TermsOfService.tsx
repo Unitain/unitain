@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from './Button';
+import { Logo } from './Logo';
 
 interface TermsOfServiceProps {
   onBack: () => void;
@@ -16,14 +17,19 @@ export function TermsOfService({ onBack }: TermsOfServiceProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
-        <Button
-          variant="secondary"
-          onClick={onBack}
-          className="mb-8"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="secondary"
+            onClick={onBack}
+            className="inline-flex items-center"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+          <a href="/" className="flex-shrink-0">
+            <Logo />
+          </a>
+        </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8">

@@ -48,6 +48,24 @@ Alle belangrijke wijzigingen aan dit project worden in dit bestand gedocumenteer
 - Opgeloste timing-problemen met document ready state
 - Opgeloste race conditions in tijdzone-detectie
 
-## [1.7.1] - 2025-02-19
+## [1.4.4] - 2025-02-19
+
+### Added
+- New PopOver UI component for enhanced user interactions
+- Implemented monospace SVG logo in Header component
+- Added Logo component with SVG implementation
+- Integrated Logo component in Terms and Privacy pages
+
+### Changed
+- Updated footer version display to 1.4.4
+- Enhanced visual consistency with updated blue color scheme
+- Improved accessibility for logo and UI components
+- Refactored Header component to use new Logo component
+
+### Fixed
+- Logo scaling and rendering issues across different viewport sizes
+- Typography consistency in monospace font implementation
+- Component versioning display in footer
+- Logo alignment and spacing in header and legal pages
 
 [Previous changelog entries remain unchanged...]

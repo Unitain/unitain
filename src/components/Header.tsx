@@ -6,6 +6,7 @@ import { UserCircle2, LogOut } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '../lib/i18n/LanguageContext';
+import { Logo } from './Logo';
 import toast from 'react-hot-toast';
 
 export function Header() {
@@ -50,7 +51,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold text-gray-900">unitain.net</h1>
+            <Logo />
           </div>
 
           <div className="flex items-center gap-4">
@@ -61,8 +62,8 @@ export function Header() {
             ) : user ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <UserCircle2 className="w-5 h-5 text-gray-600" />
-                  <span className="text-sm text-gray-700">{user.email}</span>
+                  <UserCircle2 className="w-5 h-5 text-blue-900" />
+                  <span className="text-sm text-blue-900">{user.email}</span>
                 </div>
                 <Button
                   variant="secondary"
@@ -72,7 +73,7 @@ export function Header() {
                   className="flex items-center gap-2"
                 >
                   {isSigningOut ? (
-                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
@@ -84,7 +85,7 @@ export function Header() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800"
                 id="auth-button"
               >
                 <UserCircle2 className="w-4 h-4" />

@@ -3,6 +3,7 @@ import { VersionManager } from '../lib/version';
 import packageJson from '../../package.json';
 import { MessageSquare } from 'lucide-react';
 import { ChangelogPopup } from './ChangelogPopup';
+import { PopOver } from './PopOver';
 
 const CLICK_THRESHOLD = 1000; // 1 second between clicks
 const REQUIRED_CLICKS = 5;
@@ -14,18 +15,17 @@ export function Footer() {
   
   const currentVersion = useMemo(() => {
     try {
-      const versionManager = new VersionManager(packageJson.version);
+      const versionManager = new VersionManager('1.4.4');
       return versionManager.getCurrentVersion();
     } catch (error) {
       console.error('Failed to initialize version manager:', error);
-      return packageJson.version;
+      return '1.4.4';
     }
   }, []);
 
   const handleVersionClick = useCallback(() => {
     const now = Date.now();
     
-    // Reset counter if too much time has passed since last click
     if (now - lastClickTime.current > CLICK_THRESHOLD) {
       clickCount.current = 0;
     }
@@ -33,7 +33,6 @@ export function Footer() {
     clickCount.current += 1;
     lastClickTime.current = now;
 
-    // Show changelog after 5 rapid clicks
     if (clickCount.current >= REQUIRED_CLICKS) {
       clickCount.current = 0;
       setShowChangelog(true);
@@ -60,14 +59,24 @@ export function Footer() {
 
   return (
     <>
-      <footer className="fixed bottom-0 left-0 right-0 h-10 bg-gray-900 text-white flex items-center justify-between px-4 min-w-[320px] z-40">
+      <footer className="fixed bottom-0 left-0 right-0 h-10 bg-blue-900 text-white flex items-center justify-between px-4 min-w-[320px] z-40">
         <div className="flex items-center gap-4">
-          <button
-            onClick={handleVersionClick}
-            className="text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded px-1"
-          >
-            Version: {currentVersion}
-          </button>
+          <PopOver
+            trigger={
+              <button
+                onClick={handleVersionClick}
+                className="text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-900 rounded px-1"
+              >
+                Version: {currentVersion}
+              </button>
+            }
+            content={
+              <div className="p-2 text-sm text-gray-600">
+                Click 5 times to view changelog
+              </div>
+            }
+            placement="top"
+          />
           <a 
             href="https://test.unitain.net/terms"
             className="text-sm text-white/80 hover:text-white transition-colors"

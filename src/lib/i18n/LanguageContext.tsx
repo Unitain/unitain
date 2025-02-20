@@ -41,19 +41,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const isInitialized = useRef(false);
   const lastTimezoneCheck = useRef(Date.now());
   const timezoneCheckInterval = useRef<number>();
-  const timezoneCheckThreshold = 1000;
 
   const updateDocumentLang = useCallback((lang: string) => {
     try {
-      // Ensure we have access to document and it's ready
-      if (!document || !document.documentElement) {
-        return;
-      }
-
-      const htmlElement = document.documentElement;
-      htmlElement.lang = lang;
-      htmlElement.setAttribute('data-language', lang);
-      htmlElement.setAttribute('data-timezone', timezone);
+      document.documentElement.lang = lang;
+      document.documentElement.setAttribute('data-language', lang);
+      document.documentElement.setAttribute('data-timezone', timezone);
     } catch (error) {
       console.warn('Failed to update document language:', error);
     }
@@ -62,7 +55,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const detectTimezone = useCallback(() => {
     try {
       const now = Date.now();
-      if (now - lastTimezoneCheck.current < timezoneCheckThreshold) {
+      if (now - lastTimezoneCheck.current < 1000) {
         return;
       }
       lastTimezoneCheck.current = now;
@@ -70,11 +63,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const newTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (newTimezone && newTimezone !== timezone) {
         setTimezone(newTimezone);
-        
-        // Only update DOM if document is ready
-        if (document?.documentElement) {
-          document.documentElement.setAttribute('data-timezone', newTimezone);
-        }
+        document.documentElement.setAttribute('data-timezone', newTimezone);
       }
     } catch (error) {
       console.warn('Timezone detection failed:', error);
@@ -102,70 +91,39 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
           }
 
           setCurrentLanguage(detectedLanguage);
-          try {
-            localStorage.setItem('preferred_language', detectedLanguage);
-            updateDocumentLang(detectedLanguage);
-          } catch (error) {
-            console.warn('Failed to save language preference:', error);
-          }
-        } else {
-          updateDocumentLang(currentLanguage);
+          localStorage.setItem('preferred_language', detectedLanguage);
         }
 
+        updateDocumentLang(currentLanguage);
         detectTimezone();
       } catch (error) {
         console.error('Language and timezone detection failed:', error);
       }
     };
 
-    // Run detection when document is ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', detectLanguageAndTimezone, { once: true });
     } else {
       detectLanguageAndTimezone();
     }
 
-    const handleTimezoneChange = () => {
-      if (document.hidden) return;
-      detectTimezone();
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        detectTimezone();
+      }
     };
 
-    window.addEventListener('timezoneset', handleTimezoneChange);
-    document.addEventListener('visibilitychange', handleTimezoneChange);
-
-    let observer: MutationObserver | null = null;
-    try {
-      observer = new MutationObserver((mutations) => {
-        if (document.hidden) return;
-        for (const mutation of mutations) {
-          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            handleTimezoneChange();
-          }
-        }
-      });
-
-      if (document.body) {
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true
-        });
-      }
-    } catch (error) {
-      console.warn('Failed to create MutationObserver:', error);
-    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     timezoneCheckInterval.current = window.setInterval(() => {
-      if (document.hidden) return;
-      handleTimezoneChange();
+      if (!document.hidden) {
+        detectTimezone();
+      }
     }, 60000);
 
     return () => {
-      window.removeEventListener('timezoneset', handleTimezoneChange);
-      document.removeEventListener('visibilitychange', handleTimezoneChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('DOMContentLoaded', detectLanguageAndTimezone);
-      if (observer) {
-        observer.disconnect();
-      }
       if (timezoneCheckInterval.current) {
         window.clearInterval(timezoneCheckInterval.current);
       }
