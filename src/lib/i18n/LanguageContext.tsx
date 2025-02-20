@@ -48,11 +48,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     try {
       if (document?.documentElement) {
         document.documentElement.lang = lang;
+        document.documentElement.setAttribute('data-language', lang);
+        document.documentElement.setAttribute('data-timezone', timezone);
       }
     } catch (error) {
       console.warn('Failed to update document language:', error);
     }
-  }, []);
+  }, [timezone]);
 
   const detectTimezone = useCallback(() => {
     try {
@@ -66,6 +68,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const newTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (newTimezone && newTimezone !== timezone) {
         setTimezone(newTimezone);
+        if (document?.documentElement) {
+          document.documentElement.setAttribute('data-timezone', newTimezone);
+        }
       }
     } catch (error) {
       console.warn('Timezone detection failed:', error);

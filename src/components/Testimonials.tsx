@@ -1,5 +1,6 @@
 import React from 'react';
 import { Star } from 'lucide-react';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 const testimonials = [
   {
@@ -40,9 +41,11 @@ const testimonials = [
 ];
 
 export function Testimonials() {
+  const { translate } = useLanguage();
+
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <h2 className="text-3xl font-bold text-center mb-8">What Our Clients Say</h2>
+      <h2 className="text-3xl font-bold text-center mb-8">{translate('testimonials.title')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {testimonials.slice(0, 3).map((testimonial, index) => (
           <div
