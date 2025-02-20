@@ -4,6 +4,8 @@ import { Button } from './Button';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { AuthModal } from './AuthModal';
 import { saveEligibilityCheck } from '../lib/eligibility';
+import { trackEvent, trackButtonClick } from '../lib/analytics';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 import toast from 'react-hot-toast';
 
 interface EligibilityCheckerProps {
@@ -13,7 +15,7 @@ interface EligibilityCheckerProps {
 
 type Question = {
   id: string;
-  text: string;
+  translationKey: string;
   options: string[];
   category: string;
 };
@@ -21,73 +23,73 @@ type Question = {
 const questions: Question[] = [
   {
     id: 'permanent_move',
-    text: 'Are you planning a permanent move to Portugal?',
+    translationKey: 'eligibility.questions.permanentMove',
     options: ['Yes', 'No'],
     category: 'Residency Status',
   },
   {
     id: 'deregistered',
-    text: 'Have you already deregistered your main residence in your previous country?',
+    translationKey: 'eligibility.questions.deregistered',
     options: ['Yes', 'No'],
     category: 'Residency Status',
   },
   {
     id: 'previous_residence',
-    text: 'Have you lived at your previous residence for at least 6 months?',
+    translationKey: 'eligibility.questions.previousResidence',
     options: ['Yes', 'No'],
     category: 'Residency Status',
   },
   {
     id: 'ownership_duration',
-    text: 'Have you owned the vehicle for at least 6 months before your move?',
+    translationKey: 'eligibility.questions.ownershipDuration',
     options: ['Yes', 'No'],
     category: 'Vehicle Ownership',
   },
   {
     id: 'personal_goods',
-    text: 'Is this vehicle being imported as personal moving goods?',
+    translationKey: 'eligibility.questions.personalGoods',
     options: ['Yes', 'No'],
     category: 'Vehicle Ownership',
   },
   {
     id: 'registered_name',
-    text: 'Is the vehicle registered in your name?',
+    translationKey: 'eligibility.questions.registeredName',
     options: ['Yes', 'No'],
     category: 'Vehicle Ownership',
   },
   {
     id: 'eu_registration',
-    text: 'Was the vehicle registered in an EU member state?',
+    translationKey: 'eligibility.questions.euRegistration',
     options: ['Yes', 'No'],
     category: 'Vehicle Registration',
   },
   {
     id: 'documentation',
-    text: 'Do you have all required vehicle documentation?',
+    translationKey: 'eligibility.questions.documentation',
     options: ['Yes', 'No'],
     category: 'Vehicle Registration',
   },
   {
     id: 'vat_paid',
-    text: 'Has VAT been fully paid in the country of origin?',
+    translationKey: 'eligibility.questions.vatPaid',
     options: ['Yes', 'No'],
     category: 'Tax Status',
   },
   {
     id: 'proof_documents',
-    text: 'Do you have all necessary documentation proving your residence duration and vehicle ownership?',
+    translationKey: 'eligibility.questions.proofDocuments',
     options: ['Yes', 'No'],
     category: 'Tax Status',
   },
   {
     id: 'import_type',
-    text: 'Are you importing as a private individual or a company?',
+    translationKey: 'eligibility.questions.importType',
     options: ['Individual', 'Company'],
     category: 'Additional Information',
   },
   {
     id: 'additional_vehicles',
-    text: 'Do you plan to import additional vehicles?',
+    translationKey: 'eligibility.questions.additionalVehicles',
     options: ['Yes', 'No'],
     category: 'Additional Information',
   },
@@ -100,29 +102,42 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { translate } = useLanguage();
 
   const currentQuestion = questions[currentStep];
 
   const handleAnswer = useCallback(async (answer: string) => {
     if (!currentQuestion) return;
 
-    const newAnswers = {
-      ...answers,
-      [currentQuestion.id]: answer,
-    };
-    setAnswers(newAnswers);
+    try {
+      trackEvent('eligibility_answer', {
+        question_id: currentQuestion.id,
+        answer: answer,
+        step: currentStep + 1,
+        total_steps: questions.length
+      });
 
-    if (currentStep < questions.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    } else {
-      setShowResults(true);
-      await handleSaveResults(newAnswers);
+      const newAnswers = {
+        ...answers,
+        [currentQuestion.id]: answer,
+      };
+      setAnswers(newAnswers);
+
+      if (currentStep < questions.length - 1) {
+        setCurrentStep((prev) => prev + 1);
+      } else {
+        setShowResults(true);
+        await handleSaveResults(newAnswers);
+      }
+    } catch (error) {
+      console.error('Error handling answer:', error);
+      toast.error(translate('eligibility.errors.answerFailed'));
     }
-  }, [currentQuestion, answers, currentStep]);
+  }, [currentQuestion, answers, currentStep, questions.length, translate]);
 
   const handleSaveResults = async (finalAnswers: Record<string, string>) => {
     if (!finalAnswers || Object.keys(finalAnswers).length === 0) {
-      setError('No answers to save');
+      setError(translate('eligibility.errors.noAnswers'));
       return;
     }
 
@@ -150,6 +165,12 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
         metadata
       });
 
+      trackEvent('eligibility_check_complete', {
+        is_eligible: isEligible,
+        needs_more_info: needsMoreInfo,
+        questions_answered: Object.keys(finalAnswers).length
+      });
+
       if (!saved && !isSupabaseConfigured()) {
         localStorage.setItem('pendingEligibilityCheck', JSON.stringify({
           answers: finalAnswers,
@@ -160,17 +181,25 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       }
     } catch (err) {
       console.error('Error in handleSaveResults:', err);
-      setError('Failed to process your request. Please try again.');
+      setError(translate('eligibility.errors.saveFailed'));
+      trackEvent('eligibility_check_error', {
+        error_type: 'save_failure',
+        error_message: err instanceof Error ? err.message : 'Unknown error'
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handlePrevious = useCallback(() => {
+    trackButtonClick('previous_question', {
+      current_step: currentStep,
+      category: currentQuestion?.category
+    });
     setCurrentStep((prev) => Math.max(0, prev - 1));
     setShowResults(false);
     setError(null);
-  }, []);
+  }, [currentStep, currentQuestion]);
 
   const calculateEligibility = useCallback(() => {
     const criticalQuestions = [
@@ -190,15 +219,27 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
     };
   }, [answers]);
 
+  const handleActionButton = useCallback(() => {
+    const { isEligible } = calculateEligibility();
+    trackButtonClick(isEligible ? 'proceed_to_payment' : 'contact_support', {
+      is_eligible: isEligible
+    });
+    if (isEligible) {
+      onShowPayment();
+    } else {
+      onShowContact();
+    }
+  }, [calculateEligibility, onShowPayment, onShowContact]);
+
   if (!currentQuestion) {
-    return <div>Error loading questions</div>;
+    return <div>{translate('eligibility.errors.loadingFailed')}</div>;
   }
 
   if (showResults) {
     const { isEligible, needsMoreInfo } = calculateEligibility();
     return (
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6">Eligibility Assessment</h2>
+        <h2 className="text-2xl font-bold mb-6">{translate('eligibility.results.title')}</h2>
         {error && (
           <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
             <p>{error}</p>
@@ -206,22 +247,22 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
         )}
         {needsMoreInfo ? (
           <div className="mb-6 p-4 bg-yellow-50 text-yellow-800 rounded-md">
-            <p>Please complete all questions for a full assessment.</p>
+            <p>{translate('eligibility.results.needsMoreInfo')}</p>
           </div>
         ) : isEligible ? (
           <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md">
-            <p className="font-semibold">Based on your responses, you may be eligible for tax exemption!</p>
-            <p className="mt-2">Next steps:</p>
+            <p className="font-semibold">{translate('eligibility.results.eligible')}</p>
+            <p className="mt-2">{translate('eligibility.results.nextSteps')}:</p>
             <ul className="list-disc ml-6 mt-2">
-              <li>Prepare all required documentation</li>
-              <li>Schedule a consultation with our experts</li>
-              <li>Begin your application process</li>
+              <li>{translate('eligibility.results.steps.documents')}</li>
+              <li>{translate('eligibility.results.steps.consultation')}</li>
+              <li>{translate('eligibility.results.steps.application')}</li>
             </ul>
           </div>
         ) : (
           <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
-            <p className="font-semibold">Based on your responses, you may not be eligible for tax exemption.</p>
-            <p className="mt-2">We recommend consulting with our experts to explore your options.</p>
+            <p className="font-semibold">{translate('eligibility.results.notEligible')}</p>
+            <p className="mt-2">{translate('eligibility.results.consultRecommended')}</p>
           </div>
         )}
         <div className="flex justify-between">
@@ -232,13 +273,13 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             className="flex items-center"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
-            Review Answers
+            {translate('eligibility.buttons.reviewAnswers')}
           </Button>
           <Button 
-            onClick={isEligible ? onShowPayment : onShowContact}
+            onClick={handleActionButton}
             disabled={isSubmitting}
           >
-            {isEligible ? 'Buy Now' : 'Contact Us'}
+            {isEligible ? translate('eligibility.buttons.buyNow') : translate('eligibility.buttons.contactUs')}
           </Button>
         </div>
 
@@ -254,9 +295,11 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-medium text-gray-500">{currentQuestion.category}</h3>
+          <h3 className="text-sm font-medium text-gray-500">
+            {translate(`eligibility.categories.${currentQuestion.category.toLowerCase().replace(/\s+/g, '_')}`)}
+          </h3>
           <span className="text-sm text-gray-500">
-            Question {currentStep + 1} of {questions.length}
+            {translate('eligibility.progress', { current: currentStep + 1, total: questions.length })}
           </span>
         </div>
         <div className="h-2 bg-gray-200 rounded-full">
@@ -267,25 +310,32 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold mb-6">{currentQuestion.text}</h2>
+      <h2 className="text-xl font-semibold mb-6">
+        {translate(currentQuestion.translationKey)}
+      </h2>
 
       <div className="space-y-4">
         {currentQuestion.options.map((option) => (
           <button
             key={option}
             onClick={() => handleAnswer(option)}
-            className="w-full p-4 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="w-full p-4 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            type="button"
           >
-            {option}
+            {translate(`eligibility.options.${option.toLowerCase()}`)}
           </button>
         ))}
       </div>
 
       {currentStep > 0 && (
         <div className="mt-6">
-          <Button onClick={handlePrevious} variant="secondary">
+          <Button 
+            onClick={handlePrevious} 
+            variant="secondary"
+            type="button"
+          >
             <ChevronLeft className="w-4 h-4 mr-2" />
-            Previous Question
+            {translate('eligibility.buttons.previous')}
           </Button>
         </div>
       )}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { paypalService } from '../lib/paypal';
 import { useAuthStore } from '../lib/store';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 import toast from 'react-hot-toast';
 
 interface PayPalButtonProps {
@@ -21,11 +22,16 @@ export function PayPalButton({
   const [error, setError] = useState<string | null>(null);
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const { user, isInitialized } = useAuthStore();
+  const { translate } = useLanguage();
   const mountedRef = useRef(true);
+  const retryTimeoutRef = useRef<number>();
 
   useEffect(() => {
     return () => {
       mountedRef.current = false;
+      if (retryTimeoutRef.current) {
+        window.clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -33,7 +39,11 @@ export function PayPalButton({
     let timeoutId: number;
 
     const initializePayPalButton = async () => {
-      if (!buttonContainerRef.current || !user || !isInitialized) return;
+      if (!buttonContainerRef.current || !user || !isInitialized) {
+        setError(translate('payment.signInRequired'));
+        setIsLoading(false);
+        return;
+      }
 
       try {
         setIsLoading(true);
@@ -44,12 +54,22 @@ export function PayPalButton({
           buttonContainerRef.current.innerHTML = '';
         }
 
+        // Validate amount
+        if (!amount || amount <= 0) {
+          throw new Error(translate('payment.error'));
+        }
+
+        // Validate user ID
+        if (!user.id) {
+          throw new Error(translate('payment.signInRequired'));
+        }
+
         const buttons = await paypalService.createOrder(amount, user.id);
         
         if (!mountedRef.current) return;
 
         if (!buttons) {
-          throw new Error('Failed to create PayPal buttons');
+          throw new Error(translate('payment.systemError'));
         }
 
         await buttons.render(buttonContainerRef.current);
@@ -61,15 +81,24 @@ export function PayPalButton({
         
         console.error('Failed to initialize PayPal button:', error);
         setIsLoading(false);
-        setError('Failed to initialize payment system');
+
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : translate('payment.systemError');
+
+        setError(errorMessage);
         
         if (error instanceof Error) {
           onError?.(error);
-          toast.error(error.message);
+          toast.error(errorMessage);
         }
 
         // Retry initialization after a delay
-        timeoutId = window.setTimeout(() => {
+        if (retryTimeoutRef.current) {
+          window.clearTimeout(retryTimeoutRef.current);
+        }
+
+        retryTimeoutRef.current = window.setTimeout(() => {
           if (mountedRef.current) {
             initializePayPalButton();
           }
@@ -81,14 +110,17 @@ export function PayPalButton({
 
     return () => {
       window.clearTimeout(timeoutId);
+      if (retryTimeoutRef.current) {
+        window.clearTimeout(retryTimeoutRef.current);
+      }
       paypalService.cleanup();
     };
-  }, [amount, user, isInitialized, onSuccess, onError, onCancel]);
+  }, [amount, user, isInitialized, onSuccess, onError, onCancel, translate]);
 
   if (!isInitialized || !user) {
     return (
       <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
-        Please sign in to continue with payment
+        {translate('payment.signInRequired')}
       </div>
     );
   }
@@ -96,12 +128,12 @@ export function PayPalButton({
   if (error) {
     return (
       <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
-        {error}
+        <p className="mb-2">{error}</p>
         <button 
           onClick={() => window.location.reload()}
-          className="block mx-auto mt-2 text-sm text-blue-600 hover:text-blue-800"
+          className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
         >
-          Retry
+          {translate('common.retry')}
         </button>
       </div>
     );

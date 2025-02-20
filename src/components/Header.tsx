@@ -4,12 +4,15 @@ import { supabase } from '../lib/supabase';
 import { Button } from './Button';
 import { UserCircle2, LogOut } from 'lucide-react';
 import { AuthModal } from './AuthModal';
+import { LanguageSelector } from './LanguageSelector';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 import toast from 'react-hot-toast';
 
 export function Header() {
   const { user, isLoading, setUser } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
+  const { translate } = useLanguage();
 
   const handleSignOut = async () => {
     try {
@@ -51,6 +54,8 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-4">
+            <LanguageSelector />
+            
             {isLoading ? (
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
@@ -71,7 +76,7 @@ export function Header() {
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
-                  {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+                  {isSigningOut ? translate('nav.signingout') : translate('nav.signout')}
                 </Button>
               </div>
             ) : (
@@ -83,7 +88,7 @@ export function Header() {
                 id="auth-button"
               >
                 <UserCircle2 className="w-4 h-4" />
-                Sign In
+                {translate('nav.signin')}
               </Button>
             )}
           </div>
