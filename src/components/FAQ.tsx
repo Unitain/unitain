@@ -18,6 +18,10 @@ const faqs = [
     question: 'What documents will I need?',
     answer: 'Common required documents include proof of residency, vehicle registration papers, and identification. Our system will guide you through exactly what you need based on your situation.',
   },
+  {
+    question: 'What types of vehicles are eligible for tax exemption?',
+    answer: 'Most personal vehicles including cars, motorcycles, and small vans can be eligible. The vehicle must be for personal use, registered in your name for at least 6 months before moving to Portugal, and meet EU environmental standards.',
+  },
 ];
 
 export function FAQ() {
