@@ -18,10 +18,24 @@ const testimonials = [
   },
   {
     name: 'Emma Thompson',
-    text: 'I can\'t believe how easy this was! The whole process was smooth, and I avoided thousands in unnecessary taxes. Fantastic support from start to finish.',
+    text: 'I can\'t believe how easy this was! The whole process was smooth, and I avoided thousands in unnecessary taxes.',
     rating: 5,
     location: 'London',
     country: '🇬🇧 United Kingdom',
+  },
+  {
+    name: 'Sofia Costa',
+    text: 'Professional and reliable. They made the entire process seamless. Worth every penny!',
+    rating: 5,
+    location: 'Porto',
+    country: '🇵🇹 Portugal',
+  },
+  {
+    name: 'Lars Nielsen',
+    text: 'Excellent support throughout the process. Saved me time and money. Highly recommend!',
+    rating: 5,
+    location: 'Copenhagen',
+    country: '🇩🇰 Denmark',
   },
 ];
 
@@ -30,7 +44,7 @@ export function Testimonials() {
     <div className="w-full max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold text-center mb-8">What Our Clients Say</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {testimonials.map((testimonial, index) => (
+        {testimonials.slice(0, 3).map((testimonial, index) => (
           <div
             key={index}
             className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
