@@ -1,10 +1,12 @@
 import semver from 'semver';
 import { Lock } from './Lock';
+import { supabase } from '../supabase';
 
 export class VersionManager {
   private currentVersion: string;
   private lock: Lock;
   private lastShownVersion: string | null;
+  private autoIncrementEnabled: boolean;
 
   constructor(initialVersion: string = '0.1.0') {
     if (!initialVersion || !semver.valid(initialVersion)) {
@@ -13,6 +15,7 @@ export class VersionManager {
     }
     this.currentVersion = initialVersion;
     this.lock = new Lock();
+    this.autoIncrementEnabled = true;
     
     try {
       this.lastShownVersion = localStorage.getItem('changelog_last_shown_version');
@@ -29,8 +32,65 @@ export class VersionManager {
       if (!newVersion) {
         throw new Error('Failed to increment version');
       }
+
+      // Update version in database
+      const { error } = await supabase
+        .from('changelog')
+        .insert({
+          version: newVersion,
+          type: 'changed',
+          message: `Version bumped to ${newVersion}`,
+          date: new Date().toISOString().split('T')[0]
+        });
+
+      if (error) {
+        throw new Error(`Failed to record version change: ${error.message}`);
+      }
+
       this.currentVersion = newVersion;
       return newVersion;
+    } finally {
+      this.lock.release();
+    }
+  }
+
+  async trackChange(type: 'added' | 'changed' | 'fixed', message: string): Promise<void> {
+    await this.lock.acquire();
+    try {
+      if (!this.autoIncrementEnabled) return;
+
+      // Determine version increment type based on change type
+      let incrementType: 'major' | 'minor' | 'patch';
+      switch (type) {
+        case 'added':
+          incrementType = 'minor'; // New features increment minor version
+          break;
+        case 'changed':
+          incrementType = 'minor'; // Significant changes increment minor version
+          break;
+        case 'fixed':
+          incrementType = 'patch'; // Bug fixes increment patch version
+          break;
+      }
+
+      // Increment version
+      const newVersion = await this.incrementVersion(incrementType);
+
+      // Record change in changelog
+      const { error } = await supabase
+        .from('changelog')
+        .insert({
+          version: newVersion,
+          type,
+          message,
+          date: new Date().toISOString().split('T')[0]
+        });
+
+      if (error) {
+        throw new Error(`Failed to record change: ${error.message}`);
+      }
+
+      console.debug(`Version updated to ${newVersion} for change: ${message}`);
     } finally {
       this.lock.release();
     }
@@ -63,5 +123,22 @@ export class VersionManager {
     } catch (error) {
       console.error('Failed to mark changelog as shown:', error);
     }
+  }
+
+  setAutoIncrement(enabled: boolean): void {
+    this.autoIncrementEnabled = enabled;
+  }
+
+  async getVersionHistory(): Promise<{ version: string; date: string }[]> {
+    const { data, error } = await supabase
+      .from('changelog')
+      .select('version, date')
+      .order('date', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch version history: ${error.message}`);
+    }
+
+    return data;
   }
 }
