@@ -54,48 +54,6 @@ export class VersionManager {
     }
   }
 
-  async trackChange(type: 'added' | 'changed' | 'fixed', message: string): Promise<void> {
-    await this.lock.acquire();
-    try {
-      if (!this.autoIncrementEnabled) return;
-
-      // Determine version increment type based on change type
-      let incrementType: 'major' | 'minor' | 'patch';
-      switch (type) {
-        case 'added':
-          incrementType = 'minor'; // New features increment minor version
-          break;
-        case 'changed':
-          incrementType = 'minor'; // Significant changes increment minor version
-          break;
-        case 'fixed':
-          incrementType = 'patch'; // Bug fixes increment patch version
-          break;
-      }
-
-      // Increment version
-      const newVersion = await this.incrementVersion(incrementType);
-
-      // Record change in changelog
-      const { error } = await supabase
-        .from('changelog')
-        .insert({
-          version: newVersion,
-          type,
-          message,
-          date: new Date().toISOString().split('T')[0]
-        });
-
-      if (error) {
-        throw new Error(`Failed to record change: ${error.message}`);
-      }
-
-      console.debug(`Version updated to ${newVersion} for change: ${message}`);
-    } finally {
-      this.lock.release();
-    }
-  }
-
   validateVersion(version: string): boolean {
     return Boolean(version && semver.valid(version));
   }
