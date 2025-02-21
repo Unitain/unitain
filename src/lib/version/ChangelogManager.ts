@@ -53,14 +53,17 @@ export class ChangelogManager {
     try {
       await this.lock.acquire();
       
-      // Verify database connection
+      // Verify database connection and table existence
       const { error } = await supabase
         .from('changelog')
         .select('id')
         .limit(1);
 
       if (error) {
-        throw new Error(`Failed to connect to changelog table: ${error.message}`);
+        if (error.code === '42P01') { // Table does not exist
+          throw new Error('Changelog table not found. Please ensure migrations have been run.');
+        }
+        throw error;
       }
 
       this.initialized = true;
@@ -96,7 +99,7 @@ export class ChangelogManager {
       const entry: Omit<ChangelogEntry, 'id'> = {
         version,
         type,
-        message,
+        message: message.trim(),
         date: new Date().toISOString().split('T')[0],
       };
 
@@ -171,6 +174,38 @@ export class ChangelogManager {
   }
 
   /**
+   * Get all changelog entries grouped by version.
+   */
+  async getAllEntries(): Promise<Record<string, ChangelogEntry[]>> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('changelog')
+        .select('*')
+        .order('version', { ascending: false })
+        .order('date', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      return (data as ChangelogEntry[]).reduce((acc, entry) => {
+        if (!acc[entry.version]) {
+          acc[entry.version] = [];
+        }
+        acc[entry.version].push(entry);
+        return acc;
+      }, {} as Record<string, ChangelogEntry[]>);
+    } catch (error) {
+      console.error('Failed to get all changelog entries:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Generate markdown changelog for a specific version.
    */
   async generateChangelog(version: string): Promise<string> {
@@ -186,31 +221,12 @@ export class ChangelogManager {
    */
   async exportToMarkdown(): Promise<string> {
     try {
-      const { data, error } = await supabase
-        .from('changelog')
-        .select('*')
-        .order('version', { ascending: false })
-        .order('date', { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      const entries = data as ChangelogEntry[];
-      const grouped = entries.reduce((acc, entry) => {
-        if (!acc[entry.version]) {
-          acc[entry.version] = [];
-        }
-        acc[entry.version].push(entry);
-        return acc;
-      }, {} as Record<string, ChangelogEntry[]>);
-
-      const versions = Object.keys(grouped).sort().reverse();
-      return versions
-        .map(version => this.formatChangelog(
-          version,
-          this.groupEntriesByType(grouped[version])
-        ))
+      const groupedEntries = await this.getAllEntries();
+      
+      return Object.entries(groupedEntries)
+        .map(([version, entries]) => 
+          this.formatChangelog(version, this.groupEntriesByType(entries))
+        )
         .join('\n\n');
     } catch (error) {
       console.error('Failed to export changelog:', error);
