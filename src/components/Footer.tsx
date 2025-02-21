@@ -9,11 +9,11 @@ export function Footer() {
   
   const currentVersion = useMemo(() => {
     try {
-      const versionManager = new VersionManager('1.8.1');
+      const versionManager = new VersionManager('1.8.2');
       return versionManager.getCurrentVersion();
     } catch (error) {
       console.error('Failed to initialize version manager:', error);
-      return '1.8.1';
+      return '1.8.2';
     }
   }, []);
 

@@ -1,20 +1,22 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Car, CheckCircle, Clock, EuroIcon } from 'lucide-react';
 import { Button } from './components/Button';
 import { FAQ } from './components/FAQ';
-import { Testimonials } from './components/Testimonials';
-import { EligibilityChecker } from './components/EligibilityChecker';
-import { PaymentPage } from './components/PaymentPage';
-import { Footer } from './components/Footer';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { Header } from './components/Header';
 import { AuthProvider } from './components/AuthProvider';
-import { ContactPage } from './components/ContactPage';
-import { PrivacyPolicy } from './components/PrivacyPolicy';
-import { TermsOfService } from './components/TermsOfService';
-import { CookieConsent } from './components/CookieConsent';
 import { useAuthStore } from './lib/store';
 import { useTranslation } from 'react-i18next';
-import { LoadingSpinner } from './components/LoadingSpinner';
+
+// Lazy load components that aren't immediately needed
+const Testimonials = lazy(() => import('./components/Testimonials').then(m => ({ default: m.Testimonials })));
+const EligibilityChecker = lazy(() => import('./components/EligibilityChecker').then(m => ({ default: m.EligibilityChecker })));
+const PaymentPage = lazy(() => import('./components/PaymentPage').then(m => ({ default: m.PaymentPage })));
+const Footer = lazy(() => import('./components/Footer').then(m => ({ default: m.Footer })));
+const ContactPage = lazy(() => import('./components/ContactPage').then(m => ({ default: m.ContactPage })));
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfService })));
+const CookieConsent = lazy(() => import('./components/CookieConsent').then(m => ({ default: m.CookieConsent })));
 
 function App() {
   const [showPayment, setShowPayment] = useState(false);
@@ -24,20 +26,22 @@ function App() {
   const { user, isLoading } = useAuthStore();
   const { t } = useTranslation();
 
-  React.useEffect(() => {
-    const handleRouteChange = () => {
-      const path = window.location.pathname.toLowerCase();
-      const isPrivacyPage = path === '/privacy' || path === '/privacy/';
-      const isTermsPage = path === '/terms' || path === '/terms/';
-      setShowPrivacy(isPrivacyPage);
-      setShowTerms(isTermsPage);
-      
-      if (isPrivacyPage || isTermsPage) {
-        setShowPayment(false);
-        setShowContact(false);
-      }
-    };
+  // Memoize route change handler
+  const handleRouteChange = React.useCallback(() => {
+    const path = window.location.pathname.toLowerCase();
+    const isPrivacyPage = path === '/privacy' || path === '/privacy/';
+    const isTermsPage = path === '/terms' || path === '/terms/';
+    setShowPrivacy(isPrivacyPage);
+    setShowTerms(isTermsPage);
+    
+    if (isPrivacyPage || isTermsPage) {
+      setShowPayment(false);
+      setShowContact(false);
+    }
+  }, []);
 
+  // Use layout effect to avoid flash of content
+  React.useLayoutEffect(() => {
     handleRouteChange();
 
     window.addEventListener('popstate', handleRouteChange);
@@ -60,31 +64,75 @@ function App() {
       history.pushState = originalPushState;
       history.replaceState = originalReplaceState;
     };
-  }, []);
+  }, [handleRouteChange]);
 
-  const handleShowContact = () => {
+  // Memoize handlers
+  const handleShowContact = React.useCallback(() => {
     setShowContact(true);
     setShowPayment(false);
     setShowPrivacy(false);
     setShowTerms(false);
     window.history.pushState({}, '', '/');
-  };
+  }, []);
 
-  const handleShowPayment = () => {
+  const handleShowPayment = React.useCallback(() => {
     setShowPayment(true);
     setShowContact(false);
     setShowPrivacy(false);
     setShowTerms(false);
     window.history.pushState({}, '', '/');
-  };
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = React.useCallback(() => {
     setShowPayment(false);
     setShowContact(false);
     setShowPrivacy(false);
     setShowTerms(false);
     window.history.pushState({}, '', '/');
-  };
+  }, []);
+
+  // Memoize features section content
+  const features = React.useMemo(() => [
+    {
+      icon: CheckCircle,
+      title: t('benefits.tax.title'),
+      description: t('benefits.tax.description'),
+    },
+    {
+      icon: Clock,
+      title: t('benefits.paperwork.title'),
+      description: t('benefits.paperwork.description'),
+    },
+    {
+      icon: EuroIcon,
+      title: t('benefits.process.title'),
+      description: t('benefits.process.description'),
+    },
+  ], [t]);
+
+  // Memoize process steps
+  const processSteps = React.useMemo(() => [
+    {
+      step: 1,
+      titleKey: 'process.step1.title',
+      descriptionKey: 'process.step1.description',
+    },
+    {
+      step: 2,
+      titleKey: 'process.step2.title',
+      descriptionKey: 'process.step2.description',
+    },
+    {
+      step: 3,
+      titleKey: 'process.step3.title',
+      descriptionKey: 'process.step3.description',
+    },
+    {
+      step: 4,
+      titleKey: 'process.step4.title',
+      descriptionKey: 'process.step4.description',
+    },
+  ], []);
 
   return (
     <AuthProvider>
@@ -93,13 +141,21 @@ function App() {
           <Header />
           
           {showTerms ? (
-            <TermsOfService onBack={handleBack} />
+            <Suspense fallback={<LoadingSpinner />}>
+              <TermsOfService onBack={handleBack} />
+            </Suspense>
           ) : showPrivacy ? (
-            <PrivacyPolicy onBack={handleBack} />
+            <Suspense fallback={<LoadingSpinner />}>
+              <PrivacyPolicy onBack={handleBack} />
+            </Suspense>
           ) : showContact ? (
-            <ContactPage onBack={handleBack} />
+            <Suspense fallback={<LoadingSpinner />}>
+              <ContactPage onBack={handleBack} />
+            </Suspense>
           ) : showPayment ? (
-            <PaymentPage onBack={handleBack} />
+            <Suspense fallback={<LoadingSpinner />}>
+              <PaymentPage onBack={handleBack} />
+            </Suspense>
           ) : (
             <div className="pb-10">
               {/* Hero Section */}
@@ -115,7 +171,10 @@ function App() {
                     <Button
                       size="lg"
                       className="bg-white text-blue-600 hover:bg-blue-50"
-                      onClick={() => document.getElementById('eligibility-checker')?.scrollIntoView({ behavior: 'smooth' })}
+                      onClick={() => {
+                        const element = document.getElementById('eligibility-checker');
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
                     >
                       {t('hero.cta')}
                     </Button>
@@ -127,21 +186,13 @@ function App() {
               <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="text-center p-6">
-                      <CheckCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">{t('benefits.tax.title')}</h3>
-                      <p className="text-gray-600">{t('benefits.tax.description')}</p>
-                    </div>
-                    <div className="text-center p-6">
-                      <Clock className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">{t('benefits.paperwork.title')}</h3>
-                      <p className="text-gray-600">{t('benefits.paperwork.description')}</p>
-                    </div>
-                    <div className="text-center p-6">
-                      <EuroIcon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">{t('benefits.process.title')}</h3>
-                      <p className="text-gray-600">{t('benefits.process.description')}</p>
-                    </div>
+                    {features.map((feature, index) => (
+                      <div key={index} className="text-center p-6">
+                        <feature.icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                        <p className="text-gray-600">{feature.description}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </section>
@@ -152,10 +203,12 @@ function App() {
                   <h2 className="text-3xl font-bold text-center mb-12">
                     {t('eligibility.title')}
                   </h2>
-                  <EligibilityChecker 
-                    onShowPayment={handleShowPayment}
-                    onShowContact={handleShowContact}
-                  />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <EligibilityChecker 
+                      onShowPayment={handleShowPayment}
+                      onShowContact={handleShowContact}
+                    />
+                  </Suspense>
                 </div>
               </section>
 
@@ -166,28 +219,7 @@ function App() {
                     {t('process.title')}
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {[
-                      {
-                        step: 1,
-                        titleKey: 'process.step1.title',
-                        descriptionKey: 'process.step1.description',
-                      },
-                      {
-                        step: 2,
-                        titleKey: 'process.step2.title',
-                        descriptionKey: 'process.step2.description',
-                      },
-                      {
-                        step: 3,
-                        titleKey: 'process.step3.title',
-                        descriptionKey: 'process.step3.description',
-                      },
-                      {
-                        step: 4,
-                        titleKey: 'process.step4.title',
-                        descriptionKey: 'process.step4.description',
-                      },
-                    ].map((item) => (
+                    {processSteps.map((item) => (
                       <div key={item.step} className="text-center">
                         <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                           {item.step}
@@ -206,7 +238,9 @@ function App() {
 
               {/* Testimonials Section */}
               <section className="py-20 bg-gray-50">
-                <Testimonials />
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Testimonials />
+                </Suspense>
               </section>
 
               {/* FAQ Section */}
@@ -247,11 +281,15 @@ function App() {
                 </div>
               </section>
 
-              <Footer />
+              <Suspense fallback={null}>
+                <Footer />
+              </Suspense>
             </div>
           )}
           
-          <CookieConsent />
+          <Suspense fallback={null}>
+            <CookieConsent />
+          </Suspense>
         </div>
       </Suspense>
     </AuthProvider>

@@ -147,6 +147,31 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
 }
 
 const changelog: Record<string, { date: string; changes: ChangelogEntry['changes'] }> = {
+  '1.8.2': {
+    date: '2025-02-21',
+    changes: [
+      {
+        type: 'fix',
+        description: 'Fixed visual issues in the login modal interface'
+      },
+      {
+        type: 'fix',
+        description: 'Improved overall modal responsiveness'
+      },
+      {
+        type: 'fix',
+        description: 'Adjusted button alignment and spacing'
+      },
+      {
+        type: 'fix',
+        description: 'Updated input field styling for better user experience'
+      },
+      {
+        type: 'fix',
+        description: 'Fixed form validation visual feedback'
+      }
+    ]
+  },
   '1.8.1': {
     date: '2025-02-20',
     changes: [

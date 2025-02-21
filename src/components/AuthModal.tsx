@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '../lib/supabase';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../lib/store';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,11 +13,20 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuthStore();
+
+  // Auto-close modal when user becomes authenticated
+  useEffect(() => {
+    if (user && isOpen) {
+      onClose();
+    }
+  }, [user, isOpen, onClose]);
 
   if (!isOpen) return null;
 
   const handleAuthSuccess = () => {
     toast.success('Successfully signed in!');
+    setIsLoading(false);
     onClose();
   };
 
