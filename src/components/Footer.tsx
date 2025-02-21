@@ -1,20 +1,36 @@
-import React, { useState, useMemo } from 'react';
-import { VersionManager } from '../lib/version';
+import React, { useState, useEffect } from 'react';
 import { Clock, MessageSquare } from 'lucide-react';
 import { ChangelogPopup } from './ChangelogPopup';
-import { PopOver } from './PopOver';
+import { supabase } from '../lib/supabase';
 
 export function Footer() {
   const [showChangelog, setShowChangelog] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState('1.8.3'); // Fallback version
+  const [loading, setLoading] = useState(true);
   
-  const currentVersion = useMemo(() => {
-    try {
-      const versionManager = new VersionManager('1.8.2');
-      return versionManager.getCurrentVersion();
-    } catch (error) {
-      console.error('Failed to initialize version manager:', error);
-      return '1.8.2';
-    }
+  useEffect(() => {
+    const fetchLatestVersion = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('changelog')
+          .select('version, date')
+          .order('date', { ascending: false })
+          .order('version', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setCurrentVersion(data.version);
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest version:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestVersion();
   }, []);
 
   const handleContactClick = (e: React.MouseEvent) => {
@@ -42,9 +58,18 @@ export function Footer() {
           <button
             onClick={() => setShowChangelog(true)}
             className="flex items-center gap-2 text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-900 rounded px-2 py-1"
+            disabled={loading}
           >
             <Clock className="w-4 h-4" />
-            <span>Version {currentVersion}</span>
+            <span>
+              {loading ? (
+                <span className="inline-block w-16 bg-blue-800 animate-pulse rounded">
+                  &nbsp;
+                </span>
+              ) : (
+                `Version ${currentVersion}`
+              )}
+            </span>
           </button>
           <a 
             href="https://test.unitain.net/terms"
