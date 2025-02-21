@@ -5,6 +5,7 @@ import './index.css';
 import { initScrollTracking, initExternalLinkTracking } from './lib/analytics';
 import { initializeConsent } from './lib/consent';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
+import { TimezoneProvider } from './components/TimezoneProvider';
 
 // Initialize consent management
 initializeConsent();
@@ -15,8 +16,10 @@ initExternalLinkTracking();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <LanguageProvider>
-      <App />
-    </LanguageProvider>
+    <TimezoneProvider>
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
+    </TimezoneProvider>
   </StrictMode>
 );

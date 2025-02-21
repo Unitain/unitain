@@ -1,19 +1,18 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Language, Translation, languages, defaultLanguage } from './translations';
+import { useTimezone } from '../../components/TimezoneProvider';
 import toast from 'react-hot-toast';
 
 interface LanguageContextType {
   currentLanguage: Language;
   setLanguage: (lang: Language) => void;
   translate: (key: string, params?: Record<string, string | number>) => string;
-  timezone: string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   currentLanguage: defaultLanguage,
   setLanguage: () => {},
-  translate: (key: string) => key,
-  timezone: 'UTC'
+  translate: (key: string) => key
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -29,44 +28,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return defaultLanguage;
   });
 
-  const [timezone, setTimezone] = useState(() => {
-    try {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-    } catch (error) {
-      console.warn('Failed to detect timezone:', error);
-      return 'UTC';
-    }
-  });
-
+  const { timezone } = useTimezone();
   const isInitialized = useRef(false);
-  const lastTimezoneCheck = useRef(Date.now());
-  const timezoneCheckInterval = useRef<number>();
 
   const updateDocumentLang = useCallback((lang: string) => {
     try {
-      document.documentElement.lang = lang;
-      document.documentElement.setAttribute('data-language', lang);
-      document.documentElement.setAttribute('data-timezone', timezone);
+      if (document?.documentElement) {
+        document.documentElement.lang = lang;
+        document.documentElement.setAttribute('data-language', lang);
+        document.documentElement.setAttribute('data-timezone', timezone);
+      }
     } catch (error) {
       console.warn('Failed to update document language:', error);
-    }
-  }, [timezone]);
-
-  const detectTimezone = useCallback(() => {
-    try {
-      const now = Date.now();
-      if (now - lastTimezoneCheck.current < 1000) {
-        return;
-      }
-      lastTimezoneCheck.current = now;
-
-      const newTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (newTimezone && newTimezone !== timezone) {
-        setTimezone(newTimezone);
-        document.documentElement.setAttribute('data-timezone', newTimezone);
-      }
-    } catch (error) {
-      console.warn('Timezone detection failed:', error);
     }
   }, [timezone]);
 
@@ -76,7 +49,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
     isInitialized.current = true;
 
-    const detectLanguageAndTimezone = () => {
+    const detectLanguage = () => {
       try {
         if (!localStorage.getItem('preferred_language')) {
           let detectedLanguage: Language = defaultLanguage;
@@ -95,40 +68,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         }
 
         updateDocumentLang(currentLanguage);
-        detectTimezone();
       } catch (error) {
-        console.error('Language and timezone detection failed:', error);
+        console.error('Language detection failed:', error);
       }
     };
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', detectLanguageAndTimezone, { once: true });
+      document.addEventListener('DOMContentLoaded', detectLanguage, { once: true });
     } else {
-      detectLanguageAndTimezone();
+      detectLanguage();
     }
 
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        detectTimezone();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    timezoneCheckInterval.current = window.setInterval(() => {
-      if (!document.hidden) {
-        detectTimezone();
-      }
-    }, 60000);
-
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('DOMContentLoaded', detectLanguageAndTimezone);
-      if (timezoneCheckInterval.current) {
-        window.clearInterval(timezoneCheckInterval.current);
-      }
+      document.removeEventListener('DOMContentLoaded', detectLanguage);
     };
-  }, [currentLanguage, updateDocumentLang, detectTimezone]);
+  }, [currentLanguage, updateDocumentLang]);
 
   const setLanguage = useCallback((lang: Language) => {
     try {
@@ -170,7 +124,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <LanguageContext.Provider value={{ currentLanguage, setLanguage, translate, timezone }}>
+    <LanguageContext.Provider value={{ currentLanguage, setLanguage, translate }}>
       {children}
     </LanguageContext.Provider>
   );

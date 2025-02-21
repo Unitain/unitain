@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { VersionManager } from '../lib/version';
 import packageJson from '../../package.json';
 import { MessageSquare } from 'lucide-react';
@@ -15,11 +15,11 @@ export function Footer() {
   
   const currentVersion = useMemo(() => {
     try {
-      const versionManager = new VersionManager('1.4.4');
+      const versionManager = new VersionManager('1.8.0');
       return versionManager.getCurrentVersion();
     } catch (error) {
       console.error('Failed to initialize version manager:', error);
-      return '1.4.4';
+      return '1.8.0';
     }
   }, []);
 
