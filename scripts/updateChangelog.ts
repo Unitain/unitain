@@ -1,6 +1,21 @@
-import { supabase } from '../src/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Missing Supabase environment variables');
+  process.exit(1);
+}
+
+// Create Supabase client for the script
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function updateChangelog() {
   try {
@@ -13,6 +28,8 @@ async function updateChangelog() {
     if (!version) {
       throw new Error('No version found in package.json');
     }
+
+    console.log(`📦 Current version: ${version}`);
 
     // Check if version already exists in changelog
     const { data: existingEntry, error: checkError } = await supabase
