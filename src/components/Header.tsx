@@ -5,7 +5,7 @@ import { Button } from './Button';
 import { UserCircle2, LogOut } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 import { LanguageSelector } from './LanguageSelector';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { Logo } from './Logo';
 import toast from 'react-hot-toast';
 
@@ -13,7 +13,7 @@ export function Header() {
   const { user, isLoading, setUser } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
-  const { translate } = useLanguage();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     try {
@@ -77,7 +77,7 @@ export function Header() {
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
-                  {isSigningOut ? translate('nav.signingout') : translate('nav.signout')}
+                  {isSigningOut ? t('nav.signingout') : t('nav.signout')}
                 </Button>
               </div>
             ) : (
@@ -89,7 +89,7 @@ export function Header() {
                 id="auth-button"
               >
                 <UserCircle2 className="w-4 h-4" />
-                {translate('nav.signin')}
+                {t('nav.signin')}
               </Button>
             )}
           </div>

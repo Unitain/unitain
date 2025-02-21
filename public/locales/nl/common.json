@@ -1,0 +1,185 @@
+{
+  "nav": {
+    "signin": "Inloggen",
+    "signout": "Uitloggen",
+    "signingout": "Uitloggen..."
+  },
+  "common": {
+    "back": "Terug",
+    "loading": "Laden...",
+    "error": "Fout",
+    "retry": "Opnieuw proberen",
+    "success": "Succes",
+    "next": "Volgende",
+    "previous": "Vorige",
+    "submit": "Verzenden",
+    "cancel": "Annuleren",
+    "close": "Sluiten"
+  },
+  "hero": {
+    "title": "Voorkom Hoge Invoerbelastingen – Controleer Uw Geschiktheid in Enkele Minuten!",
+    "subtitle": "De meeste expats betalen duizenden euro's aan onnodige auto-invoerbelastingen. Ontdek of u deze kunt vermijden met onze snelle en eenvoudige belastingcontrole.",
+    "cta": "Start Nu Uw Belastingcontrole"
+  },
+  "benefits": {
+    "tax": {
+      "title": "✅ Bespaar Duizenden op Invoerbelasting",
+      "description": "Ontdek binnen enkele minuten of u de dure Portugese auto-invoerbelasting niet hoeft te betalen."
+    },
+    "paperwork": {
+      "title": "📄 Geen Papierwerk, Geen Zorgen",
+      "description": "Wij regelen alle formulieren en juridische stappen, zodat u zich geen zorgen hoeft te maken over Portugese bureaucratie."
+    },
+    "process": {
+      "title": "⚡ Snel & Eenvoudig Proces",
+      "description": "Beantwoord nu enkele vragen—als u in aanmerking komt, regelen wij alles voor de legale import van uw auto."
+    }
+  },
+  "eligibility": {
+    "title": "Controleer Uw Geschiktheid",
+    "progress": "Stap {{current}} van {{total}}",
+    "categories": {
+      "residency_status": "Verblijfsstatus",
+      "vehicle_ownership": "Voertuigeigendom",
+      "vehicle_registration": "Voertuigregistratie",
+      "tax_status": "Belastingstatus",
+      "additional_information": "Aanvullende Informatie"
+    },
+    "questions": {
+      "permanentMove": "Bent u van plan permanent naar Portugal te verhuizen?",
+      "deregistered": "Heeft u zich uitgeschreven in uw thuisland?",
+      "previousResidence": "Heeft u minimaal 12 maanden buiten Portugal gewoond?",
+      "ownershipDuration": "Bent u al minimaal 6 maanden eigenaar van het voertuig?",
+      "personalGoods": "Importeert u het voertuig als onderdeel van uw persoonlijke bezittingen?",
+      "registeredName": "Staat het voertuig op uw naam geregistreerd?",
+      "euRegistration": "Is het voertuig in de EU geregistreerd?",
+      "documentation": "Heeft u alle vereiste voertuigdocumentatie?",
+      "vatPaid": "Is er BTW betaald over het voertuig binnen de EU?",
+      "proofDocuments": "Kunt u de aankoop en belastingbetaling aantonen?",
+      "importType": "Hoe wilt u het voertuig importeren?",
+      "additionalVehicles": "Heeft u in de afgelopen 12 maanden andere voertuigen geïmporteerd?"
+    },
+    "options": {
+      "yes": "Ja",
+      "no": "Nee",
+      "individual": "Particulier",
+      "company": "Bedrijf"
+    },
+    "buttons": {
+      "previous": "Vorige",
+      "next": "Volgende",
+      "reviewAnswers": "Antwoorden Bekijken",
+      "buyNow": "Doorgaan naar Betaling",
+      "contactUs": "Contact Opnemen"
+    },
+    "results": {
+      "title": "Geschiktheidsbeoordeling",
+      "eligible": "Op basis van uw antwoorden komt u mogelijk in aanmerking voor belastingvrijstelling!",
+      "nextSteps": "Volgende stappen",
+      "steps": {
+        "documents": "Bereid alle vereiste documentatie voor",
+        "consultation": "Plan een consult met onze experts",
+        "application": "Start uw aanvraagproces"
+      },
+      "notEligible": "Op basis van uw antwoorden komt u mogelijk niet in aanmerking voor belastingvrijstelling.",
+      "consultRecommended": "We raden aan om met onze experts te overleggen om uw opties te bespreken.",
+      "needsMoreInfo": "We hebben meer informatie nodig om uw geschiktheid volledig te beoordelen."
+    },
+    "errors": {
+      "loadingFailed": "Geschiktheidscontrole laden mislukt",
+      "saveFailed": "Geschiktheidscontrole opslaan mislukt",
+      "answerFailed": "Antwoord opslaan mislukt",
+      "noAnswers": "Beantwoord alle vragen"
+    }
+  },
+  "process": {
+    "title": "Hoe Het Werkt",
+    "step1": {
+      "title": "Controleer Geschiktheid",
+      "description": "Beantwoord enkele eenvoudige vragen over uw situatie"
+    },
+    "step2": {
+      "title": "Documenten Indienen",
+      "description": "Upload vereiste documentatie via ons beveiligde platform"
+    },
+    "step3": {
+      "title": "Wij Verwerken",
+      "description": "Onze experts regelen alle communicatie met autoriteiten"
+    },
+    "step4": {
+      "title": "Goedkeuring Ontvangen",
+      "description": "Ontvang uw belastingvrijstellingsbevestiging"
+    }
+  },
+  "contact": {
+    "title": "Neem Contact Op",
+    "subtitle": "Krijg Expert Hulp bij Uw Belastingvrijstelling",
+    "form": {
+      "name": "Naam",
+      "namePlaceholder": "Vul uw volledige naam in",
+      "email": "E-mail",
+      "emailPlaceholder": "Vul uw e-mailadres in",
+      "message": "Bericht",
+      "messagePlaceholder": "Hoe kunnen we u helpen?",
+      "send": "Bericht Versturen",
+      "sending": "Versturen...",
+      "usingAccountEmail": "E-mail van uw account wordt gebruikt"
+    },
+    "features": {
+      "consultation": {
+        "title": "Gratis Eerste Consult",
+        "description": "Krijg deskundig advies over uw specifieke situatie"
+      },
+      "response": {
+        "title": "Snelle Reactietijd",
+        "description": "We reageren meestal binnen 24 uur"
+      },
+      "security": {
+        "title": "Veilige Communicatie",
+        "description": "Uw informatie is beschermd"
+      }
+    }
+  },
+  "payment": {
+    "title": "Voltooi Uw Belastingcontrole",
+    "subtitle": "Professionele Belastingvrijstellingsbeoordeling",
+    "amount": "€99",
+    "oneTime": "Eenmalige betaling",
+    "noHiddenFees": "Geen verborgen kosten of terugkerende betalingen",
+    "signInRequired": "Log in om door te gaan",
+    "signInMessage": "U moet ingelogd zijn om de betaling te voltooien",
+    "signIn": "Nu Inloggen",
+    "loading": "Betalingssysteem wordt geladen...",
+    "success": "Betaling geslaagd!",
+    "error": "Betaling mislukt. Probeer het opnieuw.",
+    "cancelled": "Betaling is geannuleerd",
+    "back": "Terug naar Geschiktheidscontrole",
+    "features": {
+      "secure": "Veilige Betaling",
+      "support": "24/7 Ondersteuning",
+      "encrypted": "Versleutelde Gegevens",
+      "verified": "Geverifieerd Proces"
+    },
+    "legal": "Door verder te gaan gaat u akkoord met onze",
+    "termsLink": "Gebruiksvoorwaarden",
+    "andText": "en",
+    "privacyLink": "Privacybeleid"
+  },
+  "cookies": {
+    "title": "Cookie-instellingen",
+    "description": "We gebruiken cookies om uw browse-ervaring te verbeteren en ons verkeer te analyseren. Selecteer hieronder uw voorkeuren.",
+    "accept": "Alles Accepteren",
+    "decline": "Optionele Weigeren",
+    "privacyLink": "Privacybeleid",
+    "learnMore": "Meer Informatie"
+  },
+  "testimonials": {
+    "title": "Wat Onze Klanten Zeggen"
+  },
+  "cta": {
+    "title": "Klaar om Uw Belastingvrijstelling te Controleren?",
+    "subtitle": "Start vandaag uw aanvraag en laat onze experts de rest regelen.",
+    "contact": "Contact Opnemen",
+    "privacy": "Privacybeleid"
+  }
+}

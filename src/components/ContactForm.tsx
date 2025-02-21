@@ -3,7 +3,7 @@ import { Send, Loader2 } from 'lucide-react';
 import { Button } from './Button';
 import { submitContactForm } from '../lib/contact';
 import { useAuthStore } from '../lib/store';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface ContactFormProps {
   prefilledMessage?: string;
@@ -17,7 +17,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuthStore();
-  const { translate } = useLanguage();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +51,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          {translate('contact.form.name')} *
+          {t('contact.form.name')} *
         </label>
         <input
           type="text"
@@ -60,7 +60,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
           value={formData.name}
           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          placeholder={translate('contact.form.namePlaceholder')}
+          placeholder={t('contact.form.namePlaceholder')}
           disabled={isSubmitting}
           minLength={2}
           maxLength={100}
@@ -69,7 +69,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          {translate('contact.form.email')} *
+          {t('contact.form.email')} *
         </label>
         <input
           type="email"
@@ -78,19 +78,19 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
           value={user?.email || formData.email}
           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          placeholder={translate('contact.form.emailPlaceholder')}
+          placeholder={t('contact.form.emailPlaceholder')}
           disabled={isSubmitting || !!user?.email}
         />
         {user?.email && (
           <p className="mt-1 text-sm text-gray-500">
-            {translate('contact.form.usingAccountEmail')}
+            {t('contact.form.usingAccountEmail')}
           </p>
         )}
       </div>
 
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-          {translate('contact.form.message')} *
+          {t('contact.form.message')} *
         </label>
         <textarea
           id="message"
@@ -99,7 +99,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
           value={formData.message}
           onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          placeholder={translate('contact.form.messagePlaceholder')}
+          placeholder={t('contact.form.messagePlaceholder')}
           disabled={isSubmitting}
           minLength={10}
           maxLength={5000}
@@ -114,12 +114,12 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
         {isSubmitting ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            {translate('contact.form.sending')}
+            {t('contact.form.sending')}
           </>
         ) : (
           <>
             <Send className="w-4 h-4 mr-2" />
-            {translate('contact.form.send')}
+            {t('contact.form.send')}
           </>
         )}
       </Button>

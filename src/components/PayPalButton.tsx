@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { paypalService } from '../lib/paypal';
 import { useAuthStore } from '../lib/store';
 import { Loader2 } from 'lucide-react';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 interface PayPalButtonProps {
@@ -22,7 +22,7 @@ export function PayPalButton({
   const [error, setError] = useState<string | null>(null);
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const { user, isInitialized } = useAuthStore();
-  const { translate } = useLanguage();
+  const { t, i18n } = useTranslation();
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<number>();
 
@@ -40,7 +40,7 @@ export function PayPalButton({
 
     const initializePayPalButton = async () => {
       if (!buttonContainerRef.current || !user || !isInitialized) {
-        setError(translate('payment.signInRequired'));
+        setError(t('payment.signInRequired'));
         setIsLoading(false);
         return;
       }
@@ -56,12 +56,12 @@ export function PayPalButton({
 
         // Validate amount
         if (!amount || amount <= 0) {
-          throw new Error(translate('payment.error'));
+          throw new Error(t('payment.error'));
         }
 
         // Validate user ID
         if (!user.id) {
-          throw new Error(translate('payment.signInRequired'));
+          throw new Error(t('payment.signInRequired'));
         }
 
         const buttons = await paypalService.createOrder(amount, user.id);
@@ -69,7 +69,7 @@ export function PayPalButton({
         if (!mountedRef.current) return;
 
         if (!buttons) {
-          throw new Error(translate('payment.systemError'));
+          throw new Error(t('payment.systemError'));
         }
 
         await buttons.render(buttonContainerRef.current);
@@ -84,7 +84,7 @@ export function PayPalButton({
 
         const errorMessage = error instanceof Error 
           ? error.message 
-          : translate('payment.systemError');
+          : t('payment.systemError');
 
         setError(errorMessage);
         
@@ -115,12 +115,12 @@ export function PayPalButton({
       }
       paypalService.cleanup();
     };
-  }, [amount, user, isInitialized, onSuccess, onError, onCancel, translate]);
+  }, [amount, user, isInitialized, onSuccess, onError, onCancel, t]);
 
   if (!isInitialized || !user) {
     return (
       <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
-        {translate('payment.signInRequired')}
+        {t('payment.signInRequired')}
       </div>
     );
   }
@@ -133,7 +133,7 @@ export function PayPalButton({
           onClick={() => window.location.reload()}
           className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
         >
-          {translate('common.retry')}
+          {t('common.retry')}
         </button>
       </div>
     );

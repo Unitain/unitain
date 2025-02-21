@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { X, Clock } from 'lucide-react';
+import { X, Clock, Github } from 'lucide-react';
 import { MaterialCard } from './MaterialCard';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '../lib/utils';
 import packageJson from '../../package.json';
 
@@ -27,27 +27,28 @@ interface ChangelogPopupProps {
 }
 
 export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
-  const [dontShowVersion, setDontShowVersion] = useState<string | null>(null);
-  const { currentLanguage } = useLanguage();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     if (isOpen) {
       try {
-        const storedVersion = localStorage.getItem('changelog_dont_show_version');
-        setDontShowVersion(storedVersion);
+        // Restore scroll position
+        const storedPosition = localStorage.getItem('changelog_scroll_position');
+        if (storedPosition) {
+          setScrollPosition(parseInt(storedPosition, 10));
+        }
       } catch (error) {
-        console.warn('Failed to read changelog preferences:', error);
+        console.warn('Failed to read scroll position:', error);
       }
     }
   }, [isOpen]);
 
-  const handleDontShowAgain = () => {
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     try {
-      localStorage.setItem('changelog_dont_show_version', packageJson.version);
-      setDontShowVersion(packageJson.version);
-      onClose();
+      localStorage.setItem('changelog_scroll_position', e.currentTarget.scrollTop.toString());
     } catch (error) {
-      console.error('Failed to save changelog preferences:', error);
+      console.warn('Failed to save scroll position:', error);
     }
   };
 
@@ -80,7 +81,11 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto overscroll-contain p-6 space-y-8">
+        <div 
+          className="overflow-y-auto overscroll-contain p-6 space-y-8"
+          style={{ maxHeight: '400px' }}
+          onScroll={handleScroll}
+        >
           {Object.entries(changelog).map(([version, { date, changes }]) => (
             <div key={version} className="border-b border-gray-200 last:border-0 pb-8 last:pb-0">
               <div className="flex items-center gap-3 mb-4">
@@ -91,7 +96,7 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
                   dateTime={date}
                   className="text-sm text-gray-500"
                 >
-                  {formatDate(date, currentLanguage)}
+                  {formatDate(date, i18n.language)}
                 </time>
               </div>
 
@@ -120,15 +125,15 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent p-4 flex justify-between items-center">
-          <label className="flex items-center gap-2 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              checked={dontShowVersion === packageJson.version}
-              onChange={handleDontShowAgain}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            Don't show this version again
-          </label>
+          <a
+            href="https://github.com/unitain/vehicle-tax-exemption"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+          >
+            <Github className="w-4 h-4" />
+            <span>View on GitHub</span>
+          </a>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -142,6 +147,27 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
 }
 
 const changelog: Record<string, { date: string; changes: ChangelogEntry['changes'] }> = {
+  '1.8.1': {
+    date: '2025-02-20',
+    changes: [
+      {
+        type: 'feature',
+        description: 'Added version control system with silent state transitions'
+      },
+      {
+        type: 'feature',
+        description: 'Implemented changelog popover with scroll position memory'
+      },
+      {
+        type: 'performance',
+        description: 'Optimized version switching with background processing'
+      },
+      {
+        type: 'docs',
+        description: 'Updated documentation for version control system'
+      }
+    ]
+  },
   '1.8.0': {
     date: '2025-02-19',
     changes: [
@@ -164,27 +190,6 @@ const changelog: Record<string, { date: string; changes: ChangelogEntry['changes
       {
         type: 'fix',
         description: 'Fixed potential null reference errors in DOM operations'
-      },
-      {
-        type: 'fix',
-        description: 'Resolved race conditions in timezone detection'
-      }
-    ]
-  },
-  '1.7.3': {
-    date: '2025-02-19',
-    changes: [
-      {
-        type: 'performance',
-        description: 'Improved DOM handling and error recovery in language system'
-      },
-      {
-        type: 'performance',
-        description: 'Enhanced timezone detection reliability'
-      },
-      {
-        type: 'fix',
-        description: 'Fixed timing issues with document ready state'
       },
       {
         type: 'fix',

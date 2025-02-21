@@ -1,6 +1,6 @@
 import React from 'react';
 import { Star } from 'lucide-react';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const testimonials = [
   {
@@ -24,28 +24,14 @@ const testimonials = [
     location: 'London',
     country: '🇬🇧 United Kingdom',
   },
-  {
-    name: 'Sofia Costa',
-    text: 'Professional and reliable. They made the entire process seamless. Worth every penny!',
-    rating: 5,
-    location: 'Porto',
-    country: '🇵🇹 Portugal',
-  },
-  {
-    name: 'Lars Nielsen',
-    text: 'Excellent support throughout the process. Saved me time and money. Highly recommend!',
-    rating: 5,
-    location: 'Copenhagen',
-    country: '🇩🇰 Denmark',
-  },
 ];
 
 export function Testimonials() {
-  const { translate } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <h2 className="text-3xl font-bold text-center mb-8">{translate('testimonials.title')}</h2>
+      <h2 className="text-3xl font-bold text-center mb-8">{t('testimonials.title')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {testimonials.slice(0, 3).map((testimonial, index) => (
           <div

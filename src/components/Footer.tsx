@@ -1,41 +1,19 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { VersionManager } from '../lib/version';
-import packageJson from '../../package.json';
-import { MessageSquare } from 'lucide-react';
+import { Clock, MessageSquare } from 'lucide-react';
 import { ChangelogPopup } from './ChangelogPopup';
 import { PopOver } from './PopOver';
 
-const CLICK_THRESHOLD = 1000; // 1 second between clicks
-const REQUIRED_CLICKS = 5;
-
 export function Footer() {
   const [showChangelog, setShowChangelog] = useState(false);
-  const clickCount = useRef(0);
-  const lastClickTime = useRef(0);
   
   const currentVersion = useMemo(() => {
     try {
-      const versionManager = new VersionManager('1.8.0');
+      const versionManager = new VersionManager('1.8.1');
       return versionManager.getCurrentVersion();
     } catch (error) {
       console.error('Failed to initialize version manager:', error);
-      return '1.8.0';
-    }
-  }, []);
-
-  const handleVersionClick = useCallback(() => {
-    const now = Date.now();
-    
-    if (now - lastClickTime.current > CLICK_THRESHOLD) {
-      clickCount.current = 0;
-    }
-    
-    clickCount.current += 1;
-    lastClickTime.current = now;
-
-    if (clickCount.current >= REQUIRED_CLICKS) {
-      clickCount.current = 0;
-      setShowChangelog(true);
+      return '1.8.1';
     }
   }, []);
 
@@ -61,22 +39,13 @@ export function Footer() {
     <>
       <footer className="fixed bottom-0 left-0 right-0 h-10 bg-blue-900 text-white flex items-center justify-between px-4 min-w-[320px] z-40">
         <div className="flex items-center gap-4">
-          <PopOver
-            trigger={
-              <button
-                onClick={handleVersionClick}
-                className="text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-900 rounded px-1"
-              >
-                Version: {currentVersion}
-              </button>
-            }
-            content={
-              <div className="p-2 text-sm text-gray-600">
-                Click 5 times to view changelog
-              </div>
-            }
-            placement="top"
-          />
+          <button
+            onClick={() => setShowChangelog(true)}
+            className="flex items-center gap-2 text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-900 rounded px-2 py-1"
+          >
+            <Clock className="w-4 h-4" />
+            <span>Version {currentVersion}</span>
+          </button>
           <a 
             href="https://test.unitain.net/terms"
             className="text-sm text-white/80 hover:text-white transition-colors"
