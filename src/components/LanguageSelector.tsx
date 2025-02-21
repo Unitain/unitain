@@ -1,13 +1,18 @@
 import React from 'react';
 import { Globe } from 'lucide-react';
-import { useLanguage } from '../lib/i18n/LanguageContext';
-import { languages } from '../lib/i18n/translations';
+import { useLanguage, getLanguageName, type SupportedLanguages } from '../lib/i18n';
 import { cn } from '../lib/utils';
 
+const languages: Array<{ code: SupportedLanguages; id: number }> = [
+  { id: 1, code: 'en' },
+  { id: 2, code: 'de' },
+  { id: 3, code: 'nl' }
+];
+
 export function LanguageSelector() {
-  const { currentLanguage, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const { currentLanguage, changeLanguage } = useLanguage();
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -20,8 +25,8 @@ export function LanguageSelector() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLanguageChange = (lang: string) => {
-    setLanguage(lang as any);
+  const handleLanguageChange = async (langCode: SupportedLanguages) => {
+    await changeLanguage(langCode);
     setIsOpen(false);
   };
 
@@ -36,7 +41,7 @@ export function LanguageSelector() {
       >
         <Globe className="w-4 h-4" />
         <span className="hidden sm:inline">
-          {languages.find(l => l.language === currentLanguage)?.nativeName}
+          {getLanguageName(currentLanguage, true)}
         </span>
       </button>
 
@@ -50,21 +55,21 @@ export function LanguageSelector() {
         )}
       >
         <div className="py-1" role="none">
-          {languages.map((lang) => (
+          {languages.map(({ id, code }) => (
             <button
-              key={lang.id}
-              onClick={() => handleLanguageChange(lang.language)}
+              key={id}
+              onClick={() => handleLanguageChange(code)}
               className={cn(
                 'w-full text-left px-4 py-2 text-sm transition-colors',
-                currentLanguage === lang.language
+                currentLanguage === code
                   ? 'bg-blue-50 text-blue-700'
                   : 'text-gray-700 hover:bg-gray-100'
               )}
               role="menuitem"
-              aria-current={currentLanguage === lang.language}
+              aria-current={currentLanguage === code}
             >
-              <span className="font-medium">{lang.nativeName}</span>
-              <span className="ml-2 text-gray-500">({lang.name})</span>
+              <span className="font-medium">{getLanguageName(code, true)}</span>
+              <span className="ml-2 text-gray-500">({getLanguageName(code)})</span>
             </button>
           ))}
         </div>

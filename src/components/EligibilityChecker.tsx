@@ -5,7 +5,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { AuthModal } from './AuthModal';
 import { saveEligibilityCheck } from '../lib/eligibility';
 import { trackEvent, trackButtonClick } from '../lib/analytics';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 interface EligibilityCheckerProps {
@@ -102,7 +102,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { translate } = useLanguage();
+  const { t } = useTranslation();
 
   const currentQuestion = questions[currentStep];
 
@@ -131,13 +131,13 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       }
     } catch (error) {
       console.error('Error handling answer:', error);
-      toast.error(translate('eligibility.errors.answerFailed'));
+      toast.error(t('eligibility.errors.answerFailed'));
     }
-  }, [currentQuestion, answers, currentStep, questions.length, translate]);
+  }, [currentQuestion, answers, currentStep, questions.length, t]);
 
   const handleSaveResults = async (finalAnswers: Record<string, string>) => {
     if (!finalAnswers || Object.keys(finalAnswers).length === 0) {
-      setError(translate('eligibility.errors.noAnswers'));
+      setError(t('eligibility.errors.noAnswers'));
       return;
     }
 
@@ -181,7 +181,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       }
     } catch (err) {
       console.error('Error in handleSaveResults:', err);
-      setError(translate('eligibility.errors.saveFailed'));
+      setError(t('eligibility.errors.saveFailed'));
       trackEvent('eligibility_check_error', {
         error_type: 'save_failure',
         error_message: err instanceof Error ? err.message : 'Unknown error'
@@ -232,14 +232,14 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
   }, [calculateEligibility, onShowPayment, onShowContact]);
 
   if (!currentQuestion) {
-    return <div>{translate('eligibility.errors.loadingFailed')}</div>;
+    return <div>{t('eligibility.errors.loadingFailed')}</div>;
   }
 
   if (showResults) {
     const { isEligible, needsMoreInfo } = calculateEligibility();
     return (
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6">{translate('eligibility.results.title')}</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('eligibility.results.title')}</h2>
         {error && (
           <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
             <p>{error}</p>
@@ -247,22 +247,22 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
         )}
         {needsMoreInfo ? (
           <div className="mb-6 p-4 bg-yellow-50 text-yellow-800 rounded-md">
-            <p>{translate('eligibility.results.needsMoreInfo')}</p>
+            <p>{t('eligibility.results.needsMoreInfo')}</p>
           </div>
         ) : isEligible ? (
           <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md">
-            <p className="font-semibold">{translate('eligibility.results.eligible')}</p>
-            <p className="mt-2">{translate('eligibility.results.nextSteps')}:</p>
+            <p className="font-semibold">{t('eligibility.results.eligible')}</p>
+            <p className="mt-2">{t('eligibility.results.nextSteps')}:</p>
             <ul className="list-disc ml-6 mt-2">
-              <li>{translate('eligibility.results.steps.documents')}</li>
-              <li>{translate('eligibility.results.steps.consultation')}</li>
-              <li>{translate('eligibility.results.steps.application')}</li>
+              <li>{t('eligibility.results.steps.documents')}</li>
+              <li>{t('eligibility.results.steps.consultation')}</li>
+              <li>{t('eligibility.results.steps.application')}</li>
             </ul>
           </div>
         ) : (
           <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
-            <p className="font-semibold">{translate('eligibility.results.notEligible')}</p>
-            <p className="mt-2">{translate('eligibility.results.consultRecommended')}</p>
+            <p className="font-semibold">{t('eligibility.results.notEligible')}</p>
+            <p className="mt-2">{t('eligibility.results.consultRecommended')}</p>
           </div>
         )}
         <div className="flex justify-between">
@@ -273,13 +273,13 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             className="flex items-center"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
-            {translate('eligibility.buttons.reviewAnswers')}
+            {t('eligibility.buttons.reviewAnswers')}
           </Button>
           <Button 
             onClick={handleActionButton}
             disabled={isSubmitting}
           >
-            {isEligible ? translate('eligibility.buttons.buyNow') : translate('eligibility.buttons.contactUs')}
+            {isEligible ? t('eligibility.buttons.buyNow') : t('eligibility.buttons.contactUs')}
           </Button>
         </div>
 
@@ -296,10 +296,10 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-medium text-gray-500">
-            {translate(`eligibility.categories.${currentQuestion.category.toLowerCase().replace(/\s+/g, '_')}`)}
+            {t(`eligibility.categories.${currentQuestion.category.toLowerCase().replace(/\s+/g, '_')}`)}
           </h3>
           <span className="text-sm text-gray-500">
-            {translate('eligibility.progress', { current: currentStep + 1, total: questions.length })}
+            {t('eligibility.progress', { current: currentStep + 1, total: questions.length })}
           </span>
         </div>
         <div className="h-2 bg-gray-200 rounded-full">
@@ -311,7 +311,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       </div>
 
       <h2 className="text-xl font-semibold mb-6">
-        {translate(currentQuestion.translationKey)}
+        {t(currentQuestion.translationKey)}
       </h2>
 
       <div className="space-y-4">
@@ -322,7 +322,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             className="w-full p-4 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             type="button"
           >
-            {translate(`eligibility.options.${option.toLowerCase()}`)}
+            {t(`eligibility.options.${option.toLowerCase()}`)}
           </button>
         ))}
       </div>
@@ -335,7 +335,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             type="button"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
-            {translate('eligibility.buttons.previous')}
+            {t('eligibility.buttons.previous')}
           </Button>
         </div>
       )}

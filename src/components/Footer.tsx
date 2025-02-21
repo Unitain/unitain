@@ -1,43 +1,36 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { VersionManager } from '../lib/version';
-import packageJson from '../../package.json';
-import { MessageSquare } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Clock, MessageSquare } from 'lucide-react';
 import { ChangelogPopup } from './ChangelogPopup';
-
-const CLICK_THRESHOLD = 1000; // 1 second between clicks
-const REQUIRED_CLICKS = 5;
+import { supabase } from '../lib/supabase';
 
 export function Footer() {
   const [showChangelog, setShowChangelog] = useState(false);
-  const clickCount = useRef(0);
-  const lastClickTime = useRef(0);
+  const [currentVersion, setCurrentVersion] = useState('1.8.3'); // Fallback version
+  const [loading, setLoading] = useState(true);
   
-  const currentVersion = useMemo(() => {
-    try {
-      const versionManager = new VersionManager(packageJson.version);
-      return versionManager.getCurrentVersion();
-    } catch (error) {
-      console.error('Failed to initialize version manager:', error);
-      return packageJson.version;
-    }
-  }, []);
+  useEffect(() => {
+    const fetchLatestVersion = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('changelog')
+          .select('version, date')
+          .order('date', { ascending: false })
+          .order('version', { ascending: false })
+          .limit(1)
+          .single();
 
-  const handleVersionClick = useCallback(() => {
-    const now = Date.now();
-    
-    // Reset counter if too much time has passed since last click
-    if (now - lastClickTime.current > CLICK_THRESHOLD) {
-      clickCount.current = 0;
-    }
-    
-    clickCount.current += 1;
-    lastClickTime.current = now;
+        if (error) throw error;
+        if (data) {
+          setCurrentVersion(data.version);
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest version:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Show changelog after 5 rapid clicks
-    if (clickCount.current >= REQUIRED_CLICKS) {
-      clickCount.current = 0;
-      setShowChangelog(true);
-    }
+    fetchLatestVersion();
   }, []);
 
   const handleContactClick = (e: React.MouseEvent) => {
@@ -60,13 +53,23 @@ export function Footer() {
 
   return (
     <>
-      <footer className="fixed bottom-0 left-0 right-0 h-10 bg-gray-900 text-white flex items-center justify-between px-4 min-w-[320px] z-40">
+      <footer className="fixed bottom-0 left-0 right-0 h-10 bg-blue-900 text-white flex items-center justify-between px-4 min-w-[320px] z-40">
         <div className="flex items-center gap-4">
           <button
-            onClick={handleVersionClick}
-            className="text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded px-1"
+            onClick={() => setShowChangelog(true)}
+            className="flex items-center gap-2 text-sm hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-900 rounded px-2 py-1"
+            disabled={loading}
           >
-            Version: {currentVersion}
+            <Clock className="w-4 h-4" />
+            <span>
+              {loading ? (
+                <span className="inline-block w-16 bg-blue-800 animate-pulse rounded">
+                  &nbsp;
+                </span>
+              ) : (
+                `Version ${currentVersion}`
+              )}
+            </span>
           </button>
           <a 
             href="https://test.unitain.net/terms"

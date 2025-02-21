@@ -1,6 +1,6 @@
 import { loadScript } from "@paypal/paypal-js";
 import toast from 'react-hot-toast';
-import { useLanguage } from './i18n/LanguageContext';
+import i18next from 'i18next';
 
 const PAYPAL_LOAD_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
@@ -57,11 +57,11 @@ export class PayPalService {
       throw new Error('PayPal client ID is not configured');
     }
 
-    // Get language from document with fallback
+    // Get language from i18next with fallback
     let locale = 'en_US';
     try {
-      const docLang = document.documentElement?.lang || navigator.language;
-      locale = docLang.toLowerCase().startsWith('de') ? 'de_DE' : 'en_US';
+      const lang = i18next.language || document.documentElement?.lang || navigator.language;
+      locale = lang.toLowerCase().startsWith('de') ? 'de_DE' : 'en_US';
     } catch (error) {
       console.warn('Failed to detect language:', error);
     }
@@ -190,7 +190,7 @@ export class PayPalService {
                 shipping_preference: "NO_SHIPPING",
                 user_action: "PAY_NOW",
                 brand_name: "UNITAIN",
-                locale: document.documentElement?.lang === 'de' ? 'de_DE' : 'en_US'
+                locale: i18next.language === 'de' ? 'de_DE' : 'en_US'
               }
             });
           } catch (error) {

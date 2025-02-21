@@ -3,7 +3,7 @@ import { PayPalButton } from './PayPalButton';
 import { ArrowLeft, Shield, Globe2, BadgeCheck, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 interface PaymentPageProps {
@@ -12,27 +12,27 @@ interface PaymentPageProps {
 
 export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user, isLoading, isInitialized } = useAuthStore();
-  const { translate } = useLanguage();
+  const { t } = useTranslation();
   const amount = 99; // €99 fixed price
 
   useEffect(() => {
     if (isInitialized && !isLoading && !user) {
-      toast.error(translate('payment.signInRequired'));
+      toast.error(t('payment.signInRequired'));
     }
-  }, [isInitialized, isLoading, user, translate]);
+  }, [isInitialized, isLoading, user, t]);
 
   const handlePaymentSuccess = (orderData: any) => {
-    toast.success(translate('payment.success'));
+    toast.success(t('payment.success'));
     // Additional success handling here
   };
 
   const handlePaymentError = (error: Error) => {
-    toast.error(translate('payment.error'));
+    toast.error(t('payment.error'));
     console.error('Payment error:', error);
   };
 
   const handlePaymentCancel = () => {
-    toast.error(translate('payment.cancelled'));
+    toast.error(t('payment.cancelled'));
   };
 
   const openInNewTab = (url: string) => {
@@ -44,7 +44,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">{translate('payment.loading')}</p>
+          <p className="text-gray-600">{t('payment.loading')}</p>
         </div>
       </div>
     );
@@ -60,14 +60,14 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
             onClick={onBack}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {translate('payment.back')}
+            {t('payment.back')}
           </Button>
 
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">{translate('payment.signInRequired')}</h2>
-            <p className="text-gray-600 mb-6">{translate('payment.signInMessage')}</p>
+            <h2 className="text-2xl font-bold mb-4">{t('payment.signInRequired')}</h2>
+            <p className="text-gray-600 mb-6">{t('payment.signInMessage')}</p>
             <Button onClick={() => document.getElementById('auth-button')?.click()}>
-              {translate('payment.signIn')}
+              {t('payment.signIn')}
             </Button>
           </div>
         </div>
@@ -84,17 +84,17 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           onClick={onBack}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          {translate('payment.back')}
+          {t('payment.back')}
         </Button>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 md:p-12">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                {translate('payment.title')}
+                {t('payment.title')}
               </h1>
               <p className="text-xl md:text-2xl text-blue-100 mb-4">
-                {translate('payment.subtitle')}
+                {t('payment.subtitle')}
               </p>
             </div>
           </div>
@@ -102,10 +102,10 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           <div className="p-8 md:p-12">
             <div className="text-center mb-8">
               <div className="inline-block bg-blue-50 rounded-full px-6 py-2 text-blue-700 font-medium mb-4">
-                {translate('payment.oneTime')}
+                {t('payment.oneTime')}
               </div>
-              <div className="text-4xl font-bold text-gray-900 mb-2">{translate('payment.amount')}</div>
-              <p className="text-gray-600">{translate('payment.noHiddenFees')}</p>
+              <div className="text-4xl font-bold text-gray-900 mb-2">{t('payment.amount')}</div>
+              <p className="text-gray-600">{t('payment.noHiddenFees')}</p>
             </div>
 
             <div className="max-w-md mx-auto mb-8">
@@ -121,40 +121,40 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm text-gray-600">
                 <div className="flex flex-col items-center">
                   <Shield className="w-5 h-5 text-blue-600 mb-2" />
-                  <span>{translate('payment.features.secure')}</span>
+                  <span>{t('payment.features.secure')}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <Globe2 className="w-5 h-5 text-blue-600 mb-2" />
-                  <span>{translate('payment.features.support')}</span>
+                  <span>{t('payment.features.support')}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <CreditCard className="w-5 h-5 text-blue-600 mb-2" />
-                  <span>{translate('payment.features.encrypted')}</span>
+                  <span>{t('payment.features.encrypted')}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <BadgeCheck className="w-5 h-5 text-blue-600 mb-2" />
-                  <span>{translate('payment.features.verified')}</span>
+                  <span>{t('payment.features.verified')}</span>
                 </div>
               </div>
             </div>
 
             <div className="mt-8 text-center text-sm text-gray-500">
               <p>
-                {translate('payment.legal')}{' '}
+                {t('payment.legal')}{' '}
                 <button
                   onClick={() => openInNewTab('/terms')}
                   className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
                   aria-label="Open Terms of Service in new tab"
                 >
-                  {translate('payment.termsLink')}
+                  {t('payment.termsLink')}
                 </button>
-                {' '}{translate('payment.andText')}{' '}
+                {' '}{t('payment.andText')}{' '}
                 <button
                   onClick={() => openInNewTab('/privacy')}
                   className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
                   aria-label="Open Privacy Policy in new tab"
                 >
-                  {translate('payment.privacyLink')}
+                  {t('payment.privacyLink')}
                 </button>
               </p>
             </div>

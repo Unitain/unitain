@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './Button';
 import { getConsentSettings, saveConsentSettings, type ConsentSettings } from '../lib/consent';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 export function CookieConsent() {
   const [settings, setSettings] = useState<ConsentSettings | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const { translate, currentLanguage } = useLanguage();
+  const { t, i18n } = useTranslation();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Add debug logging
-    console.debug('CookieConsent: Initializing with language', currentLanguage);
+    console.debug('CookieConsent: Initializing with language', i18n.language);
     
     // Delay showing the banner to prevent flashing during language detection
     const timer = setTimeout(() => {
@@ -37,7 +37,7 @@ export function CookieConsent() {
       clearTimeout(timer);
       console.debug('CookieConsent: Cleanup');
     };
-  }, [currentLanguage]); // Re-run when language changes
+  }, [i18n.language]); // Re-run when language changes
 
   const handleAccept = () => {
     try {
@@ -86,16 +86,16 @@ export function CookieConsent() {
             <h2 
               id="cookie-consent-title" 
               className="text-lg font-semibold text-gray-900 mb-2"
-              lang={currentLanguage}
+              lang={i18n.language}
             >
-              {translate('cookies.title')}
+              {t('cookies.title')}
             </h2>
             <p 
               id="cookie-consent-description" 
               className="text-gray-600 text-sm md:text-base"
-              lang={currentLanguage}
+              lang={i18n.language}
             >
-              {translate('cookies.description')}
+              {t('cookies.description')}
             </p>
           </div>
           
@@ -104,16 +104,16 @@ export function CookieConsent() {
               variant="secondary"
               onClick={handleDecline}
               className="w-full sm:w-auto order-2 sm:order-1"
-              aria-label={translate('cookies.decline')}
+              aria-label={t('cookies.decline')}
             >
-              {translate('cookies.decline')}
+              {t('cookies.decline')}
             </Button>
             <Button
               onClick={handleAccept}
               className="w-full sm:w-auto order-1 sm:order-2"
-              aria-label={translate('cookies.accept')}
+              aria-label={t('cookies.accept')}
             >
-              {translate('cookies.accept')}
+              {t('cookies.accept')}
             </Button>
           </div>
         </div>
@@ -125,9 +125,9 @@ export function CookieConsent() {
               window.location.reload();
             }}
             className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm transition-colors"
-            aria-label={translate('cookies.privacyLink')}
+            aria-label={t('cookies.privacyLink')}
           >
-            {translate('cookies.privacyLink')}
+            {t('cookies.privacyLink')}
           </button>
         </div>
       </div>

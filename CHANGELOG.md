@@ -4,50 +4,83 @@ All notable changes to this project will be documented in this file.
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 Alle belangrijke wijzigingen aan dit project worden in dit bestand gedocumenteerd.
 
-## [1.7.3] - 2025-02-19
+## [1.8.3] - 2025-02-21
 
 🇬🇧 English
 ### Changed
-- Improved DOM handling and error recovery in language system
-- Enhanced timezone detection reliability
-- Optimized document ready state handling
-- Removed unnecessary console logging
-- Updated external links to use secure protocols
+- Removed Google login integration for simplified authentication
+- Optimized authentication flow for improved performance
+- Enhanced mobile responsiveness across all login screens
+- Improved timezone detection reliability
+- Fixed mobile layout issues with logout button
 
 ### Fixed
-- Fixed potential null reference errors in DOM operations
-- Improved error handling in language context
-- Fixed timing issues with document ready state
-- Resolved race conditions in timezone detection
+- Resolved horizontal scrolling issues on mobile devices
+- Fixed email overflow in header on small screens
+- Improved timezone initialization and synchronization
 
 🇩🇪 Deutsch
 ### Geändert
-- Verbesserte DOM-Behandlung und Fehlerbehebung im Sprachsystem
-- Verbesserte Zuverlässigkeit der Zeitzonenerkennung
-- Optimierte Behandlung des Document-Ready-Status
-- Entfernung unnötiger Konsolenprotokolle
-- Aktualisierte externe Links zur Verwendung sicherer Protokolle
+- Google-Login-Integration für vereinfachte Authentifizierung entfernt
+- Authentifizierungsablauf für verbesserte Leistung optimiert
+- Mobile Reaktionsfähigkeit über alle Login-Bildschirme verbessert
+- Zuverlässigkeit der Zeitzonenerkennung verbessert
+- Mobile Layout-Probleme mit Abmelde-Button behoben
 
 ### Behoben
-- Behebung potenzieller Null-Referenzfehler in DOM-Operationen
-- Verbesserte Fehlerbehandlung im Sprachkontext
-- Behebung von Timing-Problemen mit Document-Ready-Status
-- Behebung von Race Conditions in der Zeitzonenerkennung
+- Horizontale Scroll-Probleme auf mobilen Geräten behoben
+- E-Mail-Überlauf im Header auf kleinen Bildschirmen behoben
+- Zeitzonen-Initialisierung und -Synchronisation verbessert
 
 🇳🇱 Nederlands
 ### Gewijzigd
-- Verbeterde DOM-afhandeling en foutherstel in taalsysteem
-- Verbeterde betrouwbaarheid van tijdzone-detectie
-- Geoptimaliseerde document ready state afhandeling
-- Verwijderde onnodige console logging
-- Bijgewerkte externe links om beveiligde protocollen te gebruiken
+- Google-login integratie verwijderd voor vereenvoudigde authenticatie
+- Authenticatie proces geoptimaliseerd voor verbeterde prestaties
+- Mobiele responsiviteit verbeterd voor alle login schermen
+- Betrouwbaarheid van tijdzone detectie verbeterd
+- Mobiele layout problemen met uitlog knop opgelost
 
 ### Opgelost
-- Opgeloste potentiële null-referentiefouten in DOM-operaties
-- Verbeterde foutafhandeling in taalcontext
-- Opgeloste timing-problemen met document ready state
-- Opgeloste race conditions in tijdzone-detectie
+- Horizontaal scroll problemen op mobiele apparaten opgelost
+- E-mail overflow in header op kleine schermen opgelost
+- Tijdzone initialisatie en synchronisatie verbeterd
 
-## [1.7.1] - 2025-02-19
+## [1.8.2] - 2025-02-21
 
-[Previous changelog entries remain unchanged...]
+### Fixed
+- Fixed visual issues in the login modal interface
+- Improved overall modal responsiveness
+- Adjusted button alignment and spacing
+- Updated input field styling for better user experience
+- Fixed form validation visual feedback
+
+## [1.8.1] - 2025-02-20
+
+### Added
+- Version control system with silent state transitions
+- Changelog popover with scroll position memory
+- Hidden click counter for version display
+
+### Changed
+- Improved version display UI
+- Enhanced changelog accessibility
+- Optimized version switching with background processing
+
+### Fixed
+- Timezone detection edge cases
+- Scroll position persistence
+- Version display click handling
+
+## [1.8.0] - 2025-02-19
+
+### Added
+- New PopOver component with customizable placement and animations
+- Enhanced tooltip system with improved accessibility
+
+### Performance
+- Improved DOM handling and error recovery in language system
+- Enhanced timezone detection reliability
+
+### Fixed
+- Fixed potential null reference errors in DOM operations
+- Resolved race conditions in timezone detection

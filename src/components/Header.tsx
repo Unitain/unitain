@@ -5,14 +5,15 @@ import { Button } from './Button';
 import { UserCircle2, LogOut } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 import { LanguageSelector } from './LanguageSelector';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
+import { Logo } from './Logo';
 import toast from 'react-hot-toast';
 
 export function Header() {
   const { user, isLoading, setUser } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
-  const { translate } = useLanguage();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     try {
@@ -50,33 +51,34 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold text-gray-900">unitain.net</h1>
+            <Logo />
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
             <LanguageSelector />
             
             {isLoading ? (
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <UserCircle2 className="w-5 h-5 text-gray-600" />
-                  <span className="text-sm text-gray-700">{user.email}</span>
+              <div className="flex items-center gap-2 sm:gap-3 max-w-full overflow-hidden">
+                <div className="hidden sm:flex items-center gap-2 min-w-0">
+                  <UserCircle2 className="w-5 h-5 text-blue-900 flex-shrink-0" />
+                  <span className="text-sm text-blue-900 truncate">{user.email}</span>
                 </div>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={handleSignOut}
                   disabled={isSigningOut}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 whitespace-nowrap"
                 >
                   {isSigningOut ? (
-                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
-                  {isSigningOut ? translate('nav.signingout') : translate('nav.signout')}
+                  <span className="hidden sm:inline">{isSigningOut ? t('nav.signingout') : t('nav.signout')}</span>
+                  <span className="sm:hidden">Sign Out</span>
                 </Button>
               </div>
             ) : (
@@ -84,11 +86,11 @@ export function Header() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 whitespace-nowrap"
                 id="auth-button"
               >
                 <UserCircle2 className="w-4 h-4" />
-                {translate('nav.signin')}
+                {t('nav.signin')}
               </Button>
             )}
           </div>

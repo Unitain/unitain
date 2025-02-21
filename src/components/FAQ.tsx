@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const faqs = {
   en: [
@@ -42,13 +42,13 @@ const faqs = {
 };
 
 export function FAQ() {
-  const { currentLanguage } = useLanguage();
-  const currentFaqs = faqs[currentLanguage as keyof typeof faqs] || faqs.en;
+  const { i18n } = useTranslation();
+  const currentFaqs = faqs[i18n.language as keyof typeof faqs] || faqs.en;
 
   return (
     <div className="w-full max-w-3xl mx-auto">
       <h2 className="text-3xl font-bold text-center mb-8">
-        {currentLanguage === 'de' ? 'Häufig gestellte Fragen' : 'Frequently Asked Questions'}
+        {i18n.language === 'de' ? 'Häufig gestellte Fragen' : 'Frequently Asked Questions'}
       </h2>
       <div className="space-y-4">
         {currentFaqs.map((faq, index) => (
