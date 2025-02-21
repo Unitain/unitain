@@ -19,6 +19,9 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function updateChangelog() {
   try {
+    console.log('🔄 Starting changelog update...');
+    console.log('📡 Connected to Supabase:', supabaseUrl);
+
     // Read package.json to get current version
     const packageJson = JSON.parse(
       readFileSync(join(process.cwd(), 'package.json'), 'utf8')
@@ -39,25 +42,33 @@ async function updateChangelog() {
       .limit(1);
 
     if (checkError) {
+      console.error('❌ Error checking existing entry:', checkError);
       throw checkError;
     }
 
+    console.log(`🔍 Checking for existing entry: ${existingEntry?.length ? 'Found' : 'Not found'}`);
+
     // Only add new entry if version doesn't exist
     if (!existingEntry?.length) {
+      const entry = {
+        version,
+        date: new Date().toISOString().split('T')[0],
+        type: 'fixed' as const,
+        message: 'Fixed double sign-out notification issue'
+      };
+
+      console.log('📝 Creating new entry:', entry);
+
       const { error: insertError } = await supabase
         .from('changelog')
-        .insert({
-          version,
-          date: new Date().toISOString().split('T')[0],
-          type: 'fixed',
-          message: 'Fixed double sign-out notification issue'
-        });
+        .insert([entry]);
 
       if (insertError) {
+        console.error('❌ Error inserting entry:', insertError);
         throw insertError;
       }
 
-      console.log(`✅ Added changelog entry for version ${version}`);
+      console.log(`✅ Successfully added changelog entry for version ${version}`);
     } else {
       console.log(`ℹ️ Version ${version} already exists in changelog`);
     }
