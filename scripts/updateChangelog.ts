@@ -32,8 +32,8 @@ async function updateChangelog() {
         .insert({
           version,
           date: new Date().toISOString().split('T')[0],
-          type: 'changed',
-          message: `Deployed version ${version}`
+          type: 'fixed',
+          message: 'Fixed double sign-out notification issue'
         });
 
       if (insertError) {

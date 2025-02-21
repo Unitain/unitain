@@ -21,13 +21,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (mounted) {
             setUser(session?.user ?? null);
             
-            // Show appropriate notifications
+            // Show appropriate notifications, but only for user-initiated actions
             switch (event) {
               case 'SIGNED_IN':
                 toast.success('Successfully signed in!');
-                break;
-              case 'SIGNED_OUT':
-                toast.success('Successfully signed out');
                 break;
               case 'USER_UPDATED':
                 toast.success('Profile updated');
@@ -38,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               case 'USER_DELETED':
                 toast.success('Account deleted successfully');
                 break;
+              // Remove SIGNED_OUT notification from here as it's handled in Header.tsx
             }
           }
         });
