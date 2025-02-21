@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef, createContext, useContext } from 'react';
 import toast from 'react-hot-toast';
 
 interface TimezoneContextType {
@@ -37,20 +37,17 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       setTimezone(detectedTimezone);
       setError(null);
 
-      // Ensure DOM is ready before updating attributes
+      // Wait for document to be ready
       const updateDOM = () => {
-        if (!mounted.current) return;
+        if (!mounted.current || !document?.documentElement) return;
         
         try {
           const root = document.documentElement;
-          if (!root) {
-            throw new Error('Document root not available');
-          }
 
-          // Update timezone attribute
+          // Update timezone attribute safely
           root.setAttribute('data-timezone', detectedTimezone);
 
-          // Update language attribute
+          // Update language attribute if not set
           if (!root.hasAttribute('lang')) {
             root.setAttribute('lang', navigator.language);
           }
@@ -62,8 +59,9 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
 
               for (const mutation of mutations) {
                 if (mutation.type === 'attributes' && 
-                    mutation.attributeName === 'data-timezone') {
-                  const newTimezone = root.getAttribute('data-timezone');
+                    mutation.attributeName === 'data-timezone' &&
+                    mutation.target instanceof HTMLElement) {
+                  const newTimezone = mutation.target.getAttribute('data-timezone');
                   if (newTimezone && newTimezone !== timezone) {
                     setTimezone(newTimezone);
                   }
@@ -89,6 +87,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       // Handle DOM updates based on readiness state
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
+          if (!mounted.current) return;
           requestAnimationFrame(() => {
             try {
               updateDOM();

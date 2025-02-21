@@ -20,7 +20,7 @@ async function waitForTable(tableName: string, maxAttempts = 5): Promise<void> {
     try {
       const { data, error } = await supabase
         .from(tableName)
-        .select('count(*)')
+        .select('id')
         .limit(1);
 
       if (!error) {
@@ -50,7 +50,7 @@ async function testChangelogDatabase() {
     // Wait for the changelog table to be ready
     await waitForTable('changelog');
 
-    // 1. Check existing entries
+    // Test 1: Select all entries
     const { data: entries, error: selectError } = await supabase
       .from('changelog')
       .select('*')
@@ -63,15 +63,17 @@ async function testChangelogDatabase() {
     console.log('Current changelog entries:');
     console.table(entries || []);
 
-    // 2. Add a new test entry
+    // Test 2: Insert a test entry
+    const testEntry = {
+      version: '1.9.2',
+      type: 'added',
+      message: 'Test entry from database check',
+      date: new Date().toISOString().split('T')[0]
+    };
+
     const { data: newEntry, error: insertError } = await supabase
       .from('changelog')
-      .insert({
-        version: '1.8.4',
-        type: 'added',
-        message: 'Test entry from database check',
-        date: new Date().toISOString().split('T')[0]
-      })
+      .insert([testEntry])
       .select()
       .single();
 
@@ -82,31 +84,35 @@ async function testChangelogDatabase() {
     console.log('\nNew test entry added:');
     console.table([newEntry]);
 
-    // 3. Check entries for specific version
+    // Test 3: Query by version
     const { data: versionEntries, error: versionError } = await supabase
       .from('changelog')
       .select('*')
-      .eq('version', '1.8.4');
+      .eq('version', '1.9.2');
 
     if (versionError) {
       throw versionError;
     }
 
-    console.log('\nEntries for version 1.8.4:');
+    console.log('\nEntries for version 1.9.2:');
     console.table(versionEntries || []);
 
-    // 4. Check entry types distribution
+    // Test 4: Query entry types
     const { data: typeStats, error: statsError } = await supabase
       .from('changelog')
-      .select('type, count(*)')
-      .group('type');
+      .select('type');
 
     if (statsError) {
       throw statsError;
     }
 
+    const distribution = typeStats?.reduce((acc: Record<string, number>, curr) => {
+      acc[curr.type] = (acc[curr.type] || 0) + 1;
+      return acc;
+    }, {});
+
     console.log('\nEntry types distribution:');
-    console.table(typeStats || []);
+    console.table(distribution || {});
 
     console.log('\nDatabase test completed successfully!');
   } catch (error) {

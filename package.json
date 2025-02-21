@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:db": "tsx src/lib/version/test-db.ts"
+    "test:db": "tsx src/lib/version/test-db.ts",
+    "db:migrate": "supabase migration up"
   },
   "dependencies": {
     "@paypal/paypal-js": "^8.0.0",
@@ -43,6 +44,7 @@
     "eslint-plugin-react-refresh": "^0.4.11",
     "globals": "^15.9.0",
     "postcss": "^8.4.35",
+    "supabase": "^1.148.6",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.7.1",
     "typescript": "^5.5.3",
