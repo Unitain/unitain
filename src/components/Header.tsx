@@ -54,30 +54,31 @@ export function Header() {
             <Logo />
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
             <LanguageSelector />
             
             {isLoading ? (
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <UserCircle2 className="w-5 h-5 text-blue-900" />
-                  <span className="text-sm text-blue-900">{user.email}</span>
+              <div className="flex items-center gap-2 sm:gap-3 max-w-full overflow-hidden">
+                <div className="hidden sm:flex items-center gap-2 min-w-0">
+                  <UserCircle2 className="w-5 h-5 text-blue-900 flex-shrink-0" />
+                  <span className="text-sm text-blue-900 truncate">{user.email}</span>
                 </div>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={handleSignOut}
                   disabled={isSigningOut}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 whitespace-nowrap"
                 >
                   {isSigningOut ? (
                     <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
-                  {isSigningOut ? t('nav.signingout') : t('nav.signout')}
+                  <span className="hidden sm:inline">{isSigningOut ? t('nav.signingout') : t('nav.signout')}</span>
+                  <span className="sm:hidden">Sign Out</span>
                 </Button>
               </div>
             ) : (
@@ -85,7 +86,7 @@ export function Header() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800"
+                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 whitespace-nowrap"
                 id="auth-button"
               >
                 <UserCircle2 className="w-4 h-4" />

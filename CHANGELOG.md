@@ -4,9 +4,58 @@ All notable changes to this project will be documented in this file.
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 Alle belangrijke wijzigingen aan dit project worden in dit bestand gedocumenteerd.
 
-## [1.8.1] - 2025-02-20
+## [1.8.3] - 2025-02-21
 
 🇬🇧 English
+### Changed
+- Removed Google login integration for simplified authentication
+- Optimized authentication flow for improved performance
+- Enhanced mobile responsiveness across all login screens
+- Improved timezone detection reliability
+- Fixed mobile layout issues with logout button
+
+### Fixed
+- Resolved horizontal scrolling issues on mobile devices
+- Fixed email overflow in header on small screens
+- Improved timezone initialization and synchronization
+
+🇩🇪 Deutsch
+### Geändert
+- Google-Login-Integration für vereinfachte Authentifizierung entfernt
+- Authentifizierungsablauf für verbesserte Leistung optimiert
+- Mobile Reaktionsfähigkeit über alle Login-Bildschirme verbessert
+- Zuverlässigkeit der Zeitzonenerkennung verbessert
+- Mobile Layout-Probleme mit Abmelde-Button behoben
+
+### Behoben
+- Horizontale Scroll-Probleme auf mobilen Geräten behoben
+- E-Mail-Überlauf im Header auf kleinen Bildschirmen behoben
+- Zeitzonen-Initialisierung und -Synchronisation verbessert
+
+🇳🇱 Nederlands
+### Gewijzigd
+- Google-login integratie verwijderd voor vereenvoudigde authenticatie
+- Authenticatie proces geoptimaliseerd voor verbeterde prestaties
+- Mobiele responsiviteit verbeterd voor alle login schermen
+- Betrouwbaarheid van tijdzone detectie verbeterd
+- Mobiele layout problemen met uitlog knop opgelost
+
+### Opgelost
+- Horizontaal scroll problemen op mobiele apparaten opgelost
+- E-mail overflow in header op kleine schermen opgelost
+- Tijdzone initialisatie en synchronisatie verbeterd
+
+## [1.8.2] - 2025-02-21
+
+### Fixed
+- Fixed visual issues in the login modal interface
+- Improved overall modal responsiveness
+- Adjusted button alignment and spacing
+- Updated input field styling for better user experience
+- Fixed form validation visual feedback
+
+## [1.8.1] - 2025-02-20
+
 ### Added
 - Version control system with silent state transitions
 - Changelog popover with scroll position memory
@@ -22,36 +71,16 @@ Alle belangrijke wijzigingen aan dit project worden in dit bestand gedocumenteer
 - Scroll position persistence
 - Version display click handling
 
-🇩🇪 Deutsch
-### Hinzugefügt
-- Versionskontrollsystem mit stillen Zustandsübergängen
-- Changelog-Popover mit Scroll-Positionsspeicher
-- Versteckter Klickzähler für Versionsanzeige
+## [1.8.0] - 2025-02-19
 
-### Geändert
-- Verbesserte Versionsanzeige-UI
-- Verbesserte Changelog-Zugänglichkeit
-- Optimierte Versionswechsel mit Hintergrundverarbeitung
+### Added
+- New PopOver component with customizable placement and animations
+- Enhanced tooltip system with improved accessibility
 
-### Behoben
-- Zeitzonen-Erkennungsrandfälle
-- Scroll-Position-Persistenz
-- Versionsanzeige-Klickverarbeitung
+### Performance
+- Improved DOM handling and error recovery in language system
+- Enhanced timezone detection reliability
 
-🇳🇱 Nederlands
-### Toegevoegd
-- Versiebeheer systeem met stille statusovergangen
-- Changelog popover met scroll positie geheugen
-- Verborgen klik teller voor versie weergave
-
-### Gewijzigd
-- Verbeterde versie weergave UI
-- Verbeterde changelog toegankelijkheid
-- Geoptimaliseerde versie wisseling met achtergrondverwerking
-
-### Opgelost
-- Tijdzone detectie randgevallen
-- Scroll positie persistentie
-- Versie weergave klik afhandeling
-
-[Previous changelog entries remain unchanged...]
+### Fixed
+- Fixed potential null reference errors in DOM operations
+- Resolved race conditions in timezone detection

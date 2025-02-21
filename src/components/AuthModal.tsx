@@ -70,7 +70,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     },
                   },
                 }}
-                providers={['google']}
+                providers={[]}
                 onlyThirdPartyProviders={false}
                 redirectTo={window.location.origin}
                 onSuccess={handleAuthSuccess}

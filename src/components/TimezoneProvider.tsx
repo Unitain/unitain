@@ -25,26 +25,94 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const retryDelay = 1000;
 
   // Initialize timezone detection
-  const initializeTimezone = React.useCallback(() => {
+  const initializeTimezone = React.useCallback(async () => {
     if (!mounted.current || initialized.current) return;
 
     try {
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (detectedTimezone) {
-        setTimezone(detectedTimezone);
-        setError(null);
+      if (!detectedTimezone) {
+        throw new Error('Failed to detect timezone');
+      }
 
-        // Wait for DOM to be ready
-        if (document.readyState !== 'loading') {
-          updateDocumentAttributes(detectedTimezone);
-        } else {
-          document.addEventListener('DOMContentLoaded', () => {
-            updateDocumentAttributes(detectedTimezone);
-          }, { once: true });
+      setTimezone(detectedTimezone);
+      setError(null);
+
+      // Ensure DOM is ready before updating attributes
+      const updateDOM = () => {
+        if (!mounted.current) return;
+        
+        try {
+          const root = document.documentElement;
+          if (!root) {
+            throw new Error('Document root not available');
+          }
+
+          // Update timezone attribute
+          root.setAttribute('data-timezone', detectedTimezone);
+
+          // Update language attribute
+          if (!root.hasAttribute('lang')) {
+            root.setAttribute('lang', navigator.language);
+          }
+
+          // Set up mutation observer
+          if (!mutationObserver.current && mounted.current) {
+            mutationObserver.current = new MutationObserver((mutations) => {
+              if (!mounted.current) return;
+
+              for (const mutation of mutations) {
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'data-timezone') {
+                  const newTimezone = root.getAttribute('data-timezone');
+                  if (newTimezone && newTimezone !== timezone) {
+                    setTimezone(newTimezone);
+                  }
+                  break;
+                }
+              }
+            });
+
+            mutationObserver.current.observe(root, {
+              attributes: true,
+              attributeFilter: ['data-timezone']
+            });
+          }
+
+          initialized.current = true;
+          retryCount.current = 0;
+        } catch (error) {
+          console.warn('DOM update failed:', error);
+          throw error;
         }
+      };
 
-        initialized.current = true;
-        retryCount.current = 0;
+      // Handle DOM updates based on readiness state
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          requestAnimationFrame(() => {
+            try {
+              updateDOM();
+            } catch (error) {
+              console.warn('Failed to update DOM after load:', error);
+              if (retryCount.current < maxRetries) {
+                retryCount.current++;
+                setTimeout(initializeTimezone, retryDelay * Math.pow(2, retryCount.current));
+              }
+            }
+          });
+        }, { once: true });
+      } else {
+        requestAnimationFrame(() => {
+          try {
+            updateDOM();
+          } catch (error) {
+            console.warn('Failed to update DOM:', error);
+            if (retryCount.current < maxRetries) {
+              retryCount.current++;
+              setTimeout(initializeTimezone, retryDelay * Math.pow(2, retryCount.current));
+            }
+          }
+        });
       }
     } catch (err) {
       console.warn('Timezone detection failed:', err);
@@ -58,53 +126,6 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       if (mounted.current) {
         setLoading(false);
       }
-    }
-  }, []);
-
-  // Safely update document attributes
-  const updateDocumentAttributes = React.useCallback((detectedTimezone: string) => {
-    if (!mounted.current) return;
-
-    try {
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        const root = document.documentElement;
-        if (!root) return;
-
-        // Update timezone attribute
-        const currentTimezone = root.getAttribute('data-timezone');
-        if (currentTimezone !== detectedTimezone) {
-          root.setAttribute('data-timezone', detectedTimezone);
-        }
-
-        // Update language attribute if missing
-        if (!root.hasAttribute('lang')) {
-          root.setAttribute('lang', navigator.language);
-        }
-
-        // Set up mutation observer for timezone changes
-        if (!mutationObserver.current && mounted.current) {
-          mutationObserver.current = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              if (mutation.type === 'attributes' && 
-                  mutation.attributeName === 'data-timezone' &&
-                  mounted.current) {
-                const newTimezone = root.getAttribute('data-timezone');
-                if (newTimezone && newTimezone !== timezone) {
-                  setTimezone(newTimezone);
-                }
-              }
-            });
-          });
-
-          mutationObserver.current.observe(root, {
-            attributes: true,
-            attributeFilter: ['data-timezone']
-          });
-        }
-      });
-    } catch (error) {
-      console.warn('Failed to update document attributes:', error);
     }
   }, [timezone]);
 
