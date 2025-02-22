@@ -13,13 +13,22 @@ export function AuthCallback() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
 
+        console.log('AuthCallback: Starting authentication process');
+        console.log('AuthCallback: Code present:', !!code);
+
         if (!code) {
           throw new Error('No code found in URL');
         }
 
+        console.log('AuthCallback: Exchanging code for session...');
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-        if (error) throw error;
+        if (error) {
+          console.error('AuthCallback: Session exchange error:', error);
+          throw error;
+        }
+
+        console.log('AuthCallback: Session data received:', !!data);
 
         if (data.session) {
           // Store the session
@@ -32,17 +41,20 @@ export function AuthCallback() {
           const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${data.session.user.id}/submission`;
           localStorage.removeItem('nextUrl');
           
+          console.log('AuthCallback: Redirecting to:', redirectUrl);
+          
           // Show success message and redirect
           toast.success('Successfully signed in!');
           window.location.href = redirectUrl;
         } else {
+          console.error('AuthCallback: No session in response');
           window.location.href = '/';
           toast.error('Authentication failed. Please try again.');
         }
       } catch (error) {
         console.error('Auth callback error:', error);
         window.location.href = '/';
-        toast.error('Authentication failed. Please try again.');
+        toast.error(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
       }
     };
 
