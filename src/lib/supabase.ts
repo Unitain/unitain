@@ -21,6 +21,8 @@ export const supabase: SupabaseClient = (() => {
   }
 
   try {
+    console.debug('Initializing Supabase client...');
+    
     const client = createClient(supabaseUrl!, supabaseAnonKey!, {
       auth: {
         autoRefreshToken: true,
@@ -44,12 +46,15 @@ export const supabase: SupabaseClient = (() => {
     console.debug('Supabase Auth Config:', {
       flowType: client.auth.flowType,
       detectSessionInUrl: client.auth.detectSessionInUrl,
-      persistSession: client.auth.persistSession
+      persistSession: client.auth.persistSession,
+      storage: client.auth.storage,
+      storageKey: client.auth.storageKey
     });
 
     // Initialize session recovery with retry logic
     const initializeSession = async (retryCount = 0) => {
       try {
+        console.debug('Attempting to recover session...');
         const { data: { session }, error } = await client.auth.getSession();
         
         if (error) {
@@ -63,9 +68,17 @@ export const supabase: SupabaseClient = (() => {
 
         // If we have a session but it's expired, try to refresh it
         if (session && new Date(session.expires_at!) < new Date()) {
+          console.debug('Session expired, attempting refresh...');
           const { data: refreshData, error: refreshError } = await client.auth.refreshSession();
           if (refreshError) throw refreshError;
+          console.debug('Session refreshed successfully');
           return refreshData.session;
+        }
+
+        if (session) {
+          console.debug('Session recovered successfully');
+        } else {
+          console.debug('No existing session found');
         }
 
         return session;
@@ -84,15 +97,19 @@ export const supabase: SupabaseClient = (() => {
     // Initialize session
     initializeSession();
 
-    // Set up auth state change listener
+    // Set up auth state change listener with enhanced logging
     client.auth.onAuthStateChange((event, session) => {
+      console.debug('Auth state changed:', { event, sessionExists: !!session });
+      
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        console.debug('Cleaning up auth storage...');
         localStorage.removeItem('sb-auth-token');
         localStorage.removeItem('auth-storage');
         localStorage.removeItem('pendingEligibilityCheck');
       }
     });
 
+    console.debug('Supabase client initialized successfully');
     return client;
   } catch (error) {
     console.error('Failed to initialize Supabase client:', error);

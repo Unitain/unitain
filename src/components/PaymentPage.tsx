@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { PayPalButton } from './PayPalButton';
+import React, { useState } from 'react';
 import { ArrowLeft, Shield, Globe2, BadgeCheck, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 interface PaymentPageProps {
@@ -14,29 +14,44 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user, isLoading, isInitialized } = useAuthStore();
   const { t } = useTranslation();
   const amount = 99; // €99 fixed price
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (isInitialized && !isLoading && !user) {
-      toast.error(t('payment.signInRequired'));
+  // Test payment simulation
+  const simulatePaymentSuccess = async () => {
+    if (!user?.id) {
+      toast.error('Please sign in first');
+      return;
     }
-  }, [isInitialized, isLoading, user, t]);
 
-  const handlePaymentSuccess = (orderData: any) => {
-    toast.success(t('payment.success'));
-    // Additional success handling here
-  };
+    setIsSubmitting(true);
 
-  const handlePaymentError = (error: Error) => {
-    toast.error(t('payment.error'));
-    console.error('Payment error:', error);
-  };
+    try {
+      console.log('Creating test payment for user:', user.id);
 
-  const handlePaymentCancel = () => {
-    toast.error(t('payment.cancelled'));
-  };
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          amount: amount,
+          currency: 'EUR',
+          status: 'completed',
+          payment_method: 'test',
+          transaction_id: `TEST-${Date.now()}`
+        });
 
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+      if (paymentError) {
+        console.error('Payment insert error:', paymentError);
+        throw paymentError;
+      }
+
+      toast.success('Test payment recorded successfully!');
+      window.location.href = `/dashboard/${user.id}/submission`;
+    } catch (error) {
+      console.error('Test payment error:', error);
+      toast.error('Failed to simulate payment');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading || !isInitialized) {
@@ -109,12 +124,21 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
             </div>
 
             <div className="max-w-md mx-auto mb-8">
-              <PayPalButton
-                amount={amount}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-                onCancel={handlePaymentCancel}
-              />
+              {/* Test payment button - centered and styled */}
+              <Button
+                onClick={simulatePaymentSuccess}
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Complete Payment (Test)'
+                )}
+              </Button>
             </div>
 
             <div className="mt-8 pt-8 border-t border-gray-200">
@@ -142,17 +166,15 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
               <p>
                 {t('payment.legal')}{' '}
                 <button
-                  onClick={() => openInNewTab('/terms')}
+                  onClick={() => window.open('/terms', '_blank')}
                   className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-                  aria-label="Open Terms of Service in new tab"
                 >
                   {t('payment.termsLink')}
                 </button>
                 {' '}{t('payment.andText')}{' '}
                 <button
-                  onClick={() => openInNewTab('/privacy')}
+                  onClick={() => window.open('/privacy', '_blank')}
                   className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-                  aria-label="Open Privacy Policy in new tab"
                 >
                   {t('payment.privacyLink')}
                 </button>
