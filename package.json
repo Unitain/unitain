@@ -17,6 +17,7 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.39.7",
+    "axios": "^1.7.9",
     "clsx": "^2.1.0",
     "i18next": "^23.10.0",
     "i18next-browser-languagedetector": "^7.2.0",

@@ -17,12 +17,16 @@ const ContactPage = lazy(() => import('./components/ContactPage').then(m => ({ d
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfService })));
 const CookieConsent = lazy(() => import('./components/CookieConsent').then(m => ({ default: m.CookieConsent })));
+import Success from './Success';
+import Failed from './Failed';
 
 function App() {
   const [showPayment, setShowPayment] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showSuccess, setShowSuccess] = React.useState(false);
+  const [showFailed, setShowFailed] = React.useState(false);
   const { user, isLoading } = useAuthStore();
   const { t } = useTranslation();
 
@@ -31,8 +35,12 @@ function App() {
     const path = window.location.pathname.toLowerCase();
     const isPrivacyPage = path === '/privacy' || path === '/privacy/';
     const isTermsPage = path === '/terms' || path === '/terms/';
+      const isSuccessPage = path === '/success' || path === '/success/';
+      const isFailedPage = path === '/failed' || path === '/failed/';
     setShowPrivacy(isPrivacyPage);
     setShowTerms(isTermsPage);
+      setShowSuccess(isSuccessPage);
+      setShowFailed(isFailedPage);
     
     if (isPrivacyPage || isTermsPage) {
       setShowPayment(false);
@@ -88,6 +96,8 @@ function App() {
     setShowContact(false);
     setShowPrivacy(false);
     setShowTerms(false);
+    setShowFailed(false);
+    setShowSuccess(false);
     window.history.pushState({}, '', '/');
   }, []);
 
@@ -156,6 +166,14 @@ function App() {
             <Suspense fallback={<LoadingSpinner />}>
               <PaymentPage onBack={handleBack} />
             </Suspense>
+            ) : showSuccess ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <Success onBack={handleBack}/>
+            </Suspense>
+          ) : showFailed ? (
+            <Suspense fallback={<LoadingSpinner />}>
+            <Failed onBack={handleBack}/>
+              </Suspense>
           ) : (
             <div className="pb-10">
               {/* Hero Section */}

@@ -5,6 +5,7 @@ import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 interface PaymentPageProps {
   onBack: () => void;
@@ -15,29 +16,40 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const { t } = useTranslation();
   const amount = 99; // €99 fixed price
 
-  useEffect(() => {
-    if (isInitialized && !isLoading && !user) {
-      toast.error(t('payment.signInRequired'));
+  // useEffect(() => {
+  //   if (isInitialized && !isLoading && !user) {
+  //     toast.error(t('payment.signInRequired'));
+  //   }
+  // }, [isInitialized, isLoading, user, t]);
+
+  // const handlePaymentSuccess = (orderData: any) => {
+  //   toast.success(t('payment.success'));
+  //   // Additional success handling here
+  // };
+
+  // const handlePaymentError = (error: Error) => {
+  //   toast.error(t('payment.error'));
+  //   console.error('Payment error:', error);
+  // };
+
+  // const handlePaymentCancel = () => {
+  //   toast.error(t('payment.cancelled'));
+  // };
+
+  // const openInNewTab = (url: string) => {
+  //   window.open(url, '_blank', 'noopener,noreferrer');
+  // };
+
+  const handleSubmit = async () =>{
+    // let res = await axios.post('http://localhost:8000/payment')
+    let res = await axios.post('https://unitain-server.vercel.app/api/payment')
+    if(res && res.data){
+      console.log(res)
+      let link = res.data.links[1] 
+      window.location.href = link.href
+      toast.success(translate('payment.success'));
     }
-  }, [isInitialized, isLoading, user, t]);
-
-  const handlePaymentSuccess = (orderData: any) => {
-    toast.success(t('payment.success'));
-    // Additional success handling here
-  };
-
-  const handlePaymentError = (error: Error) => {
-    toast.error(t('payment.error'));
-    console.error('Payment error:', error);
-  };
-
-  const handlePaymentCancel = () => {
-    toast.error(t('payment.cancelled'));
-  };
-
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
+  }
 
   if (isLoading || !isInitialized) {
     return (
@@ -108,13 +120,15 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
               <p className="text-gray-600">{t('payment.noHiddenFees')}</p>
             </div>
 
-            <div className="max-w-md mx-auto mb-8">
-              <PayPalButton
+            <div className="max-w-md mx-auto mb-8 flex">
+              {/* <PayPalButton
                 amount={amount}
                 onSuccess={handlePaymentSuccess}
                 onError={handlePaymentError}
                 onCancel={handlePaymentCancel}
-              />
+              /> */}
+              {/* <Button className='m-auto' onClick={handleSubmit}>Pay Now</Button> */}
+              <Button className='m-auto text-[#00447B] font-bold p-4 hover:bg-white border-yellow-500 border bg-yellow-500' onClick={handleSubmit}>Pay With <img width={100} src="https://www.pngplay.com/wp-content/uploads/8/Paypal-PNG-Clipart-Background.png" alt="paypal logo" /></Button>
             </div>
 
             <div className="mt-8 pt-8 border-t border-gray-200">
