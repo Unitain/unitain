@@ -37,13 +37,14 @@ export const supabase: SupabaseClient = (() => {
         headers: {
           'x-client-info': '@supabase/auth-ui-react'
         }
-      },
-      // Add retryAttempts and retryInterval for better network resilience
-      realtime: {
-        params: {
-          eventsPerSecond: 2
-        }
       }
+    });
+
+    // Log configuration for debugging
+    console.debug('Supabase Auth Config:', {
+      flowType: client.auth.flowType,
+      detectSessionInUrl: client.auth.detectSessionInUrl,
+      persistSession: client.auth.persistSession
     });
 
     // Initialize session recovery with retry logic

@@ -15,6 +15,11 @@ export function AuthCallback() {
 
         console.log('AuthCallback: Starting authentication process');
         console.log('AuthCallback: Code present:', !!code);
+        console.log('AuthCallback: Supabase Auth Config:', {
+          flowType: supabase.auth.flowType,
+          detectSessionInUrl: supabase.auth.detectSessionInUrl,
+          persistSession: supabase.auth.persistSession
+        });
 
         if (!code) {
           throw new Error('No code found in URL');
