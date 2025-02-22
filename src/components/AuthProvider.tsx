@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 toast.success('Account deleted successfully');
                 break;
               case 'SIGNED_OUT':
-                // Don't show toast here - it's handled in Header.tsx
+                // Clear all auth-related storage
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
                 localStorage.removeItem('pendingEligibilityCheck');
@@ -44,6 +44,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         });
+
+        // Try to recover existing session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        if (session) {
+          setUser(session.user);
+        }
 
         return () => {
           mounted = false;

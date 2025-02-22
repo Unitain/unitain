@@ -22,11 +22,19 @@ export function AuthCallback() {
         if (error) throw error;
 
         if (data.session) {
+          // Store the session
+          localStorage.setItem('sb-auth-token', data.session.access_token);
+          
+          // Set the user in the store
           setUser(data.session.user);
+          
+          // Handle redirect
           const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${data.session.user.id}/submission`;
           localStorage.removeItem('nextUrl');
-          window.location.href = redirectUrl;
+          
+          // Show success message and redirect
           toast.success('Successfully authenticated!');
+          window.location.href = redirectUrl;
         } else {
           window.location.href = '/';
           toast.error('Authentication failed. Please try again.');

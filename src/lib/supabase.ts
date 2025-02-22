@@ -50,6 +50,7 @@ export const supabase: SupabaseClient = (() => {
     const initializeSession = async (retryCount = 0) => {
       try {
         const { data: { session }, error } = await client.auth.getSession();
+        
         if (error) {
           if (error.message === 'Failed to fetch' && retryCount < 3) {
             console.warn(`Retrying session initialization (attempt ${retryCount + 1})`);
@@ -58,6 +59,14 @@ export const supabase: SupabaseClient = (() => {
           }
           throw error;
         }
+
+        // If we have a session but it's expired, try to refresh it
+        if (session && new Date(session.expires_at!) < new Date()) {
+          const { data: refreshData, error: refreshError } = await client.auth.refreshSession();
+          if (refreshError) throw refreshError;
+          return refreshData.session;
+        }
+
         return session;
       } catch (error) {
         console.error('Session initialization error:', error);
@@ -65,6 +74,7 @@ export const supabase: SupabaseClient = (() => {
           client.auth.signOut().catch(console.error);
           localStorage.removeItem('sb-auth-token');
           localStorage.removeItem('auth-storage');
+          localStorage.removeItem('pendingEligibilityCheck');
         }
         return null;
       }
