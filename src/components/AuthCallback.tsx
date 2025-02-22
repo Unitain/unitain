@@ -10,15 +10,20 @@ export function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
 
-        if (error) {
-          throw error;
+        if (!code) {
+          throw new Error('No code found in URL');
         }
 
-        if (user) {
-          setUser(user);
-          const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${user.id}/submission`;
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) throw error;
+
+        if (data.session) {
+          setUser(data.session.user);
+          const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${data.session.user.id}/submission`;
           localStorage.removeItem('nextUrl');
           window.location.href = redirectUrl;
           toast.success('Successfully authenticated!');
