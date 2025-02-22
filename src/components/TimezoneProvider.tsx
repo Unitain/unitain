@@ -47,7 +47,15 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!mounted.current || initialized.current) return;
 
-      const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Safely detect timezone
+      let detectedTimezone: string;
+      try {
+        detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      } catch (err) {
+        console.warn('Intl API timezone detection failed:', err);
+        detectedTimezone = 'UTC';
+      }
+
       if (!detectedTimezone) {
         throw new Error('Failed to detect timezone');
       }
@@ -70,6 +78,8 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.warn('Timezone detection failed:', err);
       setError('Failed to detect timezone');
+      // Set UTC as fallback
+      setTimezone('UTC');
     } finally {
       if (mounted.current) {
         setLoading(false);

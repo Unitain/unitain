@@ -28,6 +28,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     toast.success('Successfully signed in!');
     setIsLoading(false);
     onClose();
+
+    // Get stored redirect URL or generate default dashboard URL
+    const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${user?.id}/submission`;
+    localStorage.removeItem('nextUrl');
+    window.location.href = redirectUrl;
   };
 
   const handleAuthError = (error: Error) => {
@@ -71,8 +76,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   },
                 }}
                 providers={[]}
+                redirectTo={`${window.location.origin}/auth/callback`}
                 onlyThirdPartyProviders={false}
-                redirectTo={window.location.origin}
                 onSuccess={handleAuthSuccess}
                 onError={handleAuthError}
               />
