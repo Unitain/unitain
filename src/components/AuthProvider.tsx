@@ -35,7 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               case 'USER_DELETED':
                 toast.success('Account deleted successfully');
                 break;
-              // Remove SIGNED_OUT notification from here as it's handled in Header.tsx
+              case 'SIGNED_OUT':
+                // Don't show toast here - it's handled in Header.tsx
+                localStorage.removeItem('sb-auth-token');
+                localStorage.removeItem('auth-storage');
+                localStorage.removeItem('pendingEligibilityCheck');
+                break;
             }
           }
         });

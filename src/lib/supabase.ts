@@ -37,24 +37,45 @@ export const supabase: SupabaseClient = (() => {
         headers: {
           'x-client-info': '@supabase/auth-ui-react'
         }
+      },
+      // Add retryAttempts and retryInterval for better network resilience
+      realtime: {
+        params: {
+          eventsPerSecond: 2
+        }
       }
     });
 
-    // Initialize session recovery
-    client.auth.getSession().catch(error => {
-      if (error.message !== 'session_not_found') {
-        console.error('Failed to recover session:', error);
-        // Clear any invalid session data
-        client.auth.signOut().catch(console.error);
-        localStorage.removeItem('sb-auth-token');
-        localStorage.removeItem('auth-storage');
+    // Initialize session recovery with retry logic
+    const initializeSession = async (retryCount = 0) => {
+      try {
+        const { data: { session }, error } = await client.auth.getSession();
+        if (error) {
+          if (error.message === 'Failed to fetch' && retryCount < 3) {
+            console.warn(`Retrying session initialization (attempt ${retryCount + 1})`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+            return initializeSession(retryCount + 1);
+          }
+          throw error;
+        }
+        return session;
+      } catch (error) {
+        console.error('Session initialization error:', error);
+        if (error.message !== 'session_not_found') {
+          client.auth.signOut().catch(console.error);
+          localStorage.removeItem('sb-auth-token');
+          localStorage.removeItem('auth-storage');
+        }
+        return null;
       }
-    });
+    };
+
+    // Initialize session
+    initializeSession();
 
     // Set up auth state change listener
     client.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        // Clear all auth-related storage
         localStorage.removeItem('sb-auth-token');
         localStorage.removeItem('auth-storage');
         localStorage.removeItem('pendingEligibilityCheck');
@@ -71,6 +92,10 @@ export const supabase: SupabaseClient = (() => {
 // Helper function to handle Supabase errors
 export const handleSupabaseError = (error: any): string => {
   console.error('Supabase error:', error);
+
+  if (error?.message?.includes('Failed to fetch')) {
+    return 'Network error. Please check your connection and try again.';
+  }
 
   if (error?.message?.includes('JWT expired')) {
     return 'Your session has expired. Please sign in again.';

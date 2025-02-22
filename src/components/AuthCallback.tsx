@@ -12,7 +12,9 @@ export function AuthCallback() {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         if (user) {
           setUser(user);
