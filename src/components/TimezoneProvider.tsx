@@ -18,28 +18,11 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const mounted = useRef(true);
   const initialized = useRef(false);
-  const documentReady = useRef(false);
 
-  // Handle document ready state
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-
-    const checkDocumentReady = () => {
-      documentReady.current = document.readyState === 'complete';
-    };
-
-    checkDocumentReady();
-
-    const handleReadyStateChange = () => {
-      checkDocumentReady();
-      if (documentReady.current && !initialized.current) {
-        detectTimezone();
-      }
-    };
-
-    document.addEventListener('readystatechange', handleReadyStateChange);
+    mounted.current = true;
     return () => {
-      document.removeEventListener('readystatechange', handleReadyStateChange);
+      mounted.current = false;
     };
   }, []);
 
@@ -64,8 +47,8 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       initialized.current = true;
 
-      // Only update document if it exists and is ready
-      if (typeof document !== 'undefined' && documentReady.current) {
+      // Only update document if it exists
+      if (typeof document !== 'undefined') {
         try {
           const htmlElement = document.documentElement;
           if (htmlElement && typeof htmlElement.setAttribute === 'function') {
@@ -98,8 +81,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       if (
         typeof document !== 'undefined' &&
         document.visibilityState === 'visible' &&
-        !initialized.current &&
-        documentReady.current
+        !initialized.current
       ) {
         detectTimezone();
       }
