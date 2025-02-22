@@ -16,12 +16,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await initialize();
         }
 
-        // Listen for changes on auth state (sign in, sign out, etc.)
+        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (mounted) {
             setUser(session?.user ?? null);
             
-            // Show appropriate notifications, but only for user-initiated actions
+            // Show appropriate notifications
             switch (event) {
               case 'SIGNED_IN':
                 toast.success('Successfully signed in!');
@@ -50,7 +50,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (sessionError) throw sessionError;
 
         if (session) {
-          setUser(session.user);
+          // If session exists but is expired, try to refresh it
+          if (new Date(session.expires_at!) < new Date()) {
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) throw refreshError;
+            if (refreshData.session) {
+              setUser(refreshData.session.user);
+            }
+          } else {
+            setUser(session.user);
+          }
         }
 
         return () => {

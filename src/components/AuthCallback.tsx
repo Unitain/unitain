@@ -33,7 +33,7 @@ export function AuthCallback() {
           localStorage.removeItem('nextUrl');
           
           // Show success message and redirect
-          toast.success('Successfully authenticated!');
+          toast.success('Successfully signed in!');
           window.location.href = redirectUrl;
         } else {
           window.location.href = '/';
