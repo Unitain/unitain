@@ -13,6 +13,7 @@ const RETRY_DELAY = 1000; // 1 second
 async function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
 export async function saveEligibilityCheck(
   data: EligibilityCheckData, 
   retryCount = 0

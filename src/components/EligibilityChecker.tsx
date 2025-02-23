@@ -314,10 +314,6 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
         {t(currentQuestion.translationKey)}
       </h2>
 
-      {/* <button className='mb-5 border p-5 rounded-lg border-black' onClick={() => onShowPayment()}>
-        click to Pay 
-      </button> */}
-
       <div className="space-y-4">
         {currentQuestion.options.map((option) => (
           <button
