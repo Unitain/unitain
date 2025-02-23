@@ -7,13 +7,12 @@ const ExclamationIcon = () => (
       />
     </svg>
   )
-  
 const Failed = () => {
   return (
     <div className="h-[90vh] flex items-center justify-center p-4">
       <div className="rounded-lg shadow-lg w-full max-w-md  border border-red-500">
         <div className="p-6 text-center">
-          <ExclamationIcon />
+          <ExclamationIcon  />
           <h1 className="text-2xl font-bold mt-4 mb-2">Payment Failed</h1>
           <p className="text-gray-600 mb-6">
             Hey there. We tried to charge your card but, something went wrong. Please update your payment method below

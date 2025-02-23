@@ -12,15 +12,21 @@ const Success = () => {
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
   const [loading, setLoading] = useState(false);
 
-useEffect(() => {
-  if(paymentDetail){
-    const parsedResponse = JSON.parse(paymentDetail)
-    console.log("parsedResponse", parsedResponse);
-    setPaymentDetails(parsedResponse)
-  }
-}, [paymentDetail])
-
+  useEffect(() => {
+    if (paymentDetail && !paymentDetails) {
+      setLoading(true);
+      try {
+        const parsedResponse = JSON.parse(paymentDetail);
+        setPaymentDetails(parsedResponse);
+      } catch (error) {
+        console.error("Error parsing payment details:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [paymentDetail, paymentDetails]);
   
+
 if (loading) return (
   <div className="w-full flex justify-center items-center mt-32">
   <button type="button" className="" disabled>
