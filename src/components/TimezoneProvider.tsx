@@ -43,22 +43,27 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Failed to detect timezone');
       }
 
-      setTimezone(detectedTimezone);
-      setError(null);
-      initialized.current = true;
-
-      // Safely store timezone in localStorage instead of DOM attributes
+      // Store timezone in localStorage for persistence
       try {
         localStorage.setItem('app_timezone', detectedTimezone);
       } catch (err) {
         console.warn('Failed to store timezone in localStorage:', err);
       }
 
-      // Update document only if needed and available
-      if (typeof document !== 'undefined' && document?.documentElement) {
+      // Update state
+      if (mounted.current) {
+        setTimezone(detectedTimezone);
+        setError(null);
+        initialized.current = true;
+        setLoading(false);
+      }
+
+      // Update document attributes safely
+      if (typeof document !== 'undefined' && document.documentElement) {
         try {
           // Use data attributes which are safer than custom attributes
           document.documentElement.dataset.appTimezone = detectedTimezone;
+          
           // Set lang attribute if not already set
           if (!document.documentElement.lang) {
             document.documentElement.lang = navigator.language || 'en';
@@ -69,10 +74,9 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.warn('Timezone detection failed:', err);
-      setError('Failed to detect timezone');
-      setTimezone('UTC');
-    } finally {
       if (mounted.current) {
+        setError('Failed to detect timezone');
+        setTimezone('UTC');
         setLoading(false);
       }
     }
