@@ -235,9 +235,9 @@ export function DashboardChatGPT() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Process Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Fixed Process Header */}
+      <div className="flex-none bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {processSteps.map((step) => (
@@ -276,11 +276,11 @@ export function DashboardChatGPT() {
         </div>
       </div>
 
-      {/* Chat Interface */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Chat Messages */}
-          <div className="h-[400px] overflow-y-auto p-4 space-y-4">
+      {/* Flexible Chat Container */}
+      <div className="flex-1 flex flex-col min-h-0 max-w-4xl mx-auto px-4 py-6 w-full">
+        <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Scrollable Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map(message => (
               <div
                 key={message.id}
@@ -304,15 +304,15 @@ export function DashboardChatGPT() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* File Uploads */}
+          {/* Fixed Upload Status Area */}
           {uploads.length > 0 && (
-            <div className="border-t border-gray-200 p-4 space-y-2">
+            <div className="flex-none border-t border-gray-200 p-4 space-y-2 bg-gray-50">
               <h3 className="text-sm font-medium text-gray-700">Uploads</h3>
               <div className="space-y-2">
                 {uploads.map(upload => (
                   <div
                     key={upload.id}
-                    className="flex items-center gap-2 bg-gray-50 p-2 rounded-md"
+                    className="flex items-center gap-2 bg-white p-2 rounded-md"
                   >
                     <FileText className="w-4 h-4 text-blue-600" />
                     <span className="flex-1 text-sm truncate">{upload.name}</span>
@@ -336,8 +336,8 @@ export function DashboardChatGPT() {
             </div>
           )}
 
-          {/* Input Area */}
-          <div className="border-t border-gray-200 p-4">
+          {/* Fixed Input Area */}
+          <div className="flex-none border-t border-gray-200 p-4 bg-white">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <input
                 type="text"
