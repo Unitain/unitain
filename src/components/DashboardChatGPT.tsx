@@ -70,6 +70,25 @@ export function DashboardChatGPT() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Add chat message event listener
+  useEffect(() => {
+    const handleChatMessage = (event: CustomEvent) => {
+      const { message, sender } = event.detail;
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role: sender,
+        content: message,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, newMessage]);
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.addEventListener('chat-message', handleChatMessage as EventListener);
+    return () => window.removeEventListener('chat-message', handleChatMessage as EventListener);
+  }, []);
+
   useEffect(() => {
     if (!isInitialized) return;
 
