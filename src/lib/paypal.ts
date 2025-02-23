@@ -102,38 +102,31 @@ export class PayPalService {
 
   async initialize(retryAttempt = 0): Promise<any> {
     try {
-      if (this.paypalPromise) {
-        return this.paypalPromise;
+      if (!window?.paypal) {
+        const config = this.getConfig();
+        this.loadStartTime = Date.now();
+
+        this.paypalPromise = new Promise(async (resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            this.cleanup();
+            reject(new Error('PayPal initialization timed out'));
+          }, PAYPAL_LOAD_TIMEOUT);
+
+          try {
+            const paypalInstance = await loadScript(config);
+            await this.waitForPayPalSDK();
+            clearTimeout(timeoutId);
+            this.scheduleCleanup();
+            resolve(paypalInstance);
+          } catch (error) {
+            clearTimeout(timeoutId);
+            this.cleanup();
+            reject(error);
+          }
+        });
       }
 
-      if (window.paypal) {
-        this.paypalPromise = Promise.resolve(window.paypal);
-        return this.paypalPromise;
-      }
-
-      const config = this.getConfig();
-      this.loadStartTime = Date.now();
-
-      this.paypalPromise = new Promise(async (resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          this.cleanup();
-          reject(new Error('PayPal initialization timed out'));
-        }, PAYPAL_LOAD_TIMEOUT);
-
-        try {
-          const paypalInstance = await loadScript(config);
-          await this.waitForPayPalSDK();
-          clearTimeout(timeoutId);
-          this.scheduleCleanup();
-          resolve(paypalInstance);
-        } catch (error) {
-          clearTimeout(timeoutId);
-          this.cleanup();
-          reject(error);
-        }
-      });
-
-      return this.paypalPromise;
+      return this.paypalPromise || window.paypal;
     } catch (error) {
       console.error('PayPal initialization error:', error);
       this.cleanup();

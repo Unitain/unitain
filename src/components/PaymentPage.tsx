@@ -13,11 +13,10 @@ interface PaymentPageProps {
 export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user, isLoading, isInitialized } = useAuthStore();
   const { t } = useTranslation();
-  const amount = 99; // €99 fixed price
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const amount = 99;
 
-  // Test payment simulation
-  const simulatePaymentSuccess = async () => {
+  const handleSimulatePayment = async () => {
     if (!user?.id) {
       toast.error('Please sign in first');
       return;
@@ -26,7 +25,8 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
     setIsSubmitting(true);
 
     try {
-      console.log('Creating test payment for user:', user.id);
+      // Create a unique transaction ID
+      const transactionId = `TEST-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
       const { error: paymentError } = await supabase
         .from('payments')
@@ -36,19 +36,19 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           currency: 'EUR',
           status: 'completed',
           payment_method: 'test',
-          transaction_id: `TEST-${Date.now()}`
+          transaction_id: transactionId
         });
 
       if (paymentError) {
-        console.error('Payment insert error:', paymentError);
         throw paymentError;
       }
 
       toast.success('Test payment recorded successfully!');
-      window.location.href = `/dashboard/${user.id}/submission`;
+      // Redirect to the GPT dashboard
+      window.location.href = `/dashboard/${user.id}/gpt`;
     } catch (error) {
-      console.error('Test payment error:', error);
-      toast.error('Failed to simulate payment');
+      console.error('Payment simulation error:', error);
+      toast.error('Failed to process payment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -123,12 +123,11 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
               <p className="text-gray-600">{t('payment.noHiddenFees')}</p>
             </div>
 
-            <div className="max-w-md mx-auto mb-8">
-              {/* Test payment button - centered and styled */}
+            <div className="flex justify-center mb-8">
               <Button
-                onClick={simulatePaymentSuccess}
+                onClick={handleSimulatePayment}
                 disabled={isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                className="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
               >
                 {isSubmitting ? (
                   <>

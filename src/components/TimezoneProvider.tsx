@@ -47,21 +47,29 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       initialized.current = true;
 
-      // Only update document if it exists
-      if (typeof document !== 'undefined') {
+      // Safely store timezone in localStorage instead of DOM attributes
+      try {
+        localStorage.setItem('app_timezone', detectedTimezone);
+      } catch (err) {
+        console.warn('Failed to store timezone in localStorage:', err);
+      }
+
+      // Update document only if needed and available
+      if (typeof document !== 'undefined' && document?.documentElement) {
         try {
-          const htmlElement = document.documentElement;
-          if (htmlElement && typeof htmlElement.setAttribute === 'function') {
-            htmlElement.setAttribute('data-timezone', detectedTimezone);
+          // Use data attributes which are safer than custom attributes
+          document.documentElement.dataset.appTimezone = detectedTimezone;
+          // Set lang attribute if not already set
+          if (!document.documentElement.lang) {
+            document.documentElement.lang = navigator.language || 'en';
           }
         } catch (err) {
-          console.warn('Failed to set timezone attribute:', err);
+          console.warn('Failed to update document attributes:', err);
         }
       }
     } catch (err) {
       console.warn('Timezone detection failed:', err);
       setError('Failed to detect timezone');
-      // Set UTC as fallback
       setTimezone('UTC');
     } finally {
       if (mounted.current) {
@@ -71,12 +79,25 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Initial detection
+    // Try to get timezone from localStorage first
+    try {
+      const storedTimezone = localStorage.getItem('app_timezone');
+      if (storedTimezone) {
+        setTimezone(storedTimezone);
+        initialized.current = true;
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Failed to read timezone from localStorage:', err);
+    }
+
+    // Initial detection if no stored timezone
     if (typeof window !== 'undefined') {
       detectTimezone();
     }
 
-    // Re-detect on visibility change
+    // Re-detect on visibility change only if not initialized
     const handleVisibilityChange = () => {
       if (
         typeof document !== 'undefined' &&
