@@ -53,7 +53,6 @@ export function DashboardChatGPT() {
   const vehicleDataInputRef = useRef<HTMLInputElement>(null);
   const dataSet2InputRef = useRef<HTMLInputElement>(null);
 
-  // Process steps state
   const [processSteps, setProcessSteps] = useState<ProcessStep[]>([
     {
       id: 1,
@@ -95,16 +94,37 @@ export function DashboardChatGPT() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  function handleGuideDownload() {
-    // Simulate guide download
-    toast.success('Guide download started');
-    
-    // Update step status
-    updateStepStatus(1, 'complete');
-    updateStepStatus(2, 'active');
-    
-    // Add system message
-    addSystemMessage('Guide has been downloaded successfully. You can now proceed with uploading your vehicle data.');
+  async function handleGuideDownload() {
+    try {
+      const guideUrl = "https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/sign/guides/unitan-guide.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJndWlkZXMvdW5pdGFuLWd1YW4tZ3VpZGUucGRmLnBkZiIsImlhdCI6MTc0MDI3MjM4NCwiZXhwIjoxNzcxODA4Mzg0fQ.vBjiDPPWMkLShCD3qxS2c3pePn_sHb8t2gcBL0syeeQ";
+
+      if (!guideUrl) {
+        throw new Error("Guide download URL not available");
+      }
+
+      // Open guide in new tab
+      window.open(guideUrl, '_blank');
+
+      // Update step status
+      updateStepStatus(1, 'complete');
+      updateStepStatus(2, 'active');
+
+      // Add success message to chat
+      addSystemMessage('Guide has been downloaded successfully. You can now proceed with uploading your vehicle data.');
+      
+      // Show success notification
+      toast.success('Guide download started');
+
+    } catch (error) {
+      console.error('Guide download error:', error);
+      toast.error('Failed to download guide. Please try again.');
+      
+      // Update step status to error
+      updateStepStatus(1, 'error');
+      
+      // Add error message to chat
+      addSystemMessage('There was a problem downloading the guide. Please try again or contact support if the issue persists.');
+    }
   }
 
   function updateStepStatus(stepId: number, status: ProcessStep['status']) {
