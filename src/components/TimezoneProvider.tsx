@@ -57,12 +57,19 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Dispatch timezone change event
-        try {
-          window.dispatchEvent(new CustomEvent('appTimezoneSet', {
-            detail: { timezone: detectedTimezone }
-          }));
-        } catch (err) {
-          console.warn('Failed to dispatch timezone event:', err);
+        window.dispatchEvent(new CustomEvent('appTimezoneSet', {
+          detail: { 
+            timezone: detectedTimezone,
+            timestamp: Date.now()
+          }
+        }));
+
+        // Create a meta tag for timezone info
+        const metaTag = document.querySelector('meta[name="timezone"]') || document.createElement('meta');
+        metaTag.setAttribute('name', 'timezone');
+        metaTag.setAttribute('content', detectedTimezone);
+        if (!metaTag.parentNode) {
+          document.head.appendChild(metaTag);
         }
       }
     } catch (err) {

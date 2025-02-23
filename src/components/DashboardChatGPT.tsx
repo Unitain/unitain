@@ -352,6 +352,7 @@ export function DashboardChatGPT() {
               <Button
                 onClick={handleDownload}
                 disabled={loading}
+                variant="primary"
                 className="w-full flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -390,6 +391,7 @@ export function DashboardChatGPT() {
               />
               <Button
                 onClick={() => vehicleDataInputRef.current?.click()}
+                variant="primary"
                 className="w-full flex items-center justify-center gap-2"
               >
                 <Upload className="w-4 h-4" />
@@ -419,6 +421,7 @@ export function DashboardChatGPT() {
               />
               <Button
                 onClick={() => dataSet2InputRef.current?.click()}
+                variant="primary"
                 className="w-full flex items-center justify-center gap-2"
               >
                 <Upload className="w-4 h-4" />
@@ -538,6 +541,7 @@ export function DashboardChatGPT() {
                   />
                   <Button
                     type="submit"
+                    variant="primary"
                     disabled={isLoading || !input.trim()}
                   >
                     {isLoading ? (
@@ -591,6 +595,7 @@ export function DashboardChatGPT() {
                 />
                 <Button
                   type="submit"
+                  variant="primary"
                   disabled={isLoading || !input.trim()}
                 >
                   {isLoading ? (
