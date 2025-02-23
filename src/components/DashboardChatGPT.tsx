@@ -36,16 +36,6 @@ interface FileUpload {
   progress: number;
 }
 
-interface ProcessStep {
-  id: number;
-  title: string;
-  description: string;
-  status: 'pending' | 'active' | 'complete' | 'error';
-  action?: () => void;
-  buttonText?: string;
-  icon: React.ComponentType<any>;
-}
-
 export function DashboardChatGPT() {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
@@ -63,9 +53,6 @@ export function DashboardChatGPT() {
   const [unreadCount, setUnreadCount] = useState(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const vehicleDataInputRef = useRef<HTMLInputElement>(null);
-  const dataSet2InputRef = useRef<HTMLInputElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -115,19 +102,6 @@ export function DashboardChatGPT() {
 
     checkAuth();
   }, [isInitialized, userId, navigate]);
-
-  useEffect(() => {
-    if (!chatVisible && messages.length > 0) {
-      setUnreadCount(messages.length);
-    }
-  }, [messages, chatVisible]);
-
-  useEffect(() => {
-    if (chatVisible) {
-      setUnreadCount(0);
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatVisible]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,38 +153,45 @@ export function DashboardChatGPT() {
     });
   };
 
-  const toggleChat = () => {
-    setChatVisible(!chatVisible);
-    if (!chatVisible) {
-      setUnreadCount(0);
-      setTimeout(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        inputRef.current?.focus();
-      }, 100);
+  const handleFileUpload = async (file: File) => {
+    if (!user?.id) {
+      toast.error('Please sign in to upload files');
+      return;
+    }
+
+    const upload: FileUpload = {
+      id: Date.now().toString(),
+      name: file.name,
+      status: 'uploading',
+      progress: 0
+    };
+
+    setUploads(prev => [...prev, upload]);
+
+    try {
+      const url = await uploadVehicleFile(file, user.id);
+      if (url) {
+        setUploads(prev => 
+          prev.map(u => 
+            u.id === upload.id 
+              ? { ...u, status: 'complete', progress: 100 }
+              : u
+          )
+        );
+        toast.success('File uploaded successfully');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploads(prev => 
+        prev.map(u => 
+          u.id === upload.id 
+            ? { ...u, status: 'error', progress: 0 }
+            : u
+        )
+      );
+      toast.error('Failed to upload file');
     }
   };
-
-  const chatInputClasses = cn(
-    "flex-1 min-h-[40px] max-h-[100px]",
-    "p-2 border rounded-lg text-base",
-    "resize-none focus:outline-none focus:ring-2 focus:ring-blue-500",
-    "bg-white placeholder-gray-400"
-  );
-
-  const sendButtonClasses = cn(
-    "flex-shrink-0 flex items-center justify-center",
-    "w-10 h-10 rounded-full",
-    "bg-blue-600 text-white",
-    "hover:bg-blue-700 active:bg-blue-800",
-    "disabled:opacity-50 disabled:hover:bg-blue-600",
-    "transition-colors duration-200"
-  );
-
-  const chatFormClasses = cn(
-    "flex items-center gap-2",
-    "p-3 bg-white border-t",
-    "shadow-sm"
-  );
 
   if (!authChecked) {
     return (
@@ -225,110 +206,58 @@ export function DashboardChatGPT() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Mobile Chat Button */}
-      {isMobile && (
-        <button
-          onClick={toggleChat}
-          className={cn(
-            "fixed bottom-4 right-4 z-50",
-            "w-12 h-12 rounded-full shadow-lg",
-            "flex items-center justify-center",
-            "transition-all duration-200",
-            unreadCount > 0 ? "bg-red-500" : "bg-blue-600",
-            "hover:scale-105 active:scale-95"
-          )}
-        >
-          <MessageCircle className="w-6 h-6 text-white" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-white text-red-500 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm">
-              {unreadCount}
-            </span>
-          )}
-        </button>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        {/* Download Guide */}
+        <MaterialCard elevation={2} className="bg-white p-6 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4">{t('Download Guide')}</h2>
+          <DownloadGuide 
+            onSuccess={() => toast.success('Guide downloaded successfully')}
+            onError={(error) => toast.error(error.message)}
+          />
+        </MaterialCard>
 
-      {/* Mobile Chat Panel */}
-      {isMobile && chatVisible ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white">
-          {/* Chat Header */}
-          <div className="flex items-center justify-between h-12 px-4 bg-gray-100 border-b">
-            <h2 className="text-base font-semibold text-gray-900">
-              {t('Chat Assistant')}
-            </h2>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={toggleChat}
-              className="w-8 h-8 p-0 flex items-center justify-center"
-              aria-label={t('Close chat')}
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.map(message => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-lg p-3",
-                  message.role === 'assistant' ? 'bg-blue-50' : ''
-                )}
-              >
-                {message.role === 'assistant' ? (
-                  <Bot className="w-5 h-5 text-blue-600 mt-0.5" />
-                ) : (
-                  <User className="w-5 h-5 text-gray-600 mt-0.5" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-900 text-base break-words">{message.content}</p>
-                  <span className="text-xs text-gray-500 mt-1 block">
-                    {message.timestamp.toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <form 
-            onSubmit={handleSubmit}
-            className={chatFormClasses}
+        {/* Upload Vehicle Data */}
+        <MaterialCard elevation={2} className="bg-white p-6 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4">{t('Upload Vehicle Data')}</h2>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }}
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            variant="secondary"
+            className="w-full flex items-center justify-center gap-2"
           >
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={t('Type your message...')}
-              className={chatInputClasses}
-              rows={1}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className={sendButtonClasses}
-              aria-label={t('Send message')}
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </button>
-          </form>
-        </div>
-      ) : (
-        // Desktop chat interface
-        <div className="flex-1 max-w-4xl mx-auto px-4 py-4 w-full">
-          <MaterialCard className="flex flex-col h-full bg-white" elevation={2}>
+            <Upload className="w-5 h-5" />
+            {t('Upload Files')}
+          </Button>
+          {uploads.map(upload => (
+            <div key={upload.id} className="mt-4">
+              <p className="text-sm text-gray-600 truncate">{upload.name}</p>
+              <div className="h-2 bg-gray-200 rounded-full mt-1">
+                <div 
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    upload.status === 'complete' ? 'bg-green-500' :
+                    upload.status === 'error' ? 'bg-red-500' :
+                    'bg-blue-500'
+                  )}
+                  style={{ width: `${upload.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </MaterialCard>
+
+        {/* Chat Interface */}
+        <MaterialCard elevation={2} className="bg-white rounded-lg overflow-hidden">
+          <div className="flex flex-col h-[500px]">
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map(message => (
                 <div
@@ -339,13 +268,13 @@ export function DashboardChatGPT() {
                   )}
                 >
                   {message.role === 'assistant' ? (
-                    <Bot className="w-6 h-6 text-blue-600" />
+                    <Bot className="w-6 h-6 text-blue-600 flex-shrink-0" />
                   ) : (
-                    <User className="w-6 h-6 text-gray-600" />
+                    <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
                   )}
-                  <div className="flex-1">
-                    <p className="text-gray-900">{message.content}</p>
-                    <span className="text-xs text-gray-500">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-900 break-words">{message.content}</p>
+                    <span className="text-xs text-gray-500 mt-1 block">
                       {message.timestamp.toLocaleTimeString()}
                     </span>
                   </div>
@@ -356,38 +285,39 @@ export function DashboardChatGPT() {
 
             <form 
               onSubmit={handleSubmit}
-              className={chatFormClasses}
+              className="border-t p-4 bg-white"
             >
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={t('Type your message...')}
-                className={chatInputClasses}
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className={sendButtonClasses}
-                aria-label={t('Send message')}
-              >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Send className="w-5 h-5" />
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={t('Type your message...')}
+                  className="flex-1 min-h-[44px] max-h-[120px] p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
+                />
+                <Button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  variant="primary"
+                  className="h-[44px] w-[44px] p-0 rounded-full flex items-center justify-center"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
             </form>
-          </MaterialCard>
-        </div>
-      )}
+          </div>
+        </MaterialCard>
+      </div>
     </div>
   );
 }
