@@ -46,14 +46,14 @@ export function DashboardChatGPT() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [uploads, setUploads] = useState<FileUpload[]>([]);
   const [isMobile, setIsMobile] = useState(false);
-  const [chatVisible, setChatVisible] = useState(false);
+  const [chatVisible, setChatVisible] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -82,13 +82,13 @@ export function DashboardChatGPT() {
         if (!session) {
           localStorage.setItem('nextUrl', window.location.pathname);
           navigate('/');
-          toast.error('Please sign in to access the dashboard');
+          toast.error(t('Please sign in to access the dashboard'));
           return;
         }
 
         if (session.user.id !== userId) {
           navigate('/');
-          toast.error('Unauthorized access');
+          toast.error(t('Unauthorized access'));
           return;
         }
 
@@ -96,12 +96,12 @@ export function DashboardChatGPT() {
       } catch (error) {
         console.error('Auth check error:', error);
         navigate('/');
-        toast.error('Authentication error. Please try again.');
+        toast.error(t('Authentication error. Please try again.'));
       }
     };
 
     checkAuth();
-  }, [isInitialized, userId, navigate]);
+  }, [isInitialized, userId, navigate, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +132,7 @@ export function DashboardChatGPT() {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error('Error getting GPT response:', error);
-      toast.error('Failed to get response. Please try again.');
+      toast.error(t('Failed to get response. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -140,10 +140,10 @@ export function DashboardChatGPT() {
 
   const simulateGPTResponse = async (userMessage: string) => {
     const responses = [
-      "I understand your question. Let me analyze that for you...",
-      "Based on the data provided, here's what I can tell you...",
-      "That's an interesting point. Here's my analysis...",
-      "I've processed your request. Here's what I found..."
+      t("I understand your question. Let me analyze that for you..."),
+      t("Based on the data provided, here's what I can tell you..."),
+      t("That's an interesting point. Here's my analysis..."),
+      t("I've processed your request. Here's what I found...")
     ];
     
     return new Promise<string>(resolve => {
@@ -155,7 +155,7 @@ export function DashboardChatGPT() {
 
   const handleFileUpload = async (file: File) => {
     if (!user?.id) {
-      toast.error('Please sign in to upload files');
+      toast.error(t('Please sign in to upload files'));
       return;
     }
 
@@ -178,7 +178,7 @@ export function DashboardChatGPT() {
               : u
           )
         );
-        toast.success('File uploaded successfully');
+        toast.success(t('File uploaded successfully'));
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -189,7 +189,7 @@ export function DashboardChatGPT() {
             : u
         )
       );
-      toast.error('Failed to upload file');
+      toast.error(t('Failed to upload file'));
     }
   };
 
@@ -211,7 +211,7 @@ export function DashboardChatGPT() {
         <MaterialCard elevation={2} className="bg-white p-6 rounded-lg">
           <h2 className="text-xl font-semibold mb-4">{t('Download Guide')}</h2>
           <DownloadGuide 
-            onSuccess={() => toast.success('Guide downloaded successfully')}
+            onSuccess={() => toast.success(t('Guide downloaded successfully'))}
             onError={(error) => toast.error(error.message)}
           />
         </MaterialCard>
@@ -232,7 +232,8 @@ export function DashboardChatGPT() {
           <Button
             onClick={() => fileInputRef.current?.click()}
             variant="secondary"
-            className="w-full flex items-center justify-center gap-2"
+            fullWidth
+            className="flex items-center justify-center gap-2"
           >
             <Upload className="w-5 h-5" />
             {t('Upload Files')}
@@ -258,7 +259,27 @@ export function DashboardChatGPT() {
         {/* Chat Interface */}
         <MaterialCard elevation={2} className="bg-white rounded-lg overflow-hidden">
           <div className="flex flex-col h-[500px]">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Chat Header */}
+            <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b">
+              <h2 className="text-lg font-semibold">{t('Chat Assistant')}</h2>
+              {isMobile && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setChatVisible(false)}
+                  className="p-1"
+                  aria-label={t('Chat schließen')}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
+
+            {/* Messages */}
+            <div 
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+            >
               {messages.map(message => (
                 <div
                   key={message.id}
@@ -283,9 +304,10 @@ export function DashboardChatGPT() {
               <div ref={chatEndRef} />
             </div>
 
+            {/* Chat Input */}
             <form 
               onSubmit={handleSubmit}
-              className="border-t p-4 bg-white"
+              className="border-t p-3 bg-white"
             >
               <div className="flex items-center gap-2">
                 <textarea
@@ -305,6 +327,7 @@ export function DashboardChatGPT() {
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   variant="primary"
+                  size="sm"
                   className="h-[44px] w-[44px] p-0 rounded-full flex items-center justify-center"
                 >
                   {isLoading ? (
