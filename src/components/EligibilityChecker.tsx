@@ -265,12 +265,12 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             <p className="mt-2">{t('eligibility.results.consultRecommended')}</p>
           </div>
         )}
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
           <Button 
             variant="secondary"
             onClick={handlePrevious}
             disabled={isSubmitting}
-            className="flex items-center"
+            className="w-full sm:w-auto order-2 sm:order-1"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             {t('eligibility.buttons.reviewAnswers')}
@@ -278,6 +278,8 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
           <Button 
             onClick={handleActionButton}
             disabled={isSubmitting}
+            variant="primary"
+            className="w-full sm:w-auto order-1 sm:order-2"
           >
             {isEligible ? t('eligibility.buttons.buyNow') : t('eligibility.buttons.contactUs')}
           </Button>
