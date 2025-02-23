@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { PayPalButton } from './PayPalButton';
+import React, { useState } from 'react';
 import { ArrowLeft, Shield, Globe2, BadgeCheck, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import axios from "axios"
 
 interface PaymentPageProps {
   onBack: () => void;
@@ -14,41 +14,24 @@ interface PaymentPageProps {
 export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user, isLoading, isInitialized } = useAuthStore();
   const { t } = useTranslation();
-  const amount = 99; // €99 fixed price
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const amount = 99;
+  const [loading, setLoading] = useState(false)
 
-  // useEffect(() => {
-  //   if (isInitialized && !isLoading && !user) {
-  //     toast.error(t('payment.signInRequired'));
-  //   }
-  // }, [isInitialized, isLoading, user, t]);
+  const handleSubmit = (e: { preventDefault: () => void; }) =>{
+    setLoading(true)
+    e.preventDefault()
 
-  // const handlePaymentSuccess = (orderData: any) => {
-  //   toast.success(t('payment.success'));
-  //   // Additional success handling here
-  // };
-
-  // const handlePaymentError = (error: Error) => {
-  //   toast.error(t('payment.error'));
-  //   console.error('Payment error:', error);
-  // };
-
-  // const handlePaymentCancel = () => {
-  //   toast.error(t('payment.cancelled'));
-  // };
-
-  // const openInNewTab = (url: string) => {
-  //   window.open(url, '_blank', 'noopener,noreferrer');
-  // };
-
-  const handleSubmit = async () =>{
-    // let res = await axios.post('http://localhost:8000/payment')
-    let res = await axios.post('https://unitain-server.vercel.app/api/payment')
-    if(res && res.data){
-      console.log(res)
-      let link = res.data.links[1] 
-      window.location.href = link.href
-      toast.success(translate('payment.success'));
-    }
+    // axios.post('http://localhost:8000/api/payment')
+    axios.post('https://unitain-server.vercel.app/api/payment')
+    .then(res => {
+      window.location.href = res.data;
+      setLoading(false)
+    })
+    .catch(error => {
+      setLoading(false)
+      console.log("error", error);
+    })
   }
 
   if (isLoading || !isInitialized) {
@@ -120,15 +103,21 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
               <p className="text-gray-600">{t('payment.noHiddenFees')}</p>
             </div>
 
-            <div className="max-w-md mx-auto mb-8 flex">
-              {/* <PayPalButton
-                amount={amount}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-                onCancel={handlePaymentCancel}
-              /> */}
-              {/* <Button className='m-auto' onClick={handleSubmit}>Pay Now</Button> */}
-              <Button className='m-auto text-[#00447B] font-bold p-4 hover:bg-white border-yellow-500 border bg-yellow-500' onClick={handleSubmit}>Pay With <img width={100} src="https://www.pngplay.com/wp-content/uploads/8/Paypal-PNG-Clipart-Background.png" alt="paypal logo" /></Button>
+            <div className="flex justify-center mb-8">
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Complete Payment (Test)'
+                )}
+              </Button>
             </div>
 
             <div className="mt-8 pt-8 border-t border-gray-200">
@@ -156,17 +145,15 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
               <p>
                 {t('payment.legal')}{' '}
                 <button
-                  onClick={() => openInNewTab('/terms')}
+                  onClick={() => window.open('/terms', '_blank')}
                   className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-                  aria-label="Open Terms of Service in new tab"
                 >
                   {t('payment.termsLink')}
                 </button>
                 {' '}{t('payment.andText')}{' '}
                 <button
-                  onClick={() => openInNewTab('/privacy')}
+                  onClick={() => window.open('/privacy', '_blank')}
                   className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-                  aria-label="Open Privacy Policy in new tab"
                 >
                   {t('payment.privacyLink')}
                 </button>

@@ -88,15 +88,46 @@ export class VersionManager {
   }
 
   async getVersionHistory(): Promise<{ version: string; date: string }[]> {
-    const { data, error } = await supabase
-      .from('changelog')
-      .select('version, date')
-      .order('date', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('changelog')
+        .select('version, date')
+        .order('date', { ascending: false })
+        .order('version', { ascending: false });
 
-    if (error) {
-      throw new Error(`Failed to fetch version history: ${error.message}`);
+      if (error) {
+        console.error('Failed to fetch version history:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch version history:', error);
+      return [];
     }
+  }
 
-    return data;
+  async getLatestVersion(): Promise<string> {
+    try {
+      const { data, error } = await supabase
+        .from('changelog')
+        .select('version')
+        .order('version', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No entries found, return current version
+          return this.currentVersion;
+        }
+        throw error;
+      }
+
+      return data?.version || this.currentVersion;
+    } catch (error) {
+      console.error('Failed to fetch latest version:', error);
+      return this.currentVersion;
+    }
   }
 }

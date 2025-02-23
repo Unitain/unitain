@@ -7,7 +7,7 @@ const ExclamationIcon = () => (
       />
     </svg>
   )
-  
+
 const Failed = () => {
   return (
     <div className="h-[90vh] flex items-center justify-center p-4">

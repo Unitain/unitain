@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await initialize();
         }
 
-        // Listen for changes on auth state (sign in, sign out, etc.)
+        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (mounted) {
             setUser(session?.user ?? null);
@@ -25,9 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             switch (event) {
               case 'SIGNED_IN':
                 toast.success('Successfully signed in!');
-                break;
-              case 'SIGNED_OUT':
-                toast.success('Successfully signed out');
                 break;
               case 'USER_UPDATED':
                 toast.success('Profile updated');
@@ -38,9 +35,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               case 'USER_DELETED':
                 toast.success('Account deleted successfully');
                 break;
+              case 'SIGNED_OUT':
+                // Clear all auth-related storage
+                localStorage.removeItem('sb-auth-token');
+                localStorage.removeItem('auth-storage');
+                localStorage.removeItem('pendingEligibilityCheck');
+                break;
             }
           }
         });
+
+        // Try to recover existing session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        if (session) {
+          // If session exists but is expired, try to refresh it
+          if (new Date(session.expires_at!) < new Date()) {
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) throw refreshError;
+            if (refreshData.session) {
+              setUser(refreshData.session.user);
+            }
+          } else {
+            setUser(session.user);
+          }
+        }
 
         return () => {
           mounted = false;

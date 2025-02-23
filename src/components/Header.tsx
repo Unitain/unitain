@@ -16,6 +16,8 @@ export function Header() {
   const { t } = useTranslation();
 
   const handleSignOut = async () => {
+    if (isSigningOut) return; // Prevent double-clicks
+
     try {
       setIsSigningOut(true);
       
@@ -27,7 +29,7 @@ export function Header() {
       // Clear user state
       setUser(null);
       
-      // Attempt to sign out from Supabase
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         // Ignore session_not_found errors as we've already cleared local state
@@ -36,6 +38,7 @@ export function Header() {
           toast.error('There was a problem signing out. Please try again.');
         }
       } else {
+        // Only show success message here, not in AuthProvider
         toast.success('Successfully signed out');
       }
     } catch (error) {

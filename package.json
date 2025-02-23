@@ -1,7 +1,7 @@
 {
   "name": "vite-react-typescript-starter",
   "private": true,
-  "version": "1.8.3",
+  "version": "1.8.6",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,8 +9,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
-    "predeploy": "ts-node scripts/updateChangelog.ts",
-    "deploy": "vite build"
+    "predeploy": "node scripts/updateChangelog.js",
+    "deploy": "vite build",
+    "populate-changelog": "node scripts/populateChangelog.js"
   },
   "dependencies": {
     "@paypal/paypal-js": "^8.0.0",
@@ -19,6 +20,7 @@
     "@supabase/supabase-js": "^2.39.7",
     "axios": "^1.7.9",
     "clsx": "^2.1.0",
+    "dotenv": "^16.4.4",
     "i18next": "^23.10.0",
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-http-backend": "^2.4.3",
@@ -28,6 +30,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-i18next": "^14.0.5",
+    "react-router-dom": "^6.22.1",
     "semver": "^7.6.0",
     "tailwind-merge": "^2.2.1",
     "zustand": "^4.5.1"

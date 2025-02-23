@@ -7,7 +7,19 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function getTimezone(): string {
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    // First try to get from Intl API
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (timezone) return timezone;
+
+    // Fallback to HTML attribute if available
+    if (typeof document !== 'undefined') {
+      const htmlElement = document.documentElement;
+      if (htmlElement && htmlElement.getAttribute('data-timezone')) {
+        return htmlElement.getAttribute('data-timezone') || 'UTC';
+      }
+    }
+
+    return 'UTC';
   } catch (error) {
     console.warn('Failed to detect timezone:', error);
     return 'UTC';
