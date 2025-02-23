@@ -20,6 +20,7 @@ import { DownloadGuide } from './DownloadGuide';
 import { uploadVehicleFile } from '../lib/storage';
 import { cn } from '../lib/utils';
 import { MaterialCard } from './MaterialCard';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -49,6 +50,7 @@ export function DashboardChatGPT() {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
   const { user, isInitialized } = useAuthStore();
+  const { t } = useTranslation();
   
   const [authChecked, setAuthChecked] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -64,115 +66,22 @@ export function DashboardChatGPT() {
   const vehicleDataInputRef = useRef<HTMLInputElement>(null);
   const dataSet2InputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const [processSteps, setProcessSteps] = useState<ProcessStep[]>([
-    {
-      id: 1,
-      title: 'Download Guide',
-      description: 'Get started with our comprehensive guide',
-      status: 'active',
-      icon: FileText
-    },
-    {
-      id: 2,
-      title: 'Upload Vehicle Data',
-      description: 'Upload your vehicle documentation',
-      status: 'pending',
-      buttonText: 'Upload',
-      action: () => vehicleDataInputRef.current?.click(),
-      icon: Upload
-    },
-    {
-      id: 3,
-      title: 'Upload Data Set 2',
-      description: 'Upload additional required documents',
-      status: 'pending',
-      buttonText: 'Upload',
-      action: () => dataSet2InputRef.current?.click(),
-      icon: Upload
-    },
-    {
-      id: 4,
-      title: 'Result Status',
-      description: 'Processing status of your documents',
-      status: 'pending',
-      icon: AlertCircle
-    }
-  ]);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, stepId: number) => {
-    const files = e.target.files;
-    if (!files?.length || !user) return;
-
-    const newUploads: FileUpload[] = Array.from(files).map(file => ({
-      id: Date.now().toString(),
-      name: file.name,
-      status: 'uploading',
-      progress: 0
-    }));
-
-    setUploads(prev => [...prev, ...newUploads]);
-    updateStepStatus(stepId, 'active');
-
-    for (const upload of newUploads) {
-      try {
-        for (let progress = 0; progress <= 50; progress += 10) {
-          setUploads(prev => 
-            prev.map(u => 
-              u.id === upload.id ? { ...u, progress } : u
-            )
-          );
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-
-        const file = files[newUploads.indexOf(upload)];
-        const result = await uploadVehicleFile(file, user.id);
-
-        if (!result) throw new Error('Upload failed');
-
-        for (let progress = 50; progress <= 100; progress += 10) {
-          setUploads(prev => 
-            prev.map(u => 
-              u.id === upload.id ? { ...u, progress } : u
-            )
-          );
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        setUploads(prev => 
-          prev.map(u => 
-            u.id === upload.id ? { ...u, status: 'complete', progress: 100 } : u
-          )
-        );
-
-        updateStepStatus(stepId, 'complete');
-        
-        if (stepId < 4) {
-          updateStepStatus(stepId + 1, 'active');
-        }
-
-      } catch (error) {
-        console.error('Upload error:', error);
-        setUploads(prev => 
-          prev.map(u => 
-            u.id === upload.id ? { ...u, status: 'error' } : u
-          )
-        );
-        updateStepStatus(stepId, 'error');
-        toast.error(`Failed to upload ${upload.name}`);
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setChatVisible(true);
       }
-    }
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const updateStepStatus = (stepId: number, status: ProcessStep['status']) => {
-    setProcessSteps(prev => prev.map(step => 
-      step.id === stepId ? { ...step, status } : step
-    ));
-  };
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -208,21 +117,6 @@ export function DashboardChatGPT() {
   }, [isInitialized, userId, navigate]);
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (!mobile) {
-        setChatVisible(true);
-      }
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
     if (!chatVisible && messages.length > 0) {
       setUnreadCount(messages.length);
     }
@@ -234,42 +128,6 @@ export function DashboardChatGPT() {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatVisible]);
-
-  useEffect(() => {
-    const handleChatMessage = (event: CustomEvent) => {
-      const { message, sender } = event.detail;
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        role: sender,
-        content: message,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, newMessage]);
-      if (!chatVisible) {
-        setUnreadCount(prev => prev + 1);
-      }
-    };
-
-    window.addEventListener('chat-message', handleChatMessage as EventListener);
-    return () => window.removeEventListener('chat-message', handleChatMessage as EventListener);
-  }, [chatVisible]);
-
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const handleDownload = () => {
-    setLoading(true);
-    // Download implementation would go here
-    setTimeout(() => setLoading(false), 2000);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -297,6 +155,7 @@ export function DashboardChatGPT() {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error('Error getting GPT response:', error);
       toast.error('Failed to get response. Please try again.');
@@ -324,237 +183,123 @@ export function DashboardChatGPT() {
     setChatVisible(!chatVisible);
     if (!chatVisible) {
       setUnreadCount(0);
-      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      <div className="flex-none bg-white border-b border-gray-200 shadow-sm overflow-x-auto">
-        <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
-          <div className={cn(
-            "grid gap-4",
-            isMobile ? "grid-cols-1" : "grid-cols-4"
-          )}>
-            {/* Download Guide Card */}
-            <MaterialCard 
-              className="p-4 bg-white"
-              elevation={2}
-              hover
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <Download className="w-5 h-5 text-blue-600" />
-                <h3 className="font-medium">Download Guide</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Get started with our comprehensive guide
-              </p>
-              <Button
-                onClick={handleDownload}
-                disabled={loading}
-                variant="primary"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Downloading...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    Download Guide
-                  </>
-                )}
-              </Button>
-            </MaterialCard>
-
-            {/* Vehicle Data Upload Card */}
-            <MaterialCard 
-              className="p-4 bg-white"
-              elevation={2}
-              hover
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <Upload className="w-5 h-5 text-blue-600" />
-                <h3 className="font-medium">Upload Vehicle Data</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Upload your vehicle documentation
-              </p>
-              <input
-                ref={vehicleDataInputRef}
-                type="file"
-                onChange={(e) => handleFileUpload(e, 2)}
-                className="hidden"
-                multiple
-              />
-              <Button
-                onClick={() => vehicleDataInputRef.current?.click()}
-                variant="primary"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                Upload Files
-              </Button>
-            </MaterialCard>
-
-            {/* Additional Documents Upload Card */}
-            <MaterialCard 
-              className="p-4 bg-white"
-              elevation={2}
-              hover
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <Upload className="w-5 h-5 text-blue-600" />
-                <h3 className="font-medium">Upload Additional Documents</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Upload any additional required documents
-              </p>
-              <input
-                ref={dataSet2InputRef}
-                type="file"
-                onChange={(e) => handleFileUpload(e, 3)}
-                className="hidden"
-                multiple
-              />
-              <Button
-                onClick={() => dataSet2InputRef.current?.click()}
-                variant="primary"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                Upload Files
-              </Button>
-            </MaterialCard>
-
-            {/* Status Card */}
-            <MaterialCard 
-              className="p-4 bg-white"
-              elevation={2}
-              hover
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <AlertCircle className="w-5 h-5 text-blue-600" />
-                <h3 className="font-medium">Processing Status</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">
-                Track your document processing status
-              </p>
-              {uploads.length > 0 && (
-                <div className="space-y-2">
-                  {uploads.map(upload => (
-                    <div
-                      key={upload.id}
-                      className="flex items-center gap-2 bg-gray-50 p-2 rounded-md"
-                    >
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <span className="flex-1 text-sm truncate">{upload.name}</span>
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${upload.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </MaterialCard>
-          </div>
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Chat Interface */}
-      {isMobile ? (
-        <>
-          {/* Mobile Chat Button */}
-          <button
-            onClick={toggleChat}
-            className={cn(
-              "fixed bottom-4 right-4 p-3 rounded-full shadow-lg z-50",
-              "flex items-center justify-center",
-              "transition-all duration-200",
-              unreadCount > 0 ? "bg-red-500" : "bg-blue-600",
-              "hover:scale-105 active:scale-95"
-            )}
-          >
-            <MessageCircle className="w-6 h-6 text-white" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-red-500 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* Mobile Chat Panel */}
-          {chatVisible && (
-            <MaterialCard
-              className="fixed inset-0 z-50 flex flex-col bg-white"
-              elevation={4}
-            >
-              <div className="flex-none p-4 bg-gray-100 border-b flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Chat Assistant</h2>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={toggleChat}
-                  className="p-2"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map(message => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex items-start gap-3 rounded-lg p-3",
-                      message.role === 'assistant' ? 'bg-blue-50' : ''
-                    )}
-                  >
-                    {message.role === 'assistant' ? (
-                      <Bot className="w-6 h-6 text-blue-600" />
-                    ) : (
-                      <User className="w-6 h-6 text-gray-600" />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-gray-900">{message.content}</p>
-                      <span className="text-xs text-gray-500">
-                        {message.timestamp.toLocaleTimeString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex-none border-t border-gray-200 p-4">
-                <form onSubmit={handleSubmit} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type your message..."
-                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={isLoading || !input.trim()}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Send className="w-5 h-5" />
-                    )}
-                  </Button>
-                </form>
-              </div>
-            </MaterialCard>
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Mobile Chat Button */}
+      {isMobile && (
+        <button
+          onClick={toggleChat}
+          className={cn(
+            "fixed bottom-4 right-4 p-3 rounded-full shadow-lg z-50",
+            "flex items-center justify-center",
+            "transition-all duration-200",
+            unreadCount > 0 ? "bg-red-500" : "bg-blue-600",
+            "hover:scale-105 active:scale-95"
           )}
-        </>
+        >
+          <MessageCircle className="w-6 h-6 text-white" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-white text-red-500 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm">
+              {unreadCount}
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* Mobile Chat Panel */}
+      {isMobile && chatVisible ? (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white">
+          {/* Chat Header */}
+          <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
+            <h2 className="text-lg font-semibold text-gray-900">{t('Chat Assistant')}</h2>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={toggleChat}
+              className="p-2"
+              aria-label={t('Close chat')}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map(message => (
+              <div
+                key={message.id}
+                className={cn(
+                  "flex items-start gap-3 rounded-lg p-3",
+                  message.role === 'assistant' ? 'bg-blue-50' : ''
+                )}
+              >
+                {message.role === 'assistant' ? (
+                  <Bot className="w-6 h-6 text-blue-600" />
+                ) : (
+                  <User className="w-6 h-6 text-gray-600" />
+                )}
+                <div className="flex-1">
+                  <p className="text-gray-900">{message.content}</p>
+                  <span className="text-xs text-gray-500">
+                    {message.timestamp.toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Chat Input */}
+          <form 
+            onSubmit={handleSubmit}
+            className="flex items-center gap-2 p-2 bg-white border-t"
+          >
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={t('Type your message...')}
+              className="flex-1 p-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isLoading || !input.trim()}
+              className="p-3 rounded-full flex-shrink-0"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </Button>
+          </form>
+        </div>
       ) : (
         // Desktop chat interface
         <div className="flex-1 max-w-4xl mx-auto px-4 py-4 w-full">
@@ -584,28 +329,37 @@ export function DashboardChatGPT() {
               <div ref={chatEndRef} />
             </div>
 
-            <div className="flex-none border-t border-gray-200 p-4">
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={isLoading || !input.trim()}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Send className="w-5 h-5" />
-                  )}
-                </Button>
-              </form>
-            </div>
+            <form 
+              onSubmit={handleSubmit}
+              className="flex items-center gap-2 p-2 bg-white border-t"
+            >
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={t('Type your message...')}
+                className="flex-1 p-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isLoading || !input.trim()}
+                className="p-3 rounded-full flex-shrink-0"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </Button>
+            </form>
           </MaterialCard>
         </div>
       )}
