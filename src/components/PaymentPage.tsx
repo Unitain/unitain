@@ -5,6 +5,8 @@ import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import axios from "axios";
+
 
 interface PaymentPageProps {
   onBack: () => void;
@@ -14,45 +16,23 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user, isLoading, isInitialized } = useAuthStore();
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState()
   const amount = 99;
 
-  const handleSimulatePayment = async () => {
-    if (!user?.id) {
-      toast.error('Please sign in first');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Create a unique transaction ID
-      const transactionId = `TEST-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .insert({
-          user_id: user.id,
-          amount: amount,
-          currency: 'EUR',
-          status: 'completed',
-          payment_method: 'test',
-          transaction_id: transactionId
-        });
-
-      if (paymentError) {
-        throw paymentError;
-      }
-
-      toast.success('Test payment recorded successfully!');
-      // Redirect to the GPT dashboard
-      window.location.href = `/dashboard/${user.id}/gpt`;
-    } catch (error) {
-      console.error('Payment simulation error:', error);
-      toast.error('Failed to process payment. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleSubmit = (e: { preventDefault: () => void; }) =>{
+    setLoading(true)
+    e.preventDefault()
+    // axios.post('http://localhost:8000/api/payment')
+    axios.post('https://unitain-server.vercel.app/api/payment')
+    .then(res => {
+      window.location.href = res.data;
+      setLoading(false)
+    })
+    .catch(error => {
+      setLoading(false)
+      console.log("error", error);
+    })
+  }
 
   if (isLoading || !isInitialized) {
     return (
@@ -125,11 +105,11 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
 
             <div className="flex justify-center mb-8">
               <Button
-                onClick={handleSimulatePayment}
-                disabled={isSubmitting}
+                onClick={handleSubmit}
+                disabled={loading}
                 className="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
               >
-                {isSubmitting ? (
+                {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processing...
