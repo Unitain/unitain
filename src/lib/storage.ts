@@ -7,10 +7,20 @@ export async function downloadGuide(): Promise<boolean> {
   try {
     console.log('Starting guide download:', GUIDE_URL);
 
+    // Fetch the file
+    const response = await fetch(GUIDE_URL);
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+
+    // Convert to blob
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
     // Create a hidden link element
     const link = document.createElement('a');
-    link.href = GUIDE_URL;
-    link.download = 'unitan-guide.pdf'; // Set filename
+    link.href = blobUrl;
+    link.download = 'unitan-guide.pdf';
     link.style.display = 'none';
     document.body.appendChild(link);
 
@@ -19,6 +29,7 @@ export async function downloadGuide(): Promise<boolean> {
 
     // Cleanup
     document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
 
     return true;
   } catch (error) {
