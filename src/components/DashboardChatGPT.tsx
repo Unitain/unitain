@@ -8,14 +8,13 @@ import {
   User, 
   X, 
   FileText,
-  Download,
-  CheckCircle,
   AlertCircle
 } from 'lucide-react';
 import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { DownloadGuide } from './DownloadGuide';
 
 interface Message {
   id: string;
@@ -59,9 +58,7 @@ export function DashboardChatGPT() {
       title: 'Download Guide',
       description: 'Get started with our comprehensive guide',
       status: 'active',
-      buttonText: 'Download',
-      action: handleGuideDownload,
-      icon: Download
+      icon: FileText
     },
     {
       id: 2,
@@ -93,39 +90,6 @@ export function DashboardChatGPT() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  async function handleGuideDownload() {
-    try {
-      const guideUrl = "https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/sign/guides/unitan-guide.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJndWlkZXMvdW5pdGFuLWd1YW4tZ3VpZGUucGRmLnBkZiIsImlhdCI6MTc0MDI3MjM4NCwiZXhwIjoxNzcxODA4Mzg0fQ.vBjiDPPWMkLShCD3qxS2c3pePn_sHb8t2gcBL0syeeQ";
-
-      if (!guideUrl) {
-        throw new Error("Guide download URL not available");
-      }
-
-      // Open guide in new tab
-      window.open(guideUrl, '_blank');
-
-      // Update step status
-      updateStepStatus(1, 'complete');
-      updateStepStatus(2, 'active');
-
-      // Add success message to chat
-      addSystemMessage('Guide has been downloaded successfully. You can now proceed with uploading your vehicle data.');
-      
-      // Show success notification
-      toast.success('Guide download started');
-
-    } catch (error) {
-      console.error('Guide download error:', error);
-      toast.error('Failed to download guide. Please try again.');
-      
-      // Update step status to error
-      updateStepStatus(1, 'error');
-      
-      // Add error message to chat
-      addSystemMessage('There was a problem downloading the guide. Please try again or contact support if the issue persists.');
-    }
-  }
 
   function updateStepStatus(stepId: number, status: ProcessStep['status']) {
     setProcessSteps(prev => prev.map(step => 
@@ -206,7 +170,6 @@ export function DashboardChatGPT() {
     setUploads(prev => [...prev, ...newUploads]);
     updateStepStatus(stepId, 'active');
 
-    // Simulate file upload process
     for (const upload of newUploads) {
       try {
         for (let progress = 0; progress <= 100; progress += 20) {
@@ -226,7 +189,6 @@ export function DashboardChatGPT() {
 
         updateStepStatus(stepId, 'complete');
         
-        // Activate next step
         if (stepId < 4) {
           updateStepStatus(stepId + 1, 'active');
         }
@@ -254,13 +216,28 @@ export function DashboardChatGPT() {
     setUploads(prev => prev.filter(u => u.id !== uploadId));
   };
 
+  const handleGuideDownloadSuccess = () => {
+    updateStepStatus(1, 'complete');
+    updateStepStatus(2, 'active');
+    addSystemMessage('Guide has been downloaded successfully. You can now proceed with uploading your vehicle data.');
+  };
+
+  const handleGuideDownloadError = (error: Error) => {
+    updateStepStatus(1, 'error');
+    addSystemMessage('There was a problem downloading the guide. Please try again or contact support if the issue persists.');
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Fixed Process Header */}
       <div className="flex-none bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {processSteps.map((step) => (
+            <DownloadGuide 
+              onSuccess={handleGuideDownloadSuccess}
+              onError={handleGuideDownloadError}
+            />
+
+            {processSteps.slice(1).map((step) => (
               <div 
                 key={step.id}
                 className={`p-4 rounded-lg border ${
@@ -296,10 +273,8 @@ export function DashboardChatGPT() {
         </div>
       </div>
 
-      {/* Flexible Chat Container */}
       <div className="flex-1 flex flex-col min-h-0 max-w-4xl mx-auto px-4 py-6 w-full">
         <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Scrollable Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map(message => (
               <div
@@ -324,7 +299,6 @@ export function DashboardChatGPT() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Fixed Upload Status Area */}
           {uploads.length > 0 && (
             <div className="flex-none border-t border-gray-200 p-4 space-y-2 bg-gray-50">
               <h3 className="text-sm font-medium text-gray-700">Uploads</h3>
@@ -356,7 +330,6 @@ export function DashboardChatGPT() {
             </div>
           )}
 
-          {/* Fixed Input Area */}
           <div className="flex-none border-t border-gray-200 p-4 bg-white">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <input

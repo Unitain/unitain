@@ -18,62 +18,96 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const mounted = useRef(true);
   const initialized = useRef(false);
+  const documentReady = useRef(false);
+  const mutationObserver = useRef<MutationObserver | null>(null);
 
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      // Cleanup mutation observer
+      if (mutationObserver.current) {
+        mutationObserver.current.disconnect();
+      }
     };
   }, []);
 
+  // Safely detect timezone
   const detectTimezone = () => {
-    try {
-      if (!mounted.current || initialized.current) return;
+    if (!mounted.current || initialized.current || !documentReady.current) return;
 
-      // Safely detect timezone
+    try {
+      // Try to get timezone from Intl API first
       let detectedTimezone: string;
       try {
         detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (!detectedTimezone) throw new Error('No timezone detected');
       } catch (err) {
         console.warn('Intl API timezone detection failed:', err);
         detectedTimezone = 'UTC';
       }
 
-      if (!detectedTimezone) {
-        throw new Error('Failed to detect timezone');
-      }
-
-      // Store timezone in localStorage for persistence
-      try {
-        localStorage.setItem('app_timezone', detectedTimezone);
-      } catch (err) {
-        console.warn('Failed to store timezone in localStorage:', err);
-      }
-
-      // Update state
+      // Update state if component is still mounted
       if (mounted.current) {
         setTimezone(detectedTimezone);
         setError(null);
         initialized.current = true;
         setLoading(false);
-      }
 
-      // Update document attributes safely
-      if (typeof document !== 'undefined' && document.documentElement) {
+        // Store timezone in localStorage for persistence
         try {
-          // Use data attributes which are safer than custom attributes
-          document.documentElement.dataset.appTimezone = detectedTimezone;
-          
-          // Set lang attribute if not already set
-          if (!document.documentElement.lang) {
-            document.documentElement.lang = navigator.language || 'en';
-          }
+          localStorage.setItem('app_timezone', detectedTimezone);
         } catch (err) {
-          console.warn('Failed to update document attributes:', err);
+          console.warn('Failed to store timezone in localStorage:', err);
+        }
+
+        // Create a custom element for timezone data
+        try {
+          const timezoneElement = document.createElement('div');
+          timezoneElement.id = 'app-timezone-data';
+          timezoneElement.style.display = 'none';
+          timezoneElement.dataset.timezone = detectedTimezone;
+          timezoneElement.dataset.timestamp = Date.now().toString();
+
+          // Remove any existing timezone elements
+          document.querySelectorAll('#app-timezone-data').forEach(el => el.remove());
+
+          // Append new element
+          document.body.appendChild(timezoneElement);
+
+          // Set up mutation observer to prevent external modifications
+          if (mutationObserver.current) {
+            mutationObserver.current.disconnect();
+          }
+
+          mutationObserver.current = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.target === timezoneElement) {
+                // Restore our data attributes if they were modified
+                timezoneElement.dataset.timezone = detectedTimezone;
+                timezoneElement.dataset.timestamp = Date.now().toString();
+              }
+            });
+          });
+
+          mutationObserver.current.observe(timezoneElement, {
+            attributes: true
+          });
+        } catch (err) {
+          console.warn('Failed to create timezone element:', err);
+        }
+
+        // Dispatch custom event for other scripts
+        try {
+          window.dispatchEvent(new CustomEvent('appTimezoneSet', {
+            detail: { timezone: detectedTimezone }
+          }));
+        } catch (err) {
+          console.warn('Failed to dispatch timezone event:', err);
         }
       }
     } catch (err) {
-      console.warn('Timezone detection failed:', err);
+      console.error('Timezone detection failed:', err);
       if (mounted.current) {
         setError('Failed to detect timezone');
         setTimezone('UTC');
@@ -83,43 +117,51 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Try to get timezone from localStorage first
-    try {
-      const storedTimezone = localStorage.getItem('app_timezone');
-      if (storedTimezone) {
-        setTimezone(storedTimezone);
-        initialized.current = true;
-        setLoading(false);
-        return;
+    // Wait for document to be fully loaded
+    const readyStateChange = () => {
+      if (document.readyState === 'complete') {
+        documentReady.current = true;
+        // Add a small delay to ensure extensions have initialized
+        setTimeout(detectTimezone, 100);
       }
-    } catch (err) {
-      console.warn('Failed to read timezone from localStorage:', err);
+    };
+
+    if (document.readyState === 'complete') {
+      documentReady.current = true;
+      setTimeout(detectTimezone, 100);
+    } else {
+      document.addEventListener('readystatechange', readyStateChange);
     }
 
-    // Initial detection if no stored timezone
-    if (typeof window !== 'undefined') {
-      detectTimezone();
-    }
-
-    // Re-detect on visibility change only if not initialized
+    // Re-detect on visibility change
     const handleVisibilityChange = () => {
       if (
-        typeof document !== 'undefined' &&
         document.visibilityState === 'visible' &&
-        !initialized.current
+        !initialized.current &&
+        documentReady.current
       ) {
         detectTimezone();
       }
     };
 
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-    }
+    // Re-detect on storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app_timezone' && e.newValue && mounted.current) {
+        setTimezone(e.newValue);
+      }
+    };
 
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup
     return () => {
       mounted.current = false;
-      if (typeof document !== 'undefined') {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('readystatechange', readyStateChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+      if (mutationObserver.current) {
+        mutationObserver.current.disconnect();
       }
     };
   }, []);
