@@ -18,6 +18,8 @@ const Success = () => {
       try {
         const parsedResponse = JSON.parse(paymentDetail);
         setPaymentDetails(parsedResponse);
+        console.log("under useEffect paymentDetails", paymentDetails);
+        
       } catch (error) {
         console.error("Error parsing payment details:", error);
       } finally {
@@ -26,7 +28,8 @@ const Success = () => {
     }
   }, [paymentDetail, paymentDetails]);
   
-
+  console.log("paymentDetail", paymentDetail);
+  
 if (loading) return (
   <div className="w-full flex justify-center items-center mt-32">
   <button type="button" className="" disabled>
