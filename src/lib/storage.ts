@@ -5,22 +5,27 @@ const GUIDE_URL = 'https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/pu
 
 export async function downloadGuide(): Promise<boolean> {
   try {
-    console.log('Opening guide in new window:', GUIDE_URL);
+    console.log('Starting guide download:', GUIDE_URL);
 
-    // Open in new window
-    const newWindow = window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
-    
-    // Check if window was blocked by popup blocker
-    if (newWindow === null) {
-      throw new Error('Popup was blocked. Please allow popups for this site.');
-    }
+    // Create a hidden link element
+    const link = document.createElement('a');
+    link.href = GUIDE_URL;
+    link.download = 'unitan-guide.pdf'; // Set filename
+    link.style.display = 'none';
+    document.body.appendChild(link);
+
+    // Trigger download
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
 
     return true;
   } catch (error) {
-    console.error('Guide open failed:', error);
+    console.error('Guide download failed:', error);
     const errorMessage = error instanceof Error 
       ? error.message
-      : 'Failed to open guide';
+      : 'Failed to download guide';
     
     toast.error(errorMessage);
     return false;
