@@ -3,10 +3,8 @@ import { ArrowLeft, Shield, Globe2, BadgeCheck, CreditCard, Loader2 } from 'luci
 import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
-// import { supabase } from '../lib/supabase';
-// import toast from 'react-hot-toast';
-import axios from "axios";
-
+import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
 interface PaymentPageProps {
   onBack: () => void;
@@ -14,48 +12,47 @@ interface PaymentPageProps {
 
 export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user, isLoading, isInitialized } = useAuthStore();
-  const [loading, setLoading] = useState()
   const { t } = useTranslation();
-  const amount = 99; // €99 fixed price
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const amount = 99;
 
-  // useEffect(() => {
-  //   if (isInitialized && !isLoading && !user) {
-  //     toast.error(t('payment.signInRequired'));
-  //   }
-  // }, [isInitialized, isLoading, user, t]);
+  const handleSimulatePayment = async () => {
+    if (!user?.id) {
+      toast.error('Please sign in first');
+      return;
+    }
 
-  // const handlePaymentSuccess = (orderData: any) => {
-  //   toast.success(t('payment.success'));
-  //   // Additional success handling here
-  // };
+    setIsSubmitting(true);
 
-  // const handlePaymentError = (error: Error) => {
-  //   toast.error(t('payment.error'));
-  //   console.error('Payment error:', error);
-  // };
+    try {
+      // Create a unique transaction ID
+      const transactionId = `TEST-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-  // const handlePaymentCancel = () => {
-  //   toast.error(t('payment.cancelled'));
-  // };
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          amount: amount,
+          currency: 'EUR',
+          status: 'completed',
+          payment_method: 'test',
+          transaction_id: transactionId
+        });
 
-  // const openInNewTab = (url: string) => {
-  //   window.open(url, '_blank', 'noopener,noreferrer');
-  // };
+      if (paymentError) {
+        throw paymentError;
+      }
 
-  const handleSubmit = (e: { preventDefault: () => void; }) =>{
-    setLoading(true)
-    e.preventDefault()
-    // axios.post('http://localhost:8000/api/payment')
-    axios.post('https://unitain-server.vercel.app/api/payment')
-    .then(res => {
-      window.location.href = res.data;
-      setLoading(false)
-    })
-    .catch(error => {
-      setLoading(false)
-      console.log("error", error);
-    })
-  }
+      toast.success('Test payment recorded successfully!');
+      // Redirect to the GPT dashboard
+      window.location.href = `/dashboard/${user.id}/gpt`;
+    } catch (error) {
+      console.error('Payment simulation error:', error);
+      toast.error('Failed to process payment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading || !isInitialized) {
     return (
@@ -128,10 +125,11 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
 
             <div className="flex justify-center mb-8">
               <Button
-                onClick={handleSubmit}
+                onClick={handleSimulatePayment}
+                disabled={isSubmitting}
                 className="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
               >
-                {loading ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processing...

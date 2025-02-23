@@ -229,9 +229,10 @@ export function DashboardChatGPT() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <div className="flex-none bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Header with Process Steps */}
+      <div className="flex-none bg-white border-b border-gray-200 shadow-sm overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <DownloadGuide 
               onSuccess={handleGuideDownloadSuccess}
               onError={handleGuideDownloadError}
@@ -273,8 +274,10 @@ export function DashboardChatGPT() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0 max-w-4xl mx-auto px-4 py-6 w-full">
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col min-h-0 max-w-4xl mx-auto px-4 py-4 w-full">
         <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map(message => (
               <div
@@ -299,6 +302,7 @@ export function DashboardChatGPT() {
             <div ref={chatEndRef} />
           </div>
 
+          {/* File Upload Status */}
           {uploads.length > 0 && (
             <div className="flex-none border-t border-gray-200 p-4 space-y-2 bg-gray-50">
               <h3 className="text-sm font-medium text-gray-700">Uploads</h3>
@@ -330,6 +334,7 @@ export function DashboardChatGPT() {
             </div>
           )}
 
+          {/* Input Area */}
           <div className="flex-none border-t border-gray-200 p-4 bg-white">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <input
