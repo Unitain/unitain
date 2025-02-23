@@ -53,7 +53,8 @@ export function DashboardChatGPT() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploads, setUploads] = useState<FileUpload[]>([]);
   const [isMobile, setIsMobile] = useState(false);
-  const [chatVisible, setChatVisible] = useState(true);
+  const [chatVisible, setChatVisible] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const vehicleDataInputRef = useRef<HTMLInputElement>(null);
@@ -97,7 +98,11 @@ export function DashboardChatGPT() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setChatVisible(true);
+      }
     };
     
     handleResize();
@@ -107,8 +112,17 @@ export function DashboardChatGPT() {
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!chatVisible && messages.length > 0) {
+      setUnreadCount(messages.length);
+    }
+  }, [messages, chatVisible]);
+
+  useEffect(() => {
+    if (chatVisible) {
+      setUnreadCount(0);
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatVisible]);
 
   // Listen for chat messages from the storage module
   useEffect(() => {
@@ -121,11 +135,14 @@ export function DashboardChatGPT() {
         timestamp: new Date()
       };
       setMessages(prev => [...prev, newMessage]);
+      if (!chatVisible) {
+        setUnreadCount(prev => prev + 1);
+      }
     };
 
     window.addEventListener('chat-message', handleChatMessage as EventListener);
     return () => window.removeEventListener('chat-message', handleChatMessage as EventListener);
-  }, []);
+  }, [chatVisible]);
 
   function updateStepStatus(stepId: number, status: ProcessStep['status']) {
     setProcessSteps(prev => prev.map(step => 
@@ -141,6 +158,9 @@ export function DashboardChatGPT() {
       timestamp: new Date()
     };
     setMessages(prev => [...prev, systemMessage]);
+    if (!chatVisible) {
+      setUnreadCount(prev => prev + 1);
+    }
   }
 
   const simulateGPTResponse = async (userMessage: string) => {
@@ -280,7 +300,8 @@ export function DashboardChatGPT() {
 
   const toggleChat = () => {
     setChatVisible(!chatVisible);
-    if (!chatVisible && chatEndRef.current) {
+    if (!chatVisible) {
+      setUnreadCount(0);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     }
   };
@@ -303,7 +324,7 @@ export function DashboardChatGPT() {
               <div 
                 key={step.id}
                 className={cn(
-                  "p-4 rounded-lg border",
+                  "p-4 rounded-lg border transition-all duration-200",
                   step.status === 'active' ? 'border-blue-500 bg-blue-50' :
                   step.status === 'complete' ? 'border-green-500 bg-green-50' :
                   step.status === 'error' ? 'border-red-500 bg-red-50' :
@@ -326,7 +347,10 @@ export function DashboardChatGPT() {
                     onClick={step.action}
                     disabled={step.status === 'pending'}
                     size="sm"
-                    className="w-full"
+                    className={cn(
+                      "w-full",
+                      isMobile && "text-sm py-2"
+                    )}
                   >
                     {step.buttonText}
                   </Button>
@@ -354,8 +378,8 @@ export function DashboardChatGPT() {
           <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Chat Header */}
             {isMobile && (
-              <div className="flex-none p-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Chat</h2>
+              <div className="flex-none p-4 border-b border-gray-200 flex items-center justify-between bg-blue-50">
+                <h2 className="text-lg font-semibold text-blue-900">Chat Assistant</h2>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -455,12 +479,14 @@ export function DashboardChatGPT() {
                   variant="secondary"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading}
+                  className={cn(isMobile && "p-2")}
                 >
                   <Upload className="w-5 h-5" />
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading || !input.trim()}
+                  className={cn(isMobile && "p-2")}
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -477,12 +503,18 @@ export function DashboardChatGPT() {
         {isMobile && !chatVisible && (
           <button
             onClick={toggleChat}
-            className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 flex items-center gap-2"
+            className={cn(
+              "fixed bottom-4 right-4 p-3 rounded-full shadow-lg z-50",
+              "flex items-center justify-center",
+              "transition-all duration-200",
+              unreadCount > 0 ? "bg-red-500" : "bg-blue-600",
+              "hover:scale-105 active:scale-95"
+            )}
           >
-            <MessageCircle className="w-6 h-6" />
-            {messages.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {messages.length}
+            <MessageCircle className="w-6 h-6 text-white" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-white text-red-500 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm">
+                {unreadCount}
               </span>
             )}
           </button>
