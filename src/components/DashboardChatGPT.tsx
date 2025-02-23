@@ -100,6 +100,80 @@ export function DashboardChatGPT() {
     }
   ]);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, stepId: number) => {
+    const files = e.target.files;
+    if (!files?.length || !user) return;
+
+    const newUploads: FileUpload[] = Array.from(files).map(file => ({
+      id: Date.now().toString(),
+      name: file.name,
+      status: 'uploading',
+      progress: 0
+    }));
+
+    setUploads(prev => [...prev, ...newUploads]);
+    updateStepStatus(stepId, 'active');
+
+    for (const upload of newUploads) {
+      try {
+        for (let progress = 0; progress <= 50; progress += 10) {
+          setUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id ? { ...u, progress } : u
+            )
+          );
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        const file = files[newUploads.indexOf(upload)];
+        const result = await uploadVehicleFile(file, user.id);
+
+        if (!result) throw new Error('Upload failed');
+
+        for (let progress = 50; progress <= 100; progress += 10) {
+          setUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id ? { ...u, progress } : u
+            )
+          );
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        setUploads(prev => 
+          prev.map(u => 
+            u.id === upload.id ? { ...u, status: 'complete', progress: 100 } : u
+          )
+        );
+
+        updateStepStatus(stepId, 'complete');
+        
+        if (stepId < 4) {
+          updateStepStatus(stepId + 1, 'active');
+        }
+
+      } catch (error) {
+        console.error('Upload error:', error);
+        setUploads(prev => 
+          prev.map(u => 
+            u.id === upload.id ? { ...u, status: 'error' } : u
+          )
+        );
+        updateStepStatus(stepId, 'error');
+        toast.error(`Failed to upload ${upload.name}`);
+      }
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const updateStepStatus = (stepId: number, status: ProcessStep['status']) => {
+    setProcessSteps(prev => prev.map(step => 
+      step.id === stepId ? { ...step, status } : step
+    ));
+  };
+
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -262,6 +336,7 @@ export function DashboardChatGPT() {
             "grid gap-4",
             isMobile ? "grid-cols-1" : "grid-cols-4"
           )}>
+            {/* Download Guide Card */}
             <MaterialCard 
               className="p-4 bg-white"
               elevation={2}
@@ -293,8 +368,97 @@ export function DashboardChatGPT() {
               </Button>
             </MaterialCard>
 
-            {/* Upload sections with MaterialCard */}
-            {/* ... (similar pattern for upload sections) */}
+            {/* Vehicle Data Upload Card */}
+            <MaterialCard 
+              className="p-4 bg-white"
+              elevation={2}
+              hover
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Upload className="w-5 h-5 text-blue-600" />
+                <h3 className="font-medium">Upload Vehicle Data</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Upload your vehicle documentation
+              </p>
+              <input
+                ref={vehicleDataInputRef}
+                type="file"
+                onChange={(e) => handleFileUpload(e, 2)}
+                className="hidden"
+                multiple
+              />
+              <Button
+                onClick={() => vehicleDataInputRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Files
+              </Button>
+            </MaterialCard>
+
+            {/* Additional Documents Upload Card */}
+            <MaterialCard 
+              className="p-4 bg-white"
+              elevation={2}
+              hover
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Upload className="w-5 h-5 text-blue-600" />
+                <h3 className="font-medium">Upload Additional Documents</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Upload any additional required documents
+              </p>
+              <input
+                ref={dataSet2InputRef}
+                type="file"
+                onChange={(e) => handleFileUpload(e, 3)}
+                className="hidden"
+                multiple
+              />
+              <Button
+                onClick={() => dataSet2InputRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Files
+              </Button>
+            </MaterialCard>
+
+            {/* Status Card */}
+            <MaterialCard 
+              className="p-4 bg-white"
+              elevation={2}
+              hover
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <AlertCircle className="w-5 h-5 text-blue-600" />
+                <h3 className="font-medium">Processing Status</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Track your document processing status
+              </p>
+              {uploads.length > 0 && (
+                <div className="space-y-2">
+                  {uploads.map(upload => (
+                    <div
+                      key={upload.id}
+                      className="flex items-center gap-2 bg-gray-50 p-2 rounded-md"
+                    >
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="flex-1 text-sm truncate">{upload.name}</span>
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${upload.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </MaterialCard>
           </div>
         </div>
       </div>

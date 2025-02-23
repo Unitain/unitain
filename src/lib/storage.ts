@@ -47,6 +47,10 @@ export async function uploadVehicleFile(
   userId: string
 ): Promise<string | null> {
   try {
+    if (!userId) {
+      throw new Error('User ID is required for upload');
+    }
+
     if (file.size > 52428800) {
       throw new Error('File size exceeds 50MB limit');
     }
@@ -64,10 +68,12 @@ export async function uploadVehicleFile(
       throw new Error('Invalid file type. Please upload PDF, Word, or image files.');
     }
 
+    // Create a clean filename
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '');
     const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const filePath = `${userId}/${timestamp}_${safeFilename}`;
 
+    // Upload the file
     const { data, error } = await supabase.storage
       .from('vehicle_uploads')
       .upload(filePath, file, {
@@ -75,14 +81,22 @@ export async function uploadVehicleFile(
         upsert: false
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase upload error:', error);
+      throw error;
+    }
 
-    addChatMessage(`✅ File "${file.name}" uploaded successfully! You can proceed with the next steps.`, 'bot');
-    
+    if (!data?.path) {
+      throw new Error('Upload failed - no path returned');
+    }
+
+    // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('vehicle_uploads')
       .getPublicUrl(data.path);
 
+    addChatMessage(`✅ File "${file.name}" uploaded successfully!`, 'bot');
+    
     return publicUrl;
   } catch (error) {
     console.error('Vehicle file upload failed:', error);
@@ -98,6 +112,10 @@ export async function uploadVehicleFile(
 
 export async function listVehicleFiles(userId: string): Promise<string[]> {
   try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
     const { data, error } = await supabase.storage
       .from('vehicle_uploads')
       .list(userId);
@@ -113,6 +131,10 @@ export async function listVehicleFiles(userId: string): Promise<string[]> {
 
 export async function deleteVehicleFile(userId: string, filename: string): Promise<boolean> {
   try {
+    if (!userId || !filename) {
+      throw new Error('User ID and filename are required');
+    }
+
     const { error } = await supabase.storage
       .from('vehicle_uploads')
       .remove([`${userId}/${filename}`]);
