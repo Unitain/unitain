@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Send, 
   Upload, 
@@ -46,8 +46,11 @@ interface ProcessStep {
 }
 
 export function DashboardChatGPT() {
+  const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
-  const { user } = useAuthStore();
+  const { user, isInitialized } = useAuthStore();
+  
+  const [authChecked, setAuthChecked] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,6 +100,39 @@ export function DashboardChatGPT() {
   ]);
 
   useEffect(() => {
+    if (!isInitialized) return;
+
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+        
+        if (!session) {
+          localStorage.setItem('nextUrl', window.location.pathname);
+          navigate('/');
+          toast.error('Please sign in to access the dashboard');
+          return;
+        }
+
+        if (session.user.id !== userId) {
+          navigate('/');
+          toast.error('Unauthorized access');
+          return;
+        }
+
+        setAuthChecked(true);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        navigate('/');
+        toast.error('Authentication error. Please try again.');
+      }
+    };
+
+    checkAuth();
+  }, [isInitialized, userId, navigate]);
+
+  useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
@@ -124,7 +160,6 @@ export function DashboardChatGPT() {
     }
   }, [chatVisible]);
 
-  // Listen for chat messages from the storage module
   useEffect(() => {
     const handleChatMessage = (event: CustomEvent) => {
       const { message, sender } = event.detail;
@@ -143,6 +178,17 @@ export function DashboardChatGPT() {
     window.addEventListener('chat-message', handleChatMessage as EventListener);
     return () => window.removeEventListener('chat-message', handleChatMessage as EventListener);
   }, [chatVisible]);
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   function updateStepStatus(stepId: number, status: ProcessStep['status']) {
     setProcessSteps(prev => prev.map(step => 
@@ -228,7 +274,6 @@ export function DashboardChatGPT() {
 
     for (const upload of newUploads) {
       try {
-        // Start progress animation
         for (let progress = 0; progress <= 50; progress += 10) {
           setUploads(prev => 
             prev.map(u => 
@@ -238,13 +283,11 @@ export function DashboardChatGPT() {
           await new Promise(resolve => setTimeout(resolve, 200));
         }
 
-        // Actual file upload
         const file = files[newUploads.indexOf(upload)];
         const result = await uploadVehicleFile(file, user.id);
 
         if (!result) throw new Error('Upload failed');
 
-        // Complete progress animation
         for (let progress = 50; progress <= 100; progress += 10) {
           setUploads(prev => 
             prev.map(u => 
@@ -308,7 +351,6 @@ export function DashboardChatGPT() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header with Process Steps */}
       <div className="flex-none bg-white border-b border-gray-200 shadow-sm overflow-x-auto">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
           <div className={cn(
@@ -361,9 +403,7 @@ export function DashboardChatGPT() {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col md:flex-row">
-        {/* Chat Area */}
         <div 
           ref={chatContainerRef}
           className={cn(
@@ -376,7 +416,6 @@ export function DashboardChatGPT() {
           )}
         >
           <div className="flex-1 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
-            {/* Chat Header */}
             {isMobile && (
               <div className="flex-none p-4 border-b border-gray-200 flex items-center justify-between bg-blue-50">
                 <h2 className="text-lg font-semibold text-blue-900">Chat Assistant</h2>
@@ -391,7 +430,6 @@ export function DashboardChatGPT() {
               </div>
             )}
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map(message => (
                 <div
@@ -417,7 +455,6 @@ export function DashboardChatGPT() {
               <div ref={chatEndRef} />
             </div>
 
-            {/* File Upload Status */}
             {uploads.length > 0 && (
               <div className="flex-none border-t border-gray-200 p-4 space-y-2 bg-gray-50">
                 <h3 className="text-sm font-medium text-gray-700">Uploads</h3>
@@ -449,7 +486,6 @@ export function DashboardChatGPT() {
               </div>
             )}
 
-            {/* Input Area */}
             <div className="flex-none border-t border-gray-200 p-4 bg-white">
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <input
@@ -499,7 +535,6 @@ export function DashboardChatGPT() {
           </div>
         </div>
 
-        {/* Mobile Chat Toggle Button */}
         {isMobile && !chatVisible && (
           <button
             onClick={toggleChat}
