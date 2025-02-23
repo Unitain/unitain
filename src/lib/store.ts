@@ -31,6 +31,19 @@ export const useAuthStore = create<AuthState>()(
             throw error;
           }
           
+          // If session exists but is expired, try to refresh it
+          if (session?.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) throw refreshError;
+            
+            set({ 
+              user: refreshData.session?.user ?? null,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
+          }
+          
           set({ 
             user: session?.user ?? null,
             isInitialized: true,

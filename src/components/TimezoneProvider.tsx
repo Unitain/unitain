@@ -19,16 +19,11 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const mounted = useRef(true);
   const initialized = useRef(false);
   const documentReady = useRef(false);
-  const mutationObserver = useRef<MutationObserver | null>(null);
 
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      // Cleanup mutation observer
-      if (mutationObserver.current) {
-        mutationObserver.current.disconnect();
-      }
     };
   }, []);
 
@@ -61,43 +56,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to store timezone in localStorage:', err);
         }
 
-        // Create a custom element for timezone data
-        try {
-          const timezoneElement = document.createElement('div');
-          timezoneElement.id = 'app-timezone-data';
-          timezoneElement.style.display = 'none';
-          timezoneElement.dataset.timezone = detectedTimezone;
-          timezoneElement.dataset.timestamp = Date.now().toString();
-
-          // Remove any existing timezone elements
-          document.querySelectorAll('#app-timezone-data').forEach(el => el.remove());
-
-          // Append new element
-          document.body.appendChild(timezoneElement);
-
-          // Set up mutation observer to prevent external modifications
-          if (mutationObserver.current) {
-            mutationObserver.current.disconnect();
-          }
-
-          mutationObserver.current = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              if (mutation.type === 'attributes' && mutation.target === timezoneElement) {
-                // Restore our data attributes if they were modified
-                timezoneElement.dataset.timezone = detectedTimezone;
-                timezoneElement.dataset.timestamp = Date.now().toString();
-              }
-            });
-          });
-
-          mutationObserver.current.observe(timezoneElement, {
-            attributes: true
-          });
-        } catch (err) {
-          console.warn('Failed to create timezone element:', err);
-        }
-
-        // Dispatch custom event for other scripts
+        // Dispatch timezone change event
         try {
           window.dispatchEvent(new CustomEvent('appTimezoneSet', {
             detail: { timezone: detectedTimezone }
@@ -160,9 +119,6 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
       document.removeEventListener('readystatechange', readyStateChange);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('storage', handleStorageChange);
-      if (mutationObserver.current) {
-        mutationObserver.current.disconnect();
-      }
     };
   }, []);
 
