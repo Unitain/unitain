@@ -15,6 +15,7 @@ import { useAuthStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { DownloadGuide } from './DownloadGuide';
+import { uploadVehicleFile } from '../lib/storage';
 
 interface Message {
   id: string;
@@ -158,7 +159,7 @@ export function DashboardChatGPT() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, stepId: number) => {
     const files = e.target.files;
-    if (!files?.length) return;
+    if (!files?.length || !user) return;
 
     const newUploads: FileUpload[] = Array.from(files).map(file => ({
       id: Date.now().toString(),
@@ -172,18 +173,35 @@ export function DashboardChatGPT() {
 
     for (const upload of newUploads) {
       try {
-        for (let progress = 0; progress <= 100; progress += 20) {
+        // Start progress animation
+        for (let progress = 0; progress <= 50; progress += 10) {
           setUploads(prev => 
             prev.map(u => 
               u.id === upload.id ? { ...u, progress } : u
             )
           );
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        // Actual file upload
+        const file = files[newUploads.indexOf(upload)];
+        const result = await uploadVehicleFile(file, user.id);
+
+        if (!result) throw new Error('Upload failed');
+
+        // Complete progress animation
+        for (let progress = 50; progress <= 100; progress += 10) {
+          setUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id ? { ...u, progress } : u
+            )
+          );
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
 
         setUploads(prev => 
           prev.map(u => 
-            u.id === upload.id ? { ...u, status: 'complete' } : u
+            u.id === upload.id ? { ...u, status: 'complete', progress: 100 } : u
           )
         );
 
@@ -192,8 +210,6 @@ export function DashboardChatGPT() {
         if (stepId < 4) {
           updateStepStatus(stepId + 1, 'active');
         }
-
-        addSystemMessage(`File "${upload.name}" has been successfully uploaded and processed.`);
 
       } catch (error) {
         console.error('Upload error:', error);

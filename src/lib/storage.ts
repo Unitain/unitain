@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import toast from 'react-hot-toast';
+import { addChatMessage } from './chat';
 
 const GUIDE_URL = 'https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/public/guides_open/unitan-guide.pdf';
 
@@ -7,29 +8,26 @@ export async function downloadGuide(): Promise<boolean> {
   try {
     console.log('Starting guide download:', GUIDE_URL);
 
-    // Fetch the file
     const response = await fetch(GUIDE_URL);
     if (!response.ok) {
       throw new Error(`Download failed: ${response.statusText}`);
     }
 
-    // Convert to blob
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);
 
-    // Create a hidden link element
     const link = document.createElement('a');
     link.href = blobUrl;
     link.download = 'unitan-guide.pdf';
     link.style.display = 'none';
     document.body.appendChild(link);
 
-    // Trigger download
     link.click();
 
-    // Cleanup
     document.body.removeChild(link);
     URL.revokeObjectURL(blobUrl);
+
+    addChatMessage('✅ Guide downloaded successfully! You can now proceed with the next steps.', 'bot');
 
     return true;
   } catch (error) {
@@ -38,6 +36,7 @@ export async function downloadGuide(): Promise<boolean> {
       ? error.message
       : 'Failed to download guide';
     
+    addChatMessage('❌ Failed to download guide. Please try again.', 'bot');
     toast.error(errorMessage);
     return false;
   }
@@ -45,16 +44,13 @@ export async function downloadGuide(): Promise<boolean> {
 
 export async function uploadVehicleFile(
   file: File,
-  userId: string,
-  onProgress?: (progress: number) => void
+  userId: string
 ): Promise<string | null> {
   try {
-    // Validate file size (50MB limit)
     if (file.size > 52428800) {
       throw new Error('File size exceeds 50MB limit');
     }
 
-    // Validate file type
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
@@ -68,12 +64,10 @@ export async function uploadVehicleFile(
       throw new Error('Invalid file type. Please upload PDF, Word, or image files.');
     }
 
-    // Generate safe filename
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '');
     const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const filePath = `${userId}/${timestamp}_${safeFilename}`;
 
-    // Upload file with progress tracking
     const { data, error } = await supabase.storage
       .from('vehicle_uploads')
       .upload(filePath, file, {
@@ -83,7 +77,8 @@ export async function uploadVehicleFile(
 
     if (error) throw error;
 
-    // Get public URL if needed
+    addChatMessage(`✅ File "${file.name}" uploaded successfully! You can proceed with the next steps.`, 'bot');
+    
     const { data: { publicUrl } } = supabase.storage
       .from('vehicle_uploads')
       .getPublicUrl(data.path);
@@ -95,6 +90,7 @@ export async function uploadVehicleFile(
       ? error.message 
       : 'Failed to upload file';
     
+    addChatMessage('❌ Upload failed. Please try again.', 'bot');
     toast.error(errorMessage);
     return null;
   }

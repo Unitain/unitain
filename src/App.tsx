@@ -8,8 +8,6 @@ import { Header } from './components/Header';
 import { AuthProvider } from './components/AuthProvider';
 import { useAuthStore } from './lib/store';
 import { useTranslation } from 'react-i18next';
-import Success from './Success';
-import Failed from './Failed';
 
 // Lazy load components
 const Testimonials = lazy(() => import('./components/Testimonials').then(m => ({ default: m.Testimonials })));
@@ -80,8 +78,6 @@ function AppContent() {
           <Route path="/dashboard/:userId/gpt" element={<DashboardChatGPT />} />
           <Route path="/privacy" element={<PrivacyPolicy onBack={handleBack} />} />
           <Route path="/terms" element={<TermsOfService onBack={handleBack} />} />
-          <Route path="/success" element={<Success onBack={handleBack} />} />
-          <Route path="failed" element={<Failed onBack={handleBack} />} />
           <Route
             path="/"
             element={
