@@ -45,7 +45,8 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const handleSubmit = (e: { preventDefault: () => void; }) =>{
     setLoading(true)
     e.preventDefault()
-    axios.post('http://localhost:8000/api/payment')
+    // axios.post('http://localhost:8000/api/payment')
+    axios.post('https://unitain-server.vercel.app/api/payment')
     .then(res => {
       window.location.href = res.data;
       setLoading(false)
