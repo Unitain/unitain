@@ -190,6 +190,28 @@ export function DashboardChatGPT() {
     }
   };
 
+  const chatInputClasses = cn(
+    "flex-1 min-h-[40px] max-h-[100px]",
+    "p-2 border rounded-lg text-base",
+    "resize-none focus:outline-none focus:ring-2 focus:ring-blue-500",
+    "bg-white placeholder-gray-400"
+  );
+
+  const sendButtonClasses = cn(
+    "flex-shrink-0 flex items-center justify-center",
+    "w-10 h-10 rounded-full",
+    "bg-blue-600 text-white",
+    "hover:bg-blue-700 active:bg-blue-800",
+    "disabled:opacity-50 disabled:hover:bg-blue-600",
+    "transition-colors duration-200"
+  );
+
+  const chatFormClasses = cn(
+    "flex items-center gap-2",
+    "p-3 bg-white border-t",
+    "shadow-sm"
+  );
+
   if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -208,7 +230,8 @@ export function DashboardChatGPT() {
         <button
           onClick={toggleChat}
           className={cn(
-            "fixed bottom-4 right-4 p-3 rounded-full shadow-lg z-50",
+            "fixed bottom-4 right-4 z-50",
+            "w-12 h-12 rounded-full shadow-lg",
             "flex items-center justify-center",
             "transition-all duration-200",
             unreadCount > 0 ? "bg-red-500" : "bg-blue-600",
@@ -228,13 +251,15 @@ export function DashboardChatGPT() {
       {isMobile && chatVisible ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-white">
           {/* Chat Header */}
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
-            <h2 className="text-lg font-semibold text-gray-900">{t('Chat Assistant')}</h2>
+          <div className="flex items-center justify-between h-12 px-4 bg-gray-100 border-b">
+            <h2 className="text-base font-semibold text-gray-900">
+              {t('Chat Assistant')}
+            </h2>
             <Button
               variant="secondary"
               size="sm"
               onClick={toggleChat}
-              className="p-2"
+              className="w-8 h-8 p-0 flex items-center justify-center"
               aria-label={t('Close chat')}
             >
               <X className="w-5 h-5" />
@@ -242,7 +267,7 @@ export function DashboardChatGPT() {
           </div>
 
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map(message => (
               <div
                 key={message.id}
@@ -252,13 +277,13 @@ export function DashboardChatGPT() {
                 )}
               >
                 {message.role === 'assistant' ? (
-                  <Bot className="w-6 h-6 text-blue-600" />
+                  <Bot className="w-5 h-5 text-blue-600 mt-0.5" />
                 ) : (
-                  <User className="w-6 h-6 text-gray-600" />
+                  <User className="w-5 h-5 text-gray-600 mt-0.5" />
                 )}
-                <div className="flex-1">
-                  <p className="text-gray-900">{message.content}</p>
-                  <span className="text-xs text-gray-500">
+                <div className="flex-1 min-w-0">
+                  <p className="text-gray-900 text-base break-words">{message.content}</p>
+                  <span className="text-xs text-gray-500 mt-1 block">
                     {message.timestamp.toLocaleTimeString()}
                   </span>
                 </div>
@@ -270,14 +295,14 @@ export function DashboardChatGPT() {
           {/* Chat Input */}
           <form 
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 p-2 bg-white border-t"
+            className={chatFormClasses}
           >
             <textarea
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('Type your message...')}
-              className="flex-1 p-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={chatInputClasses}
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -286,18 +311,18 @@ export function DashboardChatGPT() {
                 }
               }}
             />
-            <Button
+            <button
               type="submit"
-              variant="primary"
               disabled={isLoading || !input.trim()}
-              className="p-3 rounded-full flex-shrink-0"
+              className={sendButtonClasses}
+              aria-label={t('Send message')}
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Send className="w-5 h-5" />
               )}
-            </Button>
+            </button>
           </form>
         </div>
       ) : (
@@ -331,14 +356,14 @@ export function DashboardChatGPT() {
 
             <form 
               onSubmit={handleSubmit}
-              className="flex items-center gap-2 p-2 bg-white border-t"
+              className={chatFormClasses}
             >
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={t('Type your message...')}
-                className="flex-1 p-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={chatInputClasses}
                 rows={1}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -347,18 +372,18 @@ export function DashboardChatGPT() {
                   }
                 }}
               />
-              <Button
+              <button
                 type="submit"
-                variant="primary"
                 disabled={isLoading || !input.trim()}
-                className="p-3 rounded-full flex-shrink-0"
+                className={sendButtonClasses}
+                aria-label={t('Send message')}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <Send className="w-5 h-5" />
                 )}
-              </Button>
+              </button>
             </form>
           </MaterialCard>
         </div>
