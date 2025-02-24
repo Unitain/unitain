@@ -2,30 +2,6 @@ import React from 'react';
 import { Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const testimonials = [
-  {
-    name: 'Daan Vermeer',
-    text: 'Incredible service! I saved over €2,500 in taxes and didn\'t have to deal with any paperwork. Highly recommended for expats moving to Portugal.',
-    rating: 5,
-    location: 'Amsterdam',
-    country: '🇳🇱 Netherlands',
-  },
-  {
-    name: 'Stefan Müller',
-    text: 'Fast, efficient, and stress-free. I was dreading the bureaucracy, but UNITAIN handled everything. My car was registered in no time!',
-    rating: 5,
-    location: 'Berlin',
-    country: '🇩🇪 Germany',
-  },
-  {
-    name: 'Emma Thompson',
-    text: 'I can\'t believe how easy this was! The whole process was smooth, and I avoided thousands in unnecessary taxes.',
-    rating: 5,
-    location: 'London',
-    country: '🇬🇧 United Kingdom',
-  },
-];
-
 export function Testimonials() {
   const { t } = useTranslation();
 
@@ -58,3 +34,29 @@ export function Testimonials() {
     </div>
   );
 }
+
+const testimonials = [
+  {
+    name: 'Daan Vermeer',
+    text: 'Incredible service! I saved over €2,500 in taxes and didn\'t have to deal with any paperwork. Highly recommended for expats moving to Portugal.',
+    rating: 5,
+    location: 'Amsterdam',
+    country: '🇳🇱 Netherlands',
+  },
+  {
+    name: 'Stefan Müller',
+    text: 'Fast, efficient, and stress-free. I was dreading the bureaucracy, but UNITAIN handled everything. My car was registered in no time!',
+    rating: 5,
+    location: 'Berlin',
+    country: '🇩🇪 Germany',
+  },
+  {
+    name: 'Emma Thompson',
+    text: 'I can\'t believe how easy this was! The whole process was smooth, and I avoided thousands in unnecessary taxes.',
+    rating: 5,
+    location: 'London',
+    country: '🇬🇧 United Kingdom',
+  },
+];
+
+export default Testimonials;

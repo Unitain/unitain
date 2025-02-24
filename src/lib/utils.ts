@@ -7,11 +7,19 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function getTimezone(): string {
   try {
-    // First try to get from Intl API
+    // First try to get from localStorage
+    const storedTimezone = localStorage.getItem('app_timezone');
+    if (storedTimezone) return storedTimezone;
+
+    // Then try to get from meta tag
+    const metaTimezone = document.querySelector('meta[name="timezone"]')?.getAttribute('content');
+    if (metaTimezone) return metaTimezone;
+
+    // Finally try to get from Intl API
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone) return timezone;
 
-    // Fallback to UTC if Intl API fails
+    // Fallback to UTC if all else fails
     return 'UTC';
   } catch (error) {
     console.warn('Failed to detect timezone:', error);

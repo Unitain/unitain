@@ -12,7 +12,6 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
-// Create store with optimized persistence
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({

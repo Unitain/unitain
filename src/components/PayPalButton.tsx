@@ -22,7 +22,7 @@ export function PayPalButton({
   const [error, setError] = useState<string | null>(null);
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const { user, isInitialized } = useAuthStore();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<number>();
 
@@ -62,6 +62,11 @@ export function PayPalButton({
         // Validate user ID
         if (!user.id) {
           throw new Error(t('payment.signInRequired'));
+        }
+
+        // Ensure PayPal client ID is configured
+        if (!import.meta.env.VITE_PAYPAL_CLIENT_ID) {
+          throw new Error('PayPal client ID not configured');
         }
 
         const buttons = await paypalService.createOrder(amount, user.id);

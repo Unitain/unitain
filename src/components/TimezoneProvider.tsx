@@ -56,14 +56,6 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to store timezone in localStorage:', err);
         }
 
-        // Dispatch timezone change event
-        window.dispatchEvent(new CustomEvent('appTimezoneSet', {
-          detail: { 
-            timezone: detectedTimezone,
-            timestamp: Date.now()
-          }
-        }));
-
         // Create a meta tag for timezone info
         const metaTag = document.querySelector('meta[name="timezone"]') || document.createElement('meta');
         metaTag.setAttribute('name', 'timezone');

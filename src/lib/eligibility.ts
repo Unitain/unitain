@@ -14,6 +14,41 @@ async function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function getValidSession() {
+  try {
+    let { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) throw error;
+
+    if (!session) {
+      console.warn('No session found, attempting refresh...');
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError) {
+        console.error('Session refresh failed:', refreshError);
+        return null;
+      }
+      
+      session = refreshData.session;
+    } else if (session.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+      console.warn('Session expired, refreshing...');
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError) {
+        console.error('Session refresh failed:', refreshError);
+        return null;
+      }
+      
+      session = refreshData.session;
+    }
+
+    return session;
+  } catch (error) {
+    console.error('Failed to get/refresh session:', error);
+    return null;
+  }
+}
+
 export async function saveEligibilityCheck(
   data: EligibilityCheckData, 
   retryCount = 0
@@ -25,13 +60,7 @@ export async function saveEligibilityCheck(
   }
 
   try {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError) {
-      console.error('Session error:', sessionError);
-      toast.error('Please sign in to save your results.');
-      return false;
-    }
+    const session = await getValidSession();
     
     if (!session?.user) {
       console.error('No active session');

@@ -21,81 +21,86 @@ type Question = {
 };
 
 const questions: Question[] = [
+  // Residency Status Questions
   {
     id: 'permanent_move',
     translationKey: 'eligibility.questions.permanentMove',
-    options: ['Yes', 'No'],
-    category: 'Residency Status',
+    options: ['yes', 'no'],
+    category: 'residency_status'
   },
   {
     id: 'deregistered',
     translationKey: 'eligibility.questions.deregistered',
-    options: ['Yes', 'No'],
-    category: 'Residency Status',
+    options: ['yes', 'no'],
+    category: 'residency_status'
   },
   {
     id: 'previous_residence',
     translationKey: 'eligibility.questions.previousResidence',
-    options: ['Yes', 'No'],
-    category: 'Residency Status',
+    options: ['yes', 'no'],
+    category: 'residency_status'
   },
+  // Vehicle Ownership Questions
   {
     id: 'ownership_duration',
     translationKey: 'eligibility.questions.ownershipDuration',
-    options: ['Yes', 'No'],
-    category: 'Vehicle Ownership',
+    options: ['yes', 'no'],
+    category: 'vehicle_ownership'
   },
   {
     id: 'personal_goods',
     translationKey: 'eligibility.questions.personalGoods',
-    options: ['Yes', 'No'],
-    category: 'Vehicle Ownership',
+    options: ['yes', 'no'],
+    category: 'vehicle_ownership'
   },
   {
     id: 'registered_name',
     translationKey: 'eligibility.questions.registeredName',
-    options: ['Yes', 'No'],
-    category: 'Vehicle Ownership',
+    options: ['yes', 'no'],
+    category: 'vehicle_registration'
   },
+  // Vehicle Registration Questions
   {
     id: 'eu_registration',
     translationKey: 'eligibility.questions.euRegistration',
-    options: ['Yes', 'No'],
-    category: 'Vehicle Registration',
+    options: ['yes', 'no'],
+    category: 'vehicle_registration'
   },
   {
     id: 'documentation',
     translationKey: 'eligibility.questions.documentation',
-    options: ['Yes', 'No'],
-    category: 'Vehicle Registration',
+    options: ['yes', 'no'],
+    category: 'vehicle_registration'
   },
+  // Tax Status Questions
   {
     id: 'vat_paid',
     translationKey: 'eligibility.questions.vatPaid',
-    options: ['Yes', 'No'],
-    category: 'Tax Status',
+    options: ['yes', 'no'],
+    category: 'tax_status'
   },
   {
     id: 'proof_documents',
     translationKey: 'eligibility.questions.proofDocuments',
-    options: ['Yes', 'No'],
-    category: 'Tax Status',
+    options: ['yes', 'no'],
+    category: 'tax_status'
   },
+  // Additional Information Questions
   {
     id: 'import_type',
     translationKey: 'eligibility.questions.importType',
-    options: ['Individual', 'Company'],
-    category: 'Additional Information',
+    options: ['individual', 'company'],
+    category: 'additional_information'
   },
   {
     id: 'additional_vehicles',
     translationKey: 'eligibility.questions.additionalVehicles',
-    options: ['Yes', 'No'],
-    category: 'Additional Information',
-  },
+    options: ['yes', 'no'],
+    category: 'additional_information'
+  }
 ];
 
-export function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityCheckerProps) {
+function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityCheckerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
@@ -165,12 +170,6 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
         metadata
       });
 
-      trackEvent('eligibility_check_complete', {
-        is_eligible: isEligible,
-        needs_more_info: needsMoreInfo,
-        questions_answered: Object.keys(finalAnswers).length
-      });
-
       if (!saved && !isSupabaseConfigured()) {
         localStorage.setItem('pendingEligibilityCheck', JSON.stringify({
           answers: finalAnswers,
@@ -182,10 +181,6 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
     } catch (err) {
       console.error('Error in handleSaveResults:', err);
       setError(t('eligibility.errors.saveFailed'));
-      trackEvent('eligibility_check_error', {
-        error_type: 'save_failure',
-        error_message: err instanceof Error ? err.message : 'Unknown error'
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -207,10 +202,11 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       'previous_residence',
       'ownership_duration',
       'registered_name',
-      'vat_paid',
+      'eu_registration',
+      'vat_paid'
     ];
 
-    const isEligible = criticalQuestions.every((q) => answers[q] === 'Yes');
+    const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
     const needsMoreInfo = Object.keys(answers).length < questions.length;
 
     return {
@@ -284,11 +280,6 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             {isEligible ? t('eligibility.buttons.buyNow') : t('eligibility.buttons.contactUs')}
           </Button>
         </div>
-
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-        />
       </div>
     );
   }
@@ -298,7 +289,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-medium text-gray-500">
-            {t(`eligibility.categories.${currentQuestion.category.toLowerCase().replace(/\s+/g, '_')}`)}
+            {t(`eligibility.categories.${currentQuestion.category}`)}
           </h3>
           <span className="text-sm text-gray-500">
             {t('eligibility.progress', { current: currentStep + 1, total: questions.length })}
@@ -324,7 +315,7 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
             className="w-full p-4 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             type="button"
           >
-            {t(`eligibility.options.${option.toLowerCase()}`)}
+            {t(`eligibility.options.${option}`)}
           </button>
         ))}
       </div>
@@ -349,3 +340,5 @@ export function EligibilityChecker({ onShowPayment, onShowContact }: Eligibility
     </div>
   );
 }
+
+export default EligibilityChecker;

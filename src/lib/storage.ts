@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import toast from 'react-hot-toast';
-import { addChatMessage } from './chat';
+import { addSystemMessage } from './chat';
 
 const GUIDE_URL = 'https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/public/guides_open/unitan-guide.pdf';
 
@@ -27,7 +27,7 @@ export async function downloadGuide(): Promise<boolean> {
     document.body.removeChild(link);
     URL.revokeObjectURL(blobUrl);
 
-    addChatMessage('✅ Guide downloaded successfully! You can now proceed with the next steps.', 'bot');
+    addSystemMessage('✅ Guide downloaded successfully! You can now proceed with the next steps.');
 
     return true;
   } catch (error) {
@@ -36,7 +36,7 @@ export async function downloadGuide(): Promise<boolean> {
       ? error.message
       : 'Failed to download guide';
     
-    addChatMessage('❌ Failed to download guide. Please try again.', 'bot');
+    addSystemMessage('❌ Failed to download guide. Please try again.');
     toast.error(errorMessage);
     return false;
   }
@@ -95,7 +95,7 @@ export async function uploadVehicleFile(
       .from('vehicle_uploads')
       .getPublicUrl(data.path);
 
-    addChatMessage(`✅ File "${file.name}" uploaded successfully!`, 'bot');
+    addSystemMessage(`✅ File "${file.name}" uploaded successfully!`);
     
     return publicUrl;
   } catch (error) {
@@ -104,7 +104,7 @@ export async function uploadVehicleFile(
       ? error.message 
       : 'Failed to upload file';
     
-    addChatMessage('❌ Upload failed. Please try again.', 'bot');
+    addSystemMessage('❌ Upload failed. Please try again.');
     toast.error(errorMessage);
     return null;
   }
