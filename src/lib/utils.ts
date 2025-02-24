@@ -17,7 +17,24 @@ export function getTimezone(): string {
 
     // Finally try to get from Intl API
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (timezone) return timezone;
+    if (timezone) {
+      // Store for future use
+      try {
+        localStorage.setItem('app_timezone', timezone);
+        
+        // Create meta tag if it doesn't exist
+        let metaTag = document.querySelector('meta[name="timezone"]');
+        if (!metaTag) {
+          metaTag = document.createElement('meta');
+          metaTag.setAttribute('name', 'timezone');
+          document.head.appendChild(metaTag);
+        }
+        metaTag.setAttribute('content', timezone);
+      } catch (error) {
+        console.warn('Failed to store timezone:', error);
+      }
+      return timezone;
+    }
 
     // Fallback to UTC if all else fails
     return 'UTC';

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { paypalService } from '../lib/paypal';
+import { loadScript } from "@paypal/paypal-js";
 import { useAuthStore } from '../lib/store';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +25,7 @@ export function PayPalButton({
   const { t } = useTranslation();
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<number>();
+  const paypalScriptLoadedRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -36,9 +37,7 @@ export function PayPalButton({
   }, []);
 
   useEffect(() => {
-    let timeoutId: number;
-
-    const initializePayPalButton = async () => {
+    const initializePayPal = async () => {
       if (!buttonContainerRef.current || !user || !isInitialized) {
         setError(t('payment.signInRequired'));
         setIsLoading(false);
@@ -64,63 +63,114 @@ export function PayPalButton({
           throw new Error(t('payment.signInRequired'));
         }
 
-        // Ensure PayPal client ID is configured
-        if (!import.meta.env.VITE_PAYPAL_CLIENT_ID) {
+        // Get PayPal client ID from environment
+        const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+        if (!clientId) {
           throw new Error('PayPal client ID not configured');
         }
 
-        const buttons = await paypalService.createOrder(amount, user.id);
-        
-        if (!mountedRef.current) return;
+        // Load PayPal script if not already loaded
+        if (!paypalScriptLoadedRef.current) {
+          const paypal = await loadScript({
+            "client-id": clientId,
+            currency: "EUR",
+            intent: "capture",
+            components: "buttons"
+          });
+
+          if (!paypal) {
+            throw new Error('Failed to load PayPal script');
+          }
+
+          paypalScriptLoadedRef.current = true;
+          window.paypal = paypal;
+        }
+
+        // Create PayPal buttons
+        const buttons = window.paypal?.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'blue',
+            shape: 'rect',
+            label: 'pay'
+          },
+          createOrder: async () => {
+            try {
+              // Create order directly with PayPal
+              return window.paypal?.createOrder({
+                purchase_units: [{
+                  amount: {
+                    value: amount.toFixed(2),
+                    currency_code: "EUR"
+                  },
+                  description: "Vehicle Tax Exemption Check",
+                  custom_id: user.id
+                }],
+                application_context: {
+                  shipping_preference: "NO_SHIPPING"
+                }
+              });
+            } catch (error) {
+              console.error('Error creating PayPal order:', error);
+              throw error;
+            }
+          },
+          onApprove: async (data: any) => {
+            try {
+              const orderData = await window.paypal?.captureOrder(data.orderID);
+              onSuccess?.(orderData);
+              toast.success(t('payment.success'));
+            } catch (error) {
+              console.error('Payment capture failed:', error);
+              onError?.(error instanceof Error ? error : new Error('Payment capture failed'));
+              toast.error(t('payment.error'));
+            }
+          },
+          onCancel: () => {
+            console.log('Payment cancelled');
+            onCancel?.();
+            toast.error(t('payment.cancelled'));
+          },
+          onError: (err: any) => {
+            console.error('PayPal error:', err);
+            onError?.(err instanceof Error ? err : new Error('PayPal error'));
+            toast.error(t('payment.error'));
+          }
+        });
 
         if (!buttons) {
-          throw new Error(t('payment.systemError'));
+          throw new Error('Failed to create PayPal buttons');
         }
 
-        await buttons.render(buttonContainerRef.current);
+        // Render buttons
+        if (buttonContainerRef.current) {
+          await buttons.render(buttonContainerRef.current);
+        }
         
-        if (!mountedRef.current) return;
-        setIsLoading(false);
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
       } catch (error) {
-        if (!mountedRef.current) return;
+        console.error('Failed to initialize PayPal:', error);
         
-        console.error('Failed to initialize PayPal button:', error);
-        setIsLoading(false);
+        if (mountedRef.current) {
+          setIsLoading(false);
+          setError(error instanceof Error ? error.message : 'Failed to initialize payment');
+          toast.error(t('payment.error'));
 
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : t('payment.systemError');
-
-        setError(errorMessage);
-        
-        if (error instanceof Error) {
-          onError?.(error);
-          toast.error(errorMessage);
+          // Retry initialization after delay
+          retryTimeoutRef.current = window.setTimeout(() => {
+            if (mountedRef.current) {
+              paypalScriptLoadedRef.current = false;
+              initializePayPal();
+            }
+          }, 5000);
         }
-
-        // Retry initialization after a delay
-        if (retryTimeoutRef.current) {
-          window.clearTimeout(retryTimeoutRef.current);
-        }
-
-        retryTimeoutRef.current = window.setTimeout(() => {
-          if (mountedRef.current) {
-            initializePayPalButton();
-          }
-        }, 5000);
       }
     };
 
-    initializePayPalButton();
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      if (retryTimeoutRef.current) {
-        window.clearTimeout(retryTimeoutRef.current);
-      }
-      paypalService.cleanup();
-    };
-  }, [amount, user, isInitialized, onSuccess, onError, onCancel, t]);
+    initializePayPal();
+  }, [amount, user, isInitialized, t, onSuccess, onError, onCancel]);
 
   if (!isInitialized || !user) {
     return (
@@ -135,7 +185,10 @@ export function PayPalButton({
       <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
         <p className="mb-2">{error}</p>
         <button 
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            paypalScriptLoadedRef.current = false;
+            window.location.reload();
+          }}
           className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
         >
           {t('common.retry')}

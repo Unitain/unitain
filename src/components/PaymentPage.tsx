@@ -3,7 +3,9 @@ import { PayPalButton } from './PayPalButton';
 import { Button } from './Button';
 import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface PaymentPageProps {
   onBack: () => void;
@@ -12,6 +14,24 @@ interface PaymentPageProps {
 export function PaymentPage({ onBack }: PaymentPageProps) {
   const { user } = useAuthStore();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const handlePaymentSuccess = async (data: any) => {
+    console.log('Payment successful:', data);
+    
+    if (user) {
+      // Store success state
+      localStorage.setItem('payment_success', 'true');
+      localStorage.setItem('nextUrl', `/dashboard/${user.id}/submission`);
+      
+      // Redirect to dashboard
+      navigate(`/dashboard/${user.id}/submission`);
+    } else {
+      console.warn('User not found after payment');
+      toast.error(t('payment.error'));
+      navigate('/auth/signin');
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-8">
@@ -37,7 +57,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
             <p className="text-gray-600 mb-4">
               {t('payment.signInMessage')}
             </p>
-            <Button onClick={() => window.location.href = '/auth/signin'}>
+            <Button onClick={() => navigate('/auth/signin')}>
               {t('payment.signIn')}
             </Button>
           </div>
@@ -45,17 +65,14 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           <div className="space-y-6">
             <PayPalButton
               amount={99}
-              onSuccess={(data) => {
-                console.log('Payment successful:', data);
-                // Handle successful payment
-              }}
+              onSuccess={handlePaymentSuccess}
               onError={(error) => {
                 console.error('Payment error:', error);
-                // Handle payment error
+                toast.error(t('payment.error'));
               }}
               onCancel={() => {
                 console.log('Payment cancelled');
-                // Handle payment cancellation
+                toast.error(t('payment.cancelled'));
               }}
             />
           </div>
@@ -90,5 +107,3 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
     </div>
   );
 }
-
-export default PaymentPage;

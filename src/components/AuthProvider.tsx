@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, initialize } = useAuthStore();
+  const successMessageShownRef = React.useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -24,7 +25,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Show appropriate notifications
             switch (event) {
               case 'SIGNED_IN':
-                toast.success('Successfully signed in!');
+                // Only show success message if it hasn't been shown yet
+                if (!successMessageShownRef.current) {
+                  toast.success('Successfully signed in!');
+                  successMessageShownRef.current = true;
+                }
                 break;
               case 'USER_UPDATED':
                 toast.success('Profile updated');
@@ -36,6 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 toast.success('Account deleted successfully');
                 break;
               case 'SIGNED_OUT':
+                // Reset success message flag on sign out
+                successMessageShownRef.current = false;
                 // Clear all auth-related storage
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
