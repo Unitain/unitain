@@ -12,6 +12,8 @@ export type ChatMessage = {
 
 export async function fetchChatGPTResponse(message: string): Promise<string> {
   try {
+    console.log("📡 Sending request to ChatGPT API via Supabase:", message);
+
     const response = await fetch(`${supabase.supabaseUrl}/functions/v1/chatgpt-proxy`, {
       method: 'POST',
       headers: {
@@ -27,6 +29,7 @@ export async function fetchChatGPTResponse(message: string): Promise<string> {
     }
 
     const data = await response.json();
+    console.log("📡 Received response from ChatGPT API:", data);
     return data;
   } catch (error) {
     console.error('ChatGPT API error:', error);

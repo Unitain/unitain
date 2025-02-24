@@ -9,6 +9,7 @@ serve(async (req) => {
 
   try {
     const { message } = await req.json();
+    console.log("📡 Forwarding request to OpenAI:", message);
 
     // Get OpenAI API key from environment variables
     const apiKey = Deno.env.get("OPENAI_API_KEY");
@@ -33,10 +34,12 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
+      console.error("❌ OpenAI API error:", error);
       throw new Error(error.error?.message || 'OpenAI API error');
     }
 
     const data = await response.json();
+    console.log("📡 Received response from OpenAI:", data);
     
     return new Response(
       JSON.stringify(data.choices[0].message.content),
