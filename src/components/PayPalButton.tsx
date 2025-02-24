@@ -75,7 +75,9 @@ export function PayPalButton({
             "client-id": clientId,
             currency: "EUR",
             intent: "capture",
-            components: "buttons"
+            components: "buttons",
+            "enable-funding": "card",
+            "disable-funding": "credit,paylater"
           });
 
           if (!paypal) {
@@ -96,20 +98,19 @@ export function PayPalButton({
           },
           createOrder: async () => {
             try {
-              // Create order directly with PayPal
-              return window.paypal?.createOrder({
-                purchase_units: [{
-                  amount: {
-                    value: amount.toFixed(2),
-                    currency_code: "EUR"
-                  },
-                  description: "Vehicle Tax Exemption Check",
-                  custom_id: user.id
-                }],
-                application_context: {
-                  shipping_preference: "NO_SHIPPING"
-                }
+              const response = await fetch('/api/create-paypal-order', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  amount: amount.toFixed(2),
+                  userId: user.id
+                }),
               });
+
+              const order = await response.json();
+              return order.id;
             } catch (error) {
               console.error('Error creating PayPal order:', error);
               throw error;
@@ -117,9 +118,17 @@ export function PayPalButton({
           },
           onApprove: async (data: any) => {
             try {
-              const orderData = await window.paypal?.captureOrder(data.orderID);
-              onSuccess?.(orderData);
-              toast.success(t('payment.success'));
+              const response = await fetch(`/api/capture-paypal-order/${data.orderID}`, {
+                method: 'POST',
+              });
+
+              const orderData = await response.json();
+              if (orderData.status === 'COMPLETED') {
+                onSuccess?.(orderData);
+                toast.success(t('payment.success'));
+              } else {
+                throw new Error(`Payment status: ${orderData.status}`);
+              }
             } catch (error) {
               console.error('Payment capture failed:', error);
               onError?.(error instanceof Error ? error : new Error('Payment capture failed'));

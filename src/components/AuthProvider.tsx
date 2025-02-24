@@ -7,6 +7,14 @@ import toast from 'react-hot-toast';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, initialize } = useAuthStore();
   const successMessageShownRef = React.useRef(false);
+  const mounted = React.useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;

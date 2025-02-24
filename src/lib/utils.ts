@@ -23,15 +23,14 @@ export function getTimezone(): string {
         localStorage.setItem('app_timezone', timezone);
         
         // Create meta tag if it doesn't exist
-        let metaTag = document.querySelector('meta[name="timezone"]');
-        if (!metaTag) {
-          metaTag = document.createElement('meta');
-          metaTag.setAttribute('name', 'timezone');
+        const metaTag = document.querySelector('meta[name="timezone"]') || document.createElement('meta');
+        metaTag.setAttribute('name', 'timezone');
+        metaTag.setAttribute('content', timezone);
+        if (!metaTag.parentNode) {
           document.head.appendChild(metaTag);
         }
-        metaTag.setAttribute('content', timezone);
-      } catch (error) {
-        console.warn('Failed to store timezone:', error);
+      } catch (err) {
+        console.warn('Failed to store timezone:', err);
       }
       return timezone;
     }

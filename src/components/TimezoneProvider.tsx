@@ -18,6 +18,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const mounted = useRef(true);
   const initialized = useRef(false);
+  const documentReady = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -26,65 +27,98 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    const detectTimezone = () => {
-      if (!mounted.current || initialized.current) return;
+  // Safely detect timezone
+  const detectTimezone = () => {
+    if (!mounted.current || initialized.current || !documentReady.current) return;
 
+    try {
+      // Try to get timezone from Intl API first
+      let detectedTimezone: string;
       try {
-        // Try to get timezone from Intl API first
-        let detectedTimezone: string;
-        try {
-          detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          if (!detectedTimezone) throw new Error('No timezone detected');
-        } catch (err) {
-          console.warn('Intl API timezone detection failed:', err);
-          detectedTimezone = 'UTC';
-        }
-
-        // Update state if component is still mounted
-        if (mounted.current) {
-          setTimezone(detectedTimezone);
-          setError(null);
-          initialized.current = true;
-          setLoading(false);
-
-          // Store timezone in localStorage for persistence
-          try {
-            localStorage.setItem('app_timezone', detectedTimezone);
-          } catch (err) {
-            console.warn('Failed to store timezone in localStorage:', err);
-          }
-
-          // Create a meta tag for timezone info
-          try {
-            let metaTag = document.querySelector('meta[name="timezone"]');
-            if (!metaTag) {
-              metaTag = document.createElement('meta');
-              metaTag.setAttribute('name', 'timezone');
-              document.head.appendChild(metaTag);
-            }
-            metaTag.setAttribute('content', detectedTimezone);
-          } catch (err) {
-            console.warn('Failed to update timezone meta tag:', err);
-          }
-        }
+        detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (!detectedTimezone) throw new Error('No timezone detected');
       } catch (err) {
-        console.error('Timezone detection failed:', err);
-        if (mounted.current) {
-          setError('Failed to detect timezone');
-          setTimezone('UTC');
-          setLoading(false);
+        console.warn('Intl API timezone detection failed:', err);
+        detectedTimezone = 'UTC';
+      }
+
+      // Update state if component is still mounted
+      if (mounted.current) {
+        setTimezone(detectedTimezone);
+        setError(null);
+        initialized.current = true;
+        setLoading(false);
+
+        // Store timezone in localStorage for persistence
+        try {
+          localStorage.setItem('app_timezone', detectedTimezone);
+        } catch (err) {
+          console.warn('Failed to store timezone in localStorage:', err);
         }
+
+        // Create a meta tag for timezone info
+        const metaTag = document.querySelector('meta[name="timezone"]') || document.createElement('meta');
+        metaTag.setAttribute('name', 'timezone');
+        metaTag.setAttribute('content', detectedTimezone);
+        if (!metaTag.parentNode) {
+          document.head.appendChild(metaTag);
+        }
+      }
+    } catch (err) {
+      console.error('Timezone detection failed:', err);
+      if (mounted.current) {
+        setError('Failed to detect timezone');
+        setTimezone('UTC');
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Wait for document to be fully loaded
+    const readyStateChange = () => {
+      if (document.readyState === 'complete') {
+        documentReady.current = true;
+        // Add a small delay to ensure extensions have initialized
+        setTimeout(detectTimezone, 100);
       }
     };
 
-    // Wait for document to be ready
     if (document.readyState === 'complete') {
-      detectTimezone();
+      documentReady.current = true;
+      setTimeout(detectTimezone, 100);
     } else {
-      window.addEventListener('load', detectTimezone);
-      return () => window.removeEventListener('load', detectTimezone);
+      document.addEventListener('readystatechange', readyStateChange);
     }
+
+    // Re-detect on visibility change
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !initialized.current &&
+        documentReady.current
+      ) {
+        detectTimezone();
+      }
+    };
+
+    // Re-detect on storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app_timezone' && e.newValue && mounted.current) {
+        setTimezone(e.newValue);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup
+    return () => {
+      mounted.current = false;
+      document.removeEventListener('readystatechange', readyStateChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (
