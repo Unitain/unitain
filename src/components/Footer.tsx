@@ -1,41 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, MessageSquare, Globe } from 'lucide-react';
-import { ChangelogPopup } from './ChangelogPopup';
-import { supabase } from '../lib/supabase';
+import React from 'react';
+import { Globe, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 function Footer() {
-  const [showChangelog, setShowChangelog] = useState(false);
-  const [version, setVersion] = useState('1.8.9');
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    const fetchLatestVersion = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('changelog')
-          .select('version')
-          .order('date', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (error) throw error;
-        if (data?.version) {
-          setVersion(data.version);
-        }
-      } catch (error) {
-        console.error('Failed to fetch version:', error);
-      }
-    };
-
-    fetchLatestVersion();
-  }, []);
-
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
+    <footer className="bg-[#14161f] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Company Info */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Unitain</h3>
@@ -73,17 +45,12 @@ function Footer() {
           {/* Contact */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a 
-                  href="mailto:support@unitain.net" 
-                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  support@unitain.net
-                </a>
-              </li>
-            </ul>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <MessageSquare className="w-4 h-4" />
+              <a href="mailto:support@unitain.net" className="hover:text-white transition-colors">
+                support@unitain.net
+              </a>
+            </div>
           </div>
 
           {/* Legal */}
@@ -113,25 +80,14 @@ function Footer() {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setShowChangelog(true)}
-                className="flex items-center text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                Version {version}
-              </button>
+              <span className="text-gray-400 text-sm">Version 1.8.9</span>
             </div>
             <div className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} Unitain. All rights reserved.
+              © 2025 Unitain. All rights reserved.
             </div>
           </div>
         </div>
       </div>
-
-      <ChangelogPopup
-        isOpen={showChangelog}
-        onClose={() => setShowChangelog(false)}
-      />
     </footer>
   );
 }
