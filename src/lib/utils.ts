@@ -19,7 +19,7 @@ export function getTimezone(): string {
       console.warn('Failed to detect timezone from Intl API:', err);
     }
 
-    // Store detected timezone
+    // Store detected timezone if valid
     if (timezone && timezone !== 'UTC') {
       try {
         localStorage.setItem('app_timezone', timezone);

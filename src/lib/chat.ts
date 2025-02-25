@@ -99,3 +99,5 @@ export function addSystemMessage(message: string): void {
   });
   window.dispatchEvent(event);
 }
+
+export { fetchChatGPTResponse } from './api';

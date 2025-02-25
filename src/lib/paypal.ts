@@ -67,15 +67,22 @@ export class PayPalService {
       console.warn('Failed to detect language:', error);
     }
 
-    return {
+    const config = {
       "client-id": clientId,
       currency: "EUR",
-      intent: "capture",
+      intent: "capture" as const,
       components: "buttons",
       "enable-funding": "card",
       "disable-funding": "credit,paylater",
       locale
     };
+
+    console.log('PayPal Configuration:', {
+      ...config,
+      "client-id": "[REDACTED]" // Don't log sensitive data
+    });
+
+    return config;
   }
 
   private async waitForPayPalSDK(timeoutMs: number = 5000): Promise<void> {
@@ -108,10 +115,12 @@ export class PayPalService {
     }
 
     try {
+      console.log(`Initializing PayPal (attempt ${retryAttempt + 1}/${MAX_RETRIES + 1})`);
       this.isInitializing = true;
 
       // Check if PayPal is already initialized
       if (window.paypal?.Buttons) {
+        console.log('PayPal SDK already loaded');
         return window.paypal;
       }
 
@@ -142,12 +151,20 @@ export class PayPalService {
         throw new Error('PayPal SDK not properly initialized');
       }
 
+      console.log('PayPal SDK initialized successfully');
       return paypal;
     } catch (error) {
-      console.error('PayPal initialization error:', error);
+      const errorDetails = {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        retryAttempt,
+        timestamp: new Date().toISOString(),
+        loadTime: Date.now() - this.loadStartTime
+      };
+      console.error('PayPal initialization error:', errorDetails);
       this.cleanup();
 
       if (retryAttempt < MAX_RETRIES) {
+        console.log(`Retrying PayPal initialization in ${RETRY_DELAY}ms...`);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * Math.pow(2, retryAttempt)));
         return this.initialize(retryAttempt + 1);
       }
@@ -168,6 +185,7 @@ export class PayPalService {
     }
 
     try {
+      console.log('Creating PayPal order:', { amount, userId });
       const paypal = await this.initialize();
       
       if (!paypal?.Buttons) {
@@ -187,6 +205,11 @@ export class PayPalService {
           }
 
           try {
+            console.log('Creating PayPal order with data:', {
+              amount: amount.toFixed(2),
+              userId
+            });
+
             return await actions.order.create({
               purchase_units: [{
                 amount: {
@@ -205,7 +228,10 @@ export class PayPalService {
               }
             });
           } catch (error) {
-            console.error('Failed to create PayPal order:', error);
+            console.error('Failed to create PayPal order:', {
+              error: error instanceof Error ? error.message : 'Unknown error',
+              timestamp: new Date().toISOString()
+            });
             toast.error('Failed to create payment. Please try again.');
             throw error;
           }
@@ -216,24 +242,37 @@ export class PayPalService {
               throw new Error('PayPal capture action not available');
             }
 
+            console.log('Capturing PayPal order:', data.orderID);
             const order = await actions.order.capture();
+            
             if (order.status === 'COMPLETED') {
+              console.log('Payment completed successfully:', {
+                orderId: order.id,
+                status: order.status
+              });
               toast.success('Payment successful! You can now proceed with your application.');
               return order;
             } else {
               throw new Error(`Payment status: ${order.status}`);
             }
           } catch (error) {
-            console.error('Payment capture failed:', error);
+            console.error('Payment capture failed:', {
+              error: error instanceof Error ? error.message : 'Unknown error',
+              timestamp: new Date().toISOString()
+            });
             toast.error('We could not process your payment. Please try again.');
             throw error;
           }
         },
         onCancel: () => {
+          console.log('Payment cancelled by user');
           toast.error('Payment was cancelled. Please try again when you\'re ready.');
         },
         onError: (err: any) => {
-          console.error('PayPal button error:', err);
+          console.error('PayPal button error:', {
+            error: err instanceof Error ? err.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          });
           toast.error('The payment system encountered an error. Please try again later.');
           this.cleanup();
           throw err;
@@ -247,7 +286,10 @@ export class PayPalService {
 
       return buttons;
     } catch (error) {
-      console.error('Error creating PayPal order:', error);
+      console.error('Error creating PayPal order:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
       toast.error('Failed to initialize payment system. Please try again later.');
       throw error;
     }
@@ -286,6 +328,8 @@ export class PayPalService {
       if (window.paypal) {
         delete window.paypal;
       }
+
+      console.log('PayPal cleanup completed');
     } catch (error) {
       console.error('Error during PayPal cleanup:', error);
     }
