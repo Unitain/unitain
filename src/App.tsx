@@ -15,7 +15,7 @@ const ContactPage = lazy(() => import('./components/ContactPage'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
-const DashboardChatGPT = lazy(() => import('./components/DashboardChatGPT'));
+const FAQ = lazy(() => import('./components/FAQ'));
 
 interface Feature {
   icon: typeof CheckCircle;
@@ -185,6 +185,13 @@ function MainContent({ handleShowContact, handleShowPayment }: MainContentProps)
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <FAQ />
+        </Suspense>
+      </ErrorBoundary>
+
       {/* Testimonials Section */}
       <section className="py-20 bg-gray-50">
         <ErrorBoundary>
@@ -260,14 +267,6 @@ function AppContent() {
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
-            <Route 
-              path="/dashboard/:userId/gpt" 
-              element={
-                <Suspense fallback={<LoadingSpinner size="lg" />}>
-                  <DashboardChatGPT />
-                </Suspense>
-              } 
-            />
             <Route path="/privacy" element={<PrivacyPolicy onBack={handleBack} />} />
             <Route path="/terms" element={<TermsOfService onBack={handleBack} />} />
             <Route

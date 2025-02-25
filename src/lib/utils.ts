@@ -11,25 +11,12 @@ export function getTimezone(): string {
     const storedTimezone = localStorage.getItem('app_timezone');
     if (storedTimezone) return storedTimezone;
 
-    // Then try to get from meta tag
-    const metaTimezone = document.querySelector('meta[name="timezone"]')?.getAttribute('content');
-    if (metaTimezone) return metaTimezone;
-
-    // Finally try to get from Intl API
+    // Then try to get from Intl API
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone) {
       // Store for future use
       try {
         localStorage.setItem('app_timezone', timezone);
-        
-        // Create meta tag if it doesn't exist
-        let metaTag = document.querySelector('meta[name="timezone"]');
-        if (!metaTag) {
-          metaTag = document.createElement('meta');
-          metaTag.setAttribute('name', 'timezone');
-          document.head.appendChild(metaTag);
-        }
-        metaTag.setAttribute('content', timezone);
       } catch (err) {
         console.warn('Failed to store timezone:', err);
       }

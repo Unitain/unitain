@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from './supabase';
+import toast from 'react-hot-toast';
 
 interface AuthState {
   user: User | null;
@@ -24,23 +25,12 @@ export const useAuthStore = create<AuthState>()(
         if (get().isInitialized) return;
 
         try {
-          // First try to get session from storage
-          const storedToken = localStorage.getItem('sb-auth-token');
-          if (!storedToken) {
-            set({ 
-              user: null,
-              isInitialized: true,
-              isLoading: false
-            });
-            return;
-          }
-
-          // Get current session
-          const { data: { session }, error } = await supabase.auth.getSession();
+          // First check if we have a valid session in Supabase
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
           
-          if (error) {
-            console.warn('Failed to get session:', error);
-            // Clear invalid session data
+          if (sessionError) {
+            console.warn('Failed to get session:', sessionError);
+            // Clear any invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
             set({ 
@@ -50,11 +40,22 @@ export const useAuthStore = create<AuthState>()(
             });
             return;
           }
-          
+
+          // If no session, clear state and return
+          if (!session) {
+            set({ 
+              user: null,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
+          }
+
           // If session exists but is expired, try to refresh it
-          if (session?.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+          if (session.expires_at && new Date(session.expires_at * 1000) < new Date()) {
             try {
               const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+              
               if (refreshError) {
                 console.warn('Session refresh failed:', refreshError);
                 // Clear invalid session data
@@ -67,9 +68,20 @@ export const useAuthStore = create<AuthState>()(
                 });
                 return;
               }
-              
+
+              if (!refreshData.session) {
+                set({ 
+                  user: null,
+                  isInitialized: true,
+                  isLoading: false
+                });
+                return;
+              }
+
+              // Store refreshed session
+              localStorage.setItem('sb-auth-token', refreshData.session.access_token);
               set({ 
-                user: refreshData.session?.user ?? null,
+                user: refreshData.session.user,
                 isInitialized: true,
                 isLoading: false
               });
@@ -87,9 +99,11 @@ export const useAuthStore = create<AuthState>()(
               return;
             }
           }
-          
+
+          // Valid session exists
+          localStorage.setItem('sb-auth-token', session.access_token);
           set({ 
-            user: session?.user ?? null,
+            user: session.user,
             isInitialized: true,
             isLoading: false
           });
@@ -112,7 +126,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({ user: state.user }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Initialize auth state
           state.initialize();
         }
       },
