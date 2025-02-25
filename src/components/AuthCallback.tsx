@@ -13,27 +13,19 @@ export function AuthCallback() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
 
-        console.debug('AuthCallback: Starting authentication process');
-        console.debug('AuthCallback: Code present:', !!code);
-        console.debug('AuthCallback: Supabase Auth Config:', {
-          flowType: supabase.auth.flowType,
-          detectSessionInUrl: supabase.auth.detectSessionInUrl,
-          persistSession: supabase.auth.persistSession
-        });
+        console.log('AuthCallback: Starting authentication process');
+        console.log('AuthCallback: Code present:', !!code);
 
         if (!code) {
           throw new Error('No code found in URL');
         }
 
-        console.debug('AuthCallback: Exchanging code for session...');
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
           console.error('AuthCallback: Session exchange error:', error);
           throw error;
         }
-
-        console.debug('AuthCallback: Session data received:', !!data);
 
         if (data.session) {
           // Store the session
@@ -46,7 +38,7 @@ export function AuthCallback() {
           const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${data.session.user.id}/submission`;
           localStorage.removeItem('nextUrl');
           
-          console.debug('AuthCallback: Redirecting to:', redirectUrl);
+          console.log('AuthCallback: Redirecting to:', redirectUrl);
           
           // Show success message and redirect
           toast.success('Successfully signed in!');

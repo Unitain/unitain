@@ -11,27 +11,37 @@ export function getTimezone(): string {
     const storedTimezone = localStorage.getItem('app_timezone');
     if (storedTimezone) return storedTimezone;
 
-    // Try to get from Intl API
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (timezone) {
+    // Try to get from Intl API with fallback
+    let timezone = 'UTC';
+    try {
+      timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (err) {
+      console.warn('Failed to detect timezone from Intl API:', err);
+    }
+
+    // Store detected timezone
+    if (timezone && timezone !== 'UTC') {
       try {
         localStorage.setItem('app_timezone', timezone);
       } catch (err) {
-        console.debug('Failed to store timezone:', err);
+        console.warn('Failed to store timezone:', err);
       }
-      return timezone;
     }
 
-    return 'UTC';
+    return timezone;
   } catch (error) {
-    console.debug('Failed to detect timezone:', error);
+    console.warn('Failed to handle timezone:', error);
     return 'UTC';
   }
 }
 
 export function formatDate(date: string | Date, locale: string = 'en-US'): string {
   try {
-    const dateObj = new Date(date);
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) {
+      throw new Error('Invalid date');
+    }
+
     return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'long',
@@ -39,7 +49,7 @@ export function formatDate(date: string | Date, locale: string = 'en-US'): strin
       timeZone: getTimezone()
     }).format(dateObj);
   } catch (error) {
-    console.debug('Date formatting failed:', error);
+    console.warn('Date formatting failed:', error);
     return new Date(date).toLocaleDateString();
   }
 }

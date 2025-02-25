@@ -25,15 +25,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await initialize();
         }
 
-        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (mounted) {
             setUser(session?.user ?? null);
             
-            // Show appropriate notifications
             switch (event) {
               case 'SIGNED_IN':
-                // Only show success message if it hasn't been shown yet
                 if (!successMessageShownRef.current) {
                   toast.success('Successfully signed in!');
                   successMessageShownRef.current = true;
@@ -49,9 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 toast.success('Account deleted successfully');
                 break;
               case 'SIGNED_OUT':
-                // Reset success message flag on sign out
                 successMessageShownRef.current = false;
-                // Clear all auth-related storage
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
                 break;

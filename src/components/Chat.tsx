@@ -35,8 +35,7 @@ export function Chat() {
         setMessages(history);
       }
     } catch (error) {
-      console.debug('Failed to load chat history:', error);
-      // Error is already handled in getChatHistory
+      console.error('Failed to load chat history:', error);
     }
   };
 
@@ -57,8 +56,6 @@ export function Chat() {
     setIsLoading(true);
 
     try {
-      console.debug('📡 Sending message from Chat UI:', userMessage);
-
       // Add user message to UI immediately
       const userMessageObj = {
         id: crypto.randomUUID(),
@@ -69,8 +66,13 @@ export function Chat() {
       setMessages(prev => [...prev, userMessageObj]);
 
       // Get AI response
+      console.log('Sending message to ChatGPT:', userMessage);
       const response = await fetchChatGPTResponse(userMessage);
-      console.debug('📡 Received response:', response);
+      console.log('Received response from ChatGPT:', response);
+
+      if (!response) {
+        throw new Error('No response received from ChatGPT');
+      }
 
       if (mounted.current) {
         // Save messages to database
@@ -88,7 +90,7 @@ export function Chat() {
         }]);
       }
     } catch (error) {
-      console.debug('Chat error:', error);
+      console.error('Chat error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to send message');
       
       // Remove user message from UI if AI response failed
@@ -101,7 +103,7 @@ export function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-[500px]">
+    <div className="flex flex-col h-[500px] bg-white rounded-lg shadow-sm">
       <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4">
         {messages.map((message) => (
           <div
@@ -117,7 +119,7 @@ export function Chat() {
                   : 'bg-gray-100 text-gray-900'
               }`}
             >
-              <p className="whitespace-pre-wrap">{message.content}</p>
+              <p className="whitespace-pre-wrap break-words">{message.content}</p>
               <span className="text-xs opacity-70 mt-2 block">
                 {new Date(message.timestamp).toLocaleTimeString()}
               </span>
@@ -139,7 +141,7 @@ export function Chat() {
         <Button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 min-w-[80px]"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

@@ -75,4 +75,5 @@ export function ContactPage({ onBack }: ContactPageProps) {
   );
 }
 
+// Ensure proper default export
 export default ContactPage;

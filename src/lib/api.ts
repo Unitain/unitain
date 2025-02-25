@@ -8,7 +8,11 @@ interface ChatGPTResponse {
 
 export async function fetchChatGPTResponse(message: string): Promise<string> {
   try {
-    console.log("📡 Sending request to ChatGPT API via Supabase:", message);
+    if (!message?.trim()) {
+      throw new Error('Message cannot be empty');
+    }
+
+    console.log('📡 Sending request to ChatGPT API:', message);
 
     const response = await fetch(`${supabase.supabaseUrl}/functions/v1/chatgpt-proxy`, {
       method: 'POST',
@@ -19,13 +23,17 @@ export async function fetchChatGPTResponse(message: string): Promise<string> {
       body: JSON.stringify({ message })
     });
 
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       const error = await response.json();
+      console.error('ChatGPT API error:', error);
       throw new Error(error.error || 'Failed to get response from ChatGPT');
     }
 
     const data: ChatGPTResponse = await response.json();
-    console.log("📡 Received response from ChatGPT API:", data);
+    console.log('📡 Received response from ChatGPT API:', data);
 
     if (!data.message) {
       throw new Error('Invalid response format from ChatGPT proxy');

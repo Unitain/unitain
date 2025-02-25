@@ -16,22 +16,46 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/auth/signin');
+    }
+  }, [user, navigate]);
+
   const handlePaymentSuccess = async (data: any) => {
-    console.log('Payment successful:', data);
-    
-    if (user) {
+    try {
+      console.log('Payment successful:', data);
+      
+      if (!user?.id) {
+        throw new Error('User ID not found');
+      }
+
       // Store success state
       localStorage.setItem('payment_success', 'true');
-      localStorage.setItem('nextUrl', `/dashboard/${user.id}/submission`);
       
+      // Show success message
+      toast.success(t('payment.success'));
+
       // Redirect to dashboard
       navigate(`/dashboard/${user.id}/submission`);
-    } else {
-      console.warn('User not found after payment');
+    } catch (error) {
+      console.error('Payment success handler error:', error);
       toast.error(t('payment.error'));
       navigate('/auth/signin');
     }
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-2xl mx-auto p-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">{t('payment.signInRequired')}</h1>
+        <p className="mb-4">{t('payment.signInMessage')}</p>
+        <Button onClick={() => navigate('/auth/signin')}>
+          {t('payment.signIn')}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-8">
@@ -49,34 +73,20 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           </div>
         </div>
 
-        {!user ? (
-          <div className="text-center p-6 bg-gray-50 rounded-lg mb-8">
-            <h3 className="text-lg font-semibold mb-2">
-              {t('payment.signInRequired')}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {t('payment.signInMessage')}
-            </p>
-            <Button onClick={() => navigate('/auth/signin')}>
-              {t('payment.signIn')}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <PayPalButton
-              amount={99}
-              onSuccess={handlePaymentSuccess}
-              onError={(error) => {
-                console.error('Payment error:', error);
-                toast.error(t('payment.error'));
-              }}
-              onCancel={() => {
-                console.log('Payment cancelled');
-                toast.error(t('payment.cancelled'));
-              }}
-            />
-          </div>
-        )}
+        <div className="space-y-6">
+          <PayPalButton
+            amount={99}
+            onSuccess={handlePaymentSuccess}
+            onError={(error) => {
+              console.error('Payment error:', error);
+              toast.error(t('payment.error'));
+            }}
+            onCancel={() => {
+              console.log('Payment cancelled');
+              toast.error(t('payment.cancelled'));
+            }}
+          />
+        </div>
 
         <div className="grid grid-cols-2 gap-4 mt-8">
           {Object.entries(t('payment.features', { returnObjects: true })).map(([key, value]) => (
@@ -107,3 +117,5 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
     </div>
   );
 }
+
+export default PaymentPage;

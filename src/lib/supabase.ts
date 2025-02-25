@@ -1,17 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate configuration with better error handling
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase configuration missing:', {
     url: supabaseUrl ? 'present' : 'missing',
     key: supabaseAnonKey ? 'present' : 'missing'
   });
   
-  // In development, provide more helpful error message
   if (import.meta.env.DEV) {
     console.info(`
       Please ensure your .env file exists and contains:
@@ -20,10 +17,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
     `);
   }
   
-  throw new Error('Missing Supabase configuration. Please check your environment variables.');
+  throw new Error('Missing Supabase configuration');
 }
 
-// Create the Supabase client with enhanced error handling
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
@@ -31,7 +27,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     storage: localStorage,
     storageKey: 'sb-auth-token',
-    flowType: 'pkce'
+    flowType: 'pkce',
+    debug: import.meta.env.DEV
   },
   global: {
     headers: {
@@ -42,14 +39,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => {
   return Boolean(supabaseUrl && supabaseAnonKey);
 };
 
-// Helper to handle Supabase errors
 export const handleSupabaseError = (error: any): string => {
-  // Don't treat missing session as an error
   if (error?.name === 'AuthSessionMissingError') {
     return 'Please sign in to continue.';
   }
@@ -60,22 +54,6 @@ export const handleSupabaseError = (error: any): string => {
 
   if (error?.message?.includes('JWT expired')) {
     return 'Your session has expired. Please sign in again.';
-  }
-
-  if (error?.code === '42P01') {
-    return 'System is being updated. Please try again in a few minutes.';
-  }
-
-  if (error?.code === '23505') {
-    return 'A record with this information already exists.';
-  }
-
-  if (error?.code === '23503') {
-    return 'Invalid reference. Please try again.';
-  }
-
-  if (error?.status === 404) {
-    return 'The requested resource was not found.';
   }
 
   return error?.message || 'An unexpected error occurred. Please try again.';

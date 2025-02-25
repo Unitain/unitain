@@ -24,16 +24,25 @@ export const useAuthStore = create<AuthState>()(
         if (get().isInitialized) return;
 
         try {
-          // First try to get session from storage
+          // Get session from storage first
+          const storedToken = localStorage.getItem('sb-auth-token');
+          const storedSession = storedToken ? await supabase.auth.getSession() : null;
+
+          // If stored session exists and is valid, use it
+          if (storedSession?.data?.session?.user) {
+            set({ 
+              user: storedSession.data.session.user,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
+          }
+
+          // Otherwise try to get a fresh session
           const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
+
           if (sessionError) {
-            // Silently handle missing session
-            if (sessionError.name !== 'AuthSessionMissingError') {
-              console.debug('Auth error:', sessionError.message);
-            }
-            
-            // Clean up any invalid session data
+            // Clean up invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
             set({ 
@@ -44,7 +53,6 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          // If no session exists, clear state and return
           if (!session) {
             set({ 
               user: null,
@@ -54,65 +62,29 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          // If session exists but is expired, try to refresh it
-          if (session.expires_at && new Date(session.expires_at * 1000) < new Date()) {
-            try {
-              const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-              
-              if (refreshError) {
-                // Silently handle missing session
-                if (refreshError.name !== 'AuthSessionMissingError') {
-                  console.debug('Session refresh error:', refreshError.message);
-                }
-                
-                // Clean up any invalid session data
-                localStorage.removeItem('sb-auth-token');
-                localStorage.removeItem('auth-storage');
-                set({ 
-                  user: null,
-                  isInitialized: true,
-                  isLoading: false
-                });
-                return;
-              }
+          // Store valid session
+          localStorage.setItem('sb-auth-token', session.access_token);
+          set({ 
+            user: session.user,
+            isInitialized: true,
+            isLoading: false
+          });
 
-              if (!refreshData.session) {
-                set({ 
-                  user: null,
-                  isInitialized: true,
-                  isLoading: false
-                });
-                return;
+          // Set up session refresh
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+              if (event === 'TOKEN_REFRESHED' && session) {
+                localStorage.setItem('sb-auth-token', session.access_token);
+                set({ user: session.user });
               }
-
-              // Store refreshed session
-              localStorage.setItem('sb-auth-token', refreshData.session.access_token);
-              set({ 
-                user: refreshData.session.user,
-                isInitialized: true,
-                isLoading: false
-              });
-            } catch (error) {
-              // Clean up any invalid session data
-              localStorage.removeItem('sb-auth-token');
-              localStorage.removeItem('auth-storage');
-              set({ 
-                user: null,
-                isInitialized: true,
-                isLoading: false 
-              });
             }
-          } else {
-            // Valid session exists
-            localStorage.setItem('sb-auth-token', session.access_token);
-            set({ 
-              user: session.user,
-              isInitialized: true,
-              isLoading: false
-            });
-          }
+          );
+
+          return () => {
+            subscription.unsubscribe();
+          };
         } catch (error) {
-          // Clean up any invalid session data
+          // Clean up on error
           localStorage.removeItem('sb-auth-token');
           localStorage.removeItem('auth-storage');
           set({ 

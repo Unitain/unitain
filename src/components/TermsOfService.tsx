@@ -73,4 +73,5 @@ export function TermsOfService({ onBack }: TermsOfServiceProps) {
   );
 }
 
+// Ensure proper default export
 export default TermsOfService;

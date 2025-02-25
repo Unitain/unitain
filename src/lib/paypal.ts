@@ -25,6 +25,7 @@ export class PayPalService {
   private cleanupTimeout: number | null = null;
   private languageChangeHandler: (() => void) | null = null;
   private mountedRef: { current: boolean } = { current: true };
+  private isInitializing: boolean = false;
 
   private constructor() {
     this.initializeLanguageListener();
@@ -54,7 +55,7 @@ export class PayPalService {
   private getConfig(): PayPalConfig {
     const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID?.trim();
     if (!clientId) {
-      throw new Error('PayPal client ID is not configured');
+      throw new Error('PayPal client ID not configured. Please check your environment variables.');
     }
 
     // Get language from i18next with fallback
@@ -81,13 +82,13 @@ export class PayPalService {
     const startTime = Date.now();
     
     while (Date.now() - startTime < timeoutMs) {
-      if (window.paypal) {
+      if (window.paypal?.Buttons) {
         return;
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    throw new Error('PayPal SDK not loaded after waiting');
+    throw new Error('PayPal SDK initialization timeout');
   }
 
   private scheduleCleanup(): void {
@@ -101,32 +102,47 @@ export class PayPalService {
   }
 
   async initialize(retryAttempt = 0): Promise<any> {
+    if (this.isInitializing) {
+      console.log('PayPal initialization already in progress...');
+      return this.paypalPromise;
+    }
+
     try {
-      if (!window?.paypal) {
-        const config = this.getConfig();
-        this.loadStartTime = Date.now();
+      this.isInitializing = true;
 
-        this.paypalPromise = new Promise(async (resolve, reject) => {
-          const timeoutId = setTimeout(() => {
-            this.cleanup();
-            reject(new Error('PayPal initialization timed out'));
-          }, PAYPAL_LOAD_TIMEOUT);
-
-          try {
-            const paypalInstance = await loadScript(config);
-            await this.waitForPayPalSDK();
-            clearTimeout(timeoutId);
-            this.scheduleCleanup();
-            resolve(paypalInstance);
-          } catch (error) {
-            clearTimeout(timeoutId);
-            this.cleanup();
-            reject(error);
-          }
-        });
+      // Check if PayPal is already initialized
+      if (window.paypal?.Buttons) {
+        return window.paypal;
       }
 
-      return this.paypalPromise || window.paypal;
+      const config = this.getConfig();
+      this.loadStartTime = Date.now();
+
+      this.paypalPromise = new Promise(async (resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          this.cleanup();
+          reject(new Error('PayPal initialization timed out'));
+        }, PAYPAL_LOAD_TIMEOUT);
+
+        try {
+          const paypalInstance = await loadScript(config);
+          await this.waitForPayPalSDK();
+          clearTimeout(timeoutId);
+          this.scheduleCleanup();
+          resolve(paypalInstance);
+        } catch (error) {
+          clearTimeout(timeoutId);
+          this.cleanup();
+          reject(error);
+        }
+      });
+
+      const paypal = await this.paypalPromise;
+      if (!paypal?.Buttons) {
+        throw new Error('PayPal SDK not properly initialized');
+      }
+
+      return paypal;
     } catch (error) {
       console.error('PayPal initialization error:', error);
       this.cleanup();
@@ -137,6 +153,8 @@ export class PayPalService {
       }
 
       throw error;
+    } finally {
+      this.isInitializing = false;
     }
   }
 
@@ -156,7 +174,7 @@ export class PayPalService {
         throw new Error('PayPal SDK not properly initialized');
       }
 
-      return paypal.Buttons({
+      const buttons = paypal.Buttons({
         style: {
           layout: 'vertical',
           color: 'blue',
@@ -221,6 +239,13 @@ export class PayPalService {
           throw err;
         }
       });
+
+      // Verify button eligibility
+      if (!buttons.isEligible()) {
+        throw new Error('PayPal buttons not eligible for this configuration');
+      }
+
+      return buttons;
     } catch (error) {
       console.error('Error creating PayPal order:', error);
       toast.error('Failed to initialize payment system. Please try again later.');
@@ -239,12 +264,14 @@ export class PayPalService {
         window.removeEventListener('languagechange', this.languageChangeHandler);
       }
 
+      // Clean up PayPal scripts and iframes
       const scripts = document.querySelectorAll('script[src*="paypal"]');
       scripts.forEach(script => script.remove());
 
       const iframes = document.querySelectorAll('iframe[name*="paypal"]');
       iframes.forEach(iframe => iframe.remove());
 
+      // Clean up localStorage
       Object.keys(localStorage).forEach(key => {
         if (key.toLowerCase().includes('paypal')) {
           localStorage.removeItem(key);
@@ -254,6 +281,7 @@ export class PayPalService {
       this.paypalPromise = null;
       this.retryCount = 0;
       this.loadStartTime = 0;
+      this.isInitializing = false;
 
       if (window.paypal) {
         delete window.paypal;

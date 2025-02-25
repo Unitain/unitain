@@ -1,12 +1,13 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { Header } from './components/Header';
 import { AuthProvider } from './components/AuthProvider';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from './lib/store';
 import { CheckCircle, Clock, EuroIcon } from 'lucide-react';
 
-// Lazy load components with error boundaries
+// Lazy load components
 const Testimonials = lazy(() => import('./components/Testimonials'));
 const EligibilityChecker = lazy(() => import('./components/EligibilityChecker'));
 const PaymentPage = lazy(() => import('./components/PaymentPage'));
@@ -16,20 +17,34 @@ const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
 const FAQ = lazy(() => import('./components/FAQ'));
+const DashboardChatGPT = lazy(() => import('./components/DashboardChatGPT'));
+const AuthCallback = lazy(() => import('./components/AuthCallback'));
 
-interface Feature {
-  icon: typeof CheckCircle;
-  title: string;
-  description: string;
-}
+// Protected Route Component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuthStore();
+  const navigate = useNavigate();
 
-interface MainContentProps {
-  handleShowContact: () => void;
-  handleShowPayment: () => void;
+  React.useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/auth/signin');
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  return user ? <>{children}</> : null;
 }
 
 function ErrorBoundary({ children }: { children: React.ReactNode }) {
   const [hasError, setHasError] = React.useState(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const handleError = () => setHasError(true);
@@ -43,10 +58,13 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              setHasError(false);
+              navigate('/');
+            }}
             className="text-blue-600 hover:text-blue-800"
           >
-            Try again
+            Return Home
           </button>
         </div>
       </div>
@@ -54,6 +72,17 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
+}
+
+interface Feature {
+  icon: typeof CheckCircle;
+  title: string;
+  description: string;
+}
+
+interface MainContentProps {
+  handleShowContact: () => void;
+  handleShowPayment: () => void;
 }
 
 function MainContent({ handleShowContact, handleShowPayment }: MainContentProps) {
@@ -241,6 +270,7 @@ function AppContent() {
   const [showPayment, setShowPayment] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
 
   const handleShowContact = React.useCallback(() => {
     setShowContact(true);
@@ -249,10 +279,14 @@ function AppContent() {
   }, [navigate]);
 
   const handleShowPayment = React.useCallback(() => {
+    if (!user) {
+      navigate('/auth/signin');
+      return;
+    }
     setShowPayment(true);
     setShowContact(false);
     navigate('/');
-  }, [navigate]);
+  }, [navigate, user]);
 
   const handleBack = React.useCallback(() => {
     setShowPayment(false);
@@ -267,6 +301,16 @@ function AppContent() {
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
+            <Route path="/dashboard/*" element={
+              <ProtectedRoute>
+                <DashboardChatGPT />
+              </ProtectedRoute>
+            } />
+            <Route path="/auth/callback" element={
+              <Suspense fallback={<LoadingSpinner size="lg" />}>
+                <AuthCallback />
+              </Suspense>
+            } />
             <Route path="/privacy" element={<PrivacyPolicy onBack={handleBack} />} />
             <Route path="/terms" element={<TermsOfService onBack={handleBack} />} />
             <Route
@@ -284,6 +328,7 @@ function AppContent() {
                 )
               }
             />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
