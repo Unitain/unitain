@@ -1,24 +1,111 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
+interface ChatRequest {
+  message: string;
+}
+
+interface OpenAIResponse {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+  error?: {
+    message: string;
+    type: string;
+    code?: string;
+  };
+}
+
+interface ErrorResponse {
+  error: string;
+  details?: unknown;
+  code?: string;
+}
+
+function createErrorResponse(message: string, status: number, details?: unknown): Response {
+  const errorBody: ErrorResponse = {
+    error: message,
+    ...(details && { details })
+  };
+
+  return new Response(
+    JSON.stringify(errorBody),
+    { 
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status
+    }
+  );
+}
+
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { message } = await req.json();
-    console.log("📡 Forwarding request to OpenAI:", message);
-
-    // Get OpenAI API key from environment variables
-    const apiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!apiKey) {
-      throw new Error("Missing OpenAI API key");
+    // Validate request method
+    if (req.method !== 'POST') {
+      return createErrorResponse(
+        'Method not allowed',
+        405,
+        { allowed: ['POST'] }
+      );
     }
 
-    // Forward request to OpenAI API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Parse and validate request body
+    let body: ChatRequest;
+    try {
+      body = await req.json();
+    } catch (error) {
+      return createErrorResponse(
+        'Invalid JSON payload',
+        400,
+        { details: error.message }
+      );
+    }
+
+    // Validate message field
+    if (!body.message) {
+      return createErrorResponse(
+        'Message is required',
+        400,
+        { received: body }
+      );
+    }
+
+    if (typeof body.message !== 'string') {
+      return createErrorResponse(
+        'Message must be a string',
+        400,
+        { received: typeof body.message }
+      );
+    }
+
+    const message = body.message.trim();
+    if (!message) {
+      return createErrorResponse(
+        'Message cannot be empty',
+        400
+      );
+    }
+
+    // Get and validate API key
+    const apiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!apiKey) {
+      console.error("OpenAI API key not configured");
+      return createErrorResponse(
+        'Service configuration error',
+        503
+      );
+    }
+
+    // Call OpenAI API
+    console.log("📡 Sending request to OpenAI:", { messageLength: message.length });
+    
+    const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,31 +119,59 @@ serve(async (req) => {
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("❌ OpenAI API error:", error);
-      throw new Error(error.error?.message || 'OpenAI API error');
+    // Parse OpenAI response
+    let data: OpenAIResponse;
+    try {
+      data = await openAIResponse.json();
+    } catch (error) {
+      console.error("Failed to parse OpenAI response:", error);
+      return createErrorResponse(
+        'Invalid response from OpenAI',
+        502,
+        { details: error.message }
+      );
     }
 
-    const data = await response.json();
-    console.log("📡 Received response from OpenAI:", data);
-    
+    // Handle OpenAI error responses
+    if (!openAIResponse.ok) {
+      console.error("OpenAI API error:", data.error);
+      return createErrorResponse(
+        data.error?.message || 'OpenAI API error',
+        openAIResponse.status,
+        { type: data.error?.type, code: data.error?.code }
+      );
+    }
+
+    // Validate OpenAI response format
+    const responseMessage = data.choices?.[0]?.message?.content;
+    if (!responseMessage) {
+      console.error("Invalid OpenAI response format:", data);
+      return createErrorResponse(
+        'Invalid response format from OpenAI',
+        502,
+        { received: data }
+      );
+    }
+
+    // Return successful response
     return new Response(
-      JSON.stringify(data.choices[0].message.content),
+      JSON.stringify({ message: responseMessage }),
       { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json"
+        },
         status: 200
       }
     );
 
   } catch (error) {
-    console.error('ChatGPT proxy error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500
-      }
+    // Handle unexpected errors
+    console.error('Unexpected error in ChatGPT proxy:', error);
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      error instanceof Error ? { message: error.message } : undefined
     );
   }
 });

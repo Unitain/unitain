@@ -6,6 +6,7 @@ import { Upload } from './Upload';
 import { Download } from './Download';
 import { Chat } from './Chat';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 export function DashboardChatGPT() {
   const { user, isInitialized } = useAuthStore();

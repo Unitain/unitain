@@ -1,11 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables with validation
+// Get environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate configuration
+// Validate configuration with better error handling
 if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase configuration missing:', {
+    url: supabaseUrl ? 'present' : 'missing',
+    key: supabaseAnonKey ? 'present' : 'missing'
+  });
+  
+  // In development, provide more helpful error message
+  if (import.meta.env.DEV) {
+    console.info(`
+      Please ensure your .env file exists and contains:
+      VITE_SUPABASE_URL=your-project-url
+      VITE_SUPABASE_ANON_KEY=your-anon-key
+    `);
+  }
+  
   throw new Error('Missing Supabase configuration. Please check your environment variables.');
 }
 
@@ -16,7 +30,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     storage: localStorage,
-    storageKey: 'sb-auth-token'
+    storageKey: 'sb-auth-token',
+    flowType: 'pkce'
   },
   global: {
     headers: {
@@ -24,9 +39,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       'x-client-info': 'unitain',
       'Origin': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'
     }
-  },
-  db: {
-    schema: 'public'
   }
 });
 
@@ -37,7 +49,10 @@ export const isSupabaseConfigured = () => {
 
 // Helper to handle Supabase errors
 export const handleSupabaseError = (error: any): string => {
-  console.error('Supabase error:', error);
+  // Don't treat missing session as an error
+  if (error?.name === 'AuthSessionMissingError') {
+    return 'Please sign in to continue.';
+  }
 
   if (error?.message?.includes('Failed to fetch') || error?.message?.includes('CORS')) {
     return 'Network error. Please check your connection and try again.';

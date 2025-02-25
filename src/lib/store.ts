@@ -25,11 +25,10 @@ export const useAuthStore = create<AuthState>()(
         if (get().isInitialized) return;
 
         try {
-          // First check if we have a valid session in Supabase
+          // First try to get session from storage
           const { data: { session }, error: sessionError } = await supabase.auth.getSession();
           
           if (sessionError) {
-            console.warn('Failed to get session:', sessionError);
             // Clear any invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
@@ -41,7 +40,7 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          // If no session, clear state and return
+          // If no session exists, clear state and return
           if (!session) {
             set({ 
               user: null,
@@ -57,7 +56,6 @@ export const useAuthStore = create<AuthState>()(
               const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
               
               if (refreshError) {
-                console.warn('Session refresh failed:', refreshError);
                 // Clear invalid session data
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');

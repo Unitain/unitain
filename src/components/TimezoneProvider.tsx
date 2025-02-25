@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getTimezone } from '../lib/utils';
 
 interface TimezoneContextType {
@@ -17,8 +17,9 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const [timezone, setTimezone] = useState('UTC');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mounted = useRef(true);
-  const initialized = useRef(false);
+  const mounted = React.useRef(true);
+  const initialized = React.useRef(false);
+  const documentReady = React.useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -28,8 +29,8 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Safely detect timezone
-  useEffect(() => {
-    if (!mounted.current || initialized.current) return;
+  const detectTimezone = () => {
+    if (!mounted.current || initialized.current || !documentReady.current) return;
 
     try {
       const detectedTimezone = getTimezone();
@@ -42,29 +43,59 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
     } catch (err) {
-      console.error('Timezone detection failed:', err);
+      console.warn('Failed to detect timezone:', err);
       if (mounted.current) {
         setError('Failed to detect timezone');
         setTimezone('UTC');
         setLoading(false);
       }
     }
-  }, []);
+  };
 
-  // Re-detect on visibility change
   useEffect(() => {
+    // Wait for document to be fully loaded
+    const readyStateChange = () => {
+      if (document.readyState === 'complete') {
+        documentReady.current = true;
+        // Add a small delay to ensure extensions have initialized
+        setTimeout(detectTimezone, 100);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      documentReady.current = true;
+      setTimeout(detectTimezone, 100);
+    } else {
+      document.addEventListener('readystatechange', readyStateChange);
+    }
+
+    // Re-detect on visibility change
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !initialized.current) {
-        const detectedTimezone = getTimezone();
-        if (mounted.current) {
-          setTimezone(detectedTimezone);
-        }
+      if (
+        document.visibilityState === 'visible' &&
+        !initialized.current &&
+        documentReady.current
+      ) {
+        detectTimezone();
+      }
+    };
+
+    // Re-detect on storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app_timezone' && e.newValue && mounted.current) {
+        setTimezone(e.newValue);
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup
     return () => {
+      mounted.current = false;
+      document.removeEventListener('readystatechange', readyStateChange);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
