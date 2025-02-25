@@ -26,7 +26,12 @@ export async function fetchChatGPTResponse(message: string): Promise<string> {
 
     const data = await response.json();
     console.log("📡 Received response from ChatGPT API:", data);
-    return data;
+    
+    if (!data.message) {
+      throw new Error('Invalid response format from ChatGPT proxy');
+    }
+
+    return data.message;
   } catch (error) {
     console.error('ChatGPT API error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to get response from ChatGPT';

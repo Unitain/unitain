@@ -6,37 +6,11 @@ interface ChatRequest {
 }
 
 interface OpenAIResponse {
-  choices?: Array<{
-    message?: {
-      content?: string;
+  choices: Array<{
+    message: {
+      content: string;
     };
   }>;
-  error?: {
-    message: string;
-    type: string;
-    code?: string;
-  };
-}
-
-interface ErrorResponse {
-  error: string;
-  details?: unknown;
-  code?: string;
-}
-
-function createErrorResponse(message: string, status: number, details?: unknown): Response {
-  const errorBody: ErrorResponse = {
-    error: message,
-    ...(details && { details })
-  };
-
-  return new Response(
-    JSON.stringify(errorBody),
-    { 
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status
-    }
-  );
 }
 
 serve(async (req) => {
@@ -46,64 +20,47 @@ serve(async (req) => {
   }
 
   try {
-    // Validate request method
-    if (req.method !== 'POST') {
-      return createErrorResponse(
-        'Method not allowed',
-        405,
-        { allowed: ['POST'] }
-      );
-    }
-
     // Parse and validate request body
     let body: ChatRequest;
     try {
       body = await req.json();
+      console.log("📡 Received request payload:", body);
     } catch (error) {
-      return createErrorResponse(
-        'Invalid JSON payload',
-        400,
-        { details: error.message }
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON payload' }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
       );
     }
 
     // Validate message field
-    if (!body.message) {
-      return createErrorResponse(
-        'Message is required',
-        400,
-        { received: body }
+    if (!body.message || typeof body.message !== 'string' || !body.message.trim()) {
+      return new Response(
+        JSON.stringify({ error: 'Message must be a non-empty string' }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
       );
     }
 
-    if (typeof body.message !== 'string') {
-      return createErrorResponse(
-        'Message must be a string',
-        400,
-        { received: typeof body.message }
-      );
-    }
-
-    const message = body.message.trim();
-    if (!message) {
-      return createErrorResponse(
-        'Message cannot be empty',
-        400
-      );
-    }
-
-    // Get and validate API key
+    // Get OpenAI API key
     const apiKey = Deno.env.get("OPENAI_API_KEY");
     if (!apiKey) {
       console.error("OpenAI API key not configured");
-      return createErrorResponse(
-        'Service configuration error',
-        503
+      return new Response(
+        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500
+        }
       );
     }
 
     // Call OpenAI API
-    console.log("📡 Sending request to OpenAI:", { messageLength: message.length });
+    console.log("📡 Sending request to OpenAI:", { messageLength: body.message.length });
     
     const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -113,43 +70,35 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4",
-        messages: [{ role: "user", content: message }],
+        messages: [{ role: "user", content: body.message }],
         temperature: 0.7,
         max_tokens: 500,
       }),
     });
 
-    // Parse OpenAI response
-    let data: OpenAIResponse;
-    try {
-      data = await openAIResponse.json();
-    } catch (error) {
-      console.error("Failed to parse OpenAI response:", error);
-      return createErrorResponse(
-        'Invalid response from OpenAI',
-        502,
-        { details: error.message }
-      );
-    }
-
-    // Handle OpenAI error responses
     if (!openAIResponse.ok) {
-      console.error("OpenAI API error:", data.error);
-      return createErrorResponse(
-        data.error?.message || 'OpenAI API error',
-        openAIResponse.status,
-        { type: data.error?.type, code: data.error?.code }
+      const error = await openAIResponse.json();
+      console.error("OpenAI API error:", error);
+      return new Response(
+        JSON.stringify({ error: error.error?.message || 'OpenAI API error' }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: openAIResponse.status
+        }
       );
     }
 
-    // Validate OpenAI response format
-    const responseMessage = data.choices?.[0]?.message?.content;
+    const data: OpenAIResponse = await openAIResponse.json();
+    const responseMessage = data.choices[0]?.message?.content;
+
     if (!responseMessage) {
       console.error("Invalid OpenAI response format:", data);
-      return createErrorResponse(
-        'Invalid response format from OpenAI',
-        502,
-        { received: data }
+      return new Response(
+        JSON.stringify({ error: 'Invalid response format from OpenAI' }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 502
+        }
       );
     }
 
@@ -157,21 +106,21 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ message: responseMessage }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json"
-        },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200
       }
     );
 
   } catch (error) {
-    // Handle unexpected errors
     console.error('Unexpected error in ChatGPT proxy:', error);
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      error instanceof Error ? { message: error.message } : undefined
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Internal server error'
+      }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500
+      }
     );
   }
 });

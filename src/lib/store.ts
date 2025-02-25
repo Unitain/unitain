@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from './supabase';
-import toast from 'react-hot-toast';
 
 interface AuthState {
   user: User | null;
@@ -85,7 +84,6 @@ export const useAuthStore = create<AuthState>()(
               });
               return;
             } catch (error) {
-              console.warn('Session refresh error:', error);
               // Clear invalid session data
               localStorage.removeItem('sb-auth-token');
               localStorage.removeItem('auth-storage');
@@ -106,7 +104,6 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false
           });
         } catch (error) {
-          console.error('Failed to initialize auth store:', error);
           // Clear any invalid session data
           localStorage.removeItem('sb-auth-token');
           localStorage.removeItem('auth-storage');
