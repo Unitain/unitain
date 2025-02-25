@@ -11,7 +11,7 @@ export function getTimezone(): string {
     const storedTimezone = localStorage.getItem('app_timezone');
     if (storedTimezone) return storedTimezone;
 
-    // Then try to get from Intl API
+    // Try to get from Intl API
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone) {
       // Store for future use

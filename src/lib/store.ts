@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from './supabase';
+import toast from 'react-hot-toast';
 
 interface AuthState {
   user: User | null;
@@ -28,6 +29,11 @@ export const useAuthStore = create<AuthState>()(
           const { data: { session }, error: sessionError } = await supabase.auth.getSession();
           
           if (sessionError) {
+            // Silently handle missing session
+            if (sessionError.name !== 'AuthSessionMissingError') {
+              console.warn('Auth error:', sessionError.message);
+            }
+            
             // Clear any invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
@@ -55,6 +61,11 @@ export const useAuthStore = create<AuthState>()(
               const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
               
               if (refreshError) {
+                // Silently handle missing session
+                if (refreshError.name !== 'AuthSessionMissingError') {
+                  console.warn('Session refresh error:', refreshError.message);
+                }
+                
                 // Clear invalid session data
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getTimezone } from '../lib/utils';
 
 interface TimezoneContextType {
@@ -17,8 +17,8 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const [timezone, setTimezone] = useState('UTC');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mounted = React.useRef(true);
-  const initialized = React.useRef(false);
+  const mounted = useRef(true);
+  const initialized = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -27,38 +27,44 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Safely detect timezone
   useEffect(() => {
     if (!mounted.current || initialized.current) return;
 
-    try {
-      const detectedTimezone = getTimezone();
-      
-      // Update state if component is still mounted
-      if (mounted.current) {
-        setTimezone(detectedTimezone);
-        setError(null);
-        initialized.current = true;
-        setLoading(false);
+    const detectTimezone = () => {
+      try {
+        const detectedTimezone = getTimezone();
+        
+        if (mounted.current) {
+          setTimezone(detectedTimezone);
+          setError(null);
+          initialized.current = true;
+          setLoading(false);
+        }
+      } catch (err) {
+        console.warn('Failed to detect timezone:', err);
+        if (mounted.current) {
+          setError('Failed to detect timezone');
+          setTimezone('UTC');
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      console.warn('Failed to detect timezone:', err);
-      if (mounted.current) {
-        setError('Failed to detect timezone');
-        setTimezone('UTC');
-        setLoading(false);
-      }
+    };
+
+    // Wait for document to be ready
+    if (document.readyState === 'complete') {
+      detectTimezone();
+    } else {
+      const handleLoad = () => {
+        detectTimezone();
+        window.removeEventListener('load', handleLoad);
+      };
+      window.addEventListener('load', handleLoad);
+      return () => window.removeEventListener('load', handleLoad);
     }
   }, []);
 
-  const value = React.useMemo(() => ({
-    timezone,
-    loading,
-    error
-  }), [timezone, loading, error]);
-
   return (
-    <TimezoneContext.Provider value={value}>
+    <TimezoneContext.Provider value={{ timezone, loading, error }}>
       {children}
     </TimezoneContext.Provider>
   );
