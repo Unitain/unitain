@@ -19,6 +19,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const mounted = useRef(true);
   const initialized = useRef(false);
+  const documentReady = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -27,40 +28,75 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (!mounted.current || initialized.current) return;
+  // Safely detect timezone
+  const detectTimezone = () => {
+    if (!mounted.current || initialized.current || !documentReady.current) return;
 
-    const detectTimezone = () => {
-      try {
-        const detectedTimezone = getTimezone();
-        
-        if (mounted.current) {
-          setTimezone(detectedTimezone);
-          setError(null);
-          initialized.current = true;
-          setLoading(false);
-        }
-      } catch (err) {
-        console.warn('Failed to detect timezone:', err);
-        if (mounted.current) {
-          setError('Failed to detect timezone');
-          setTimezone('UTC');
-          setLoading(false);
-        }
+    try {
+      const detectedTimezone = getTimezone();
+      
+      // Update state if component is still mounted
+      if (mounted.current) {
+        setTimezone(detectedTimezone);
+        setError(null);
+        initialized.current = true;
+        setLoading(false);
+      }
+    } catch (err) {
+      console.warn('Timezone detection failed:', err);
+      if (mounted.current) {
+        setError('Failed to detect timezone');
+        setTimezone('UTC');
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Wait for document to be fully loaded
+    const readyStateChange = () => {
+      if (document.readyState === 'complete') {
+        documentReady.current = true;
+        // Add a small delay to ensure extensions have initialized
+        setTimeout(detectTimezone, 100);
       }
     };
 
-    // Wait for document to be ready
     if (document.readyState === 'complete') {
-      detectTimezone();
+      documentReady.current = true;
+      setTimeout(detectTimezone, 100);
     } else {
-      const handleLoad = () => {
-        detectTimezone();
-        window.removeEventListener('load', handleLoad);
-      };
-      window.addEventListener('load', handleLoad);
-      return () => window.removeEventListener('load', handleLoad);
+      document.addEventListener('readystatechange', readyStateChange);
     }
+
+    // Re-detect on visibility change
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !initialized.current &&
+        documentReady.current
+      ) {
+        detectTimezone();
+      }
+    };
+
+    // Re-detect on storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app_timezone' && e.newValue && mounted.current) {
+        setTimezone(e.newValue);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup
+    return () => {
+      mounted.current = false;
+      document.removeEventListener('readystatechange', readyStateChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (
