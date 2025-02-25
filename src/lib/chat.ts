@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import toast from 'react-hot-toast';
-import { addSystemMessage } from './chat';
 import { getTimezone } from './utils';
 
 export type ChatMessage = {
@@ -113,5 +112,3 @@ export function addSystemMessage(message: string): void {
   });
   window.dispatchEvent(event);
 }
-
-export const addChatMessage = addSystemMessage;

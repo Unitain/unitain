@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { getTimezone } from '../lib/utils';
 
 interface TimezoneContextType {
   timezone: string;
@@ -32,29 +33,14 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     if (!mounted.current || initialized.current || !documentReady.current) return;
 
     try {
-      // Try to get timezone from Intl API first
-      let detectedTimezone: string;
-      try {
-        detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (!detectedTimezone) throw new Error('No timezone detected');
-      } catch (err) {
-        console.warn('Intl API timezone detection failed:', err);
-        detectedTimezone = 'UTC';
-      }
-
+      const detectedTimezone = getTimezone();
+      
       // Update state if component is still mounted
       if (mounted.current) {
         setTimezone(detectedTimezone);
         setError(null);
         initialized.current = true;
         setLoading(false);
-
-        // Store timezone in localStorage for persistence
-        try {
-          localStorage.setItem('app_timezone', detectedTimezone);
-        } catch (err) {
-          console.warn('Failed to store timezone in localStorage:', err);
-        }
 
         // Create a meta tag for timezone info
         const metaTag = document.querySelector('meta[name="timezone"]') || document.createElement('meta');

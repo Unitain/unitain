@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function getTimezone(): string {
   try {
-    // First try to get from localStorage
+    // First try to get from localStorage to avoid re-detection
     const storedTimezone = localStorage.getItem('app_timezone');
     if (storedTimezone) return storedTimezone;
 
@@ -23,12 +23,13 @@ export function getTimezone(): string {
         localStorage.setItem('app_timezone', timezone);
         
         // Create meta tag if it doesn't exist
-        const metaTag = document.querySelector('meta[name="timezone"]') || document.createElement('meta');
-        metaTag.setAttribute('name', 'timezone');
-        metaTag.setAttribute('content', timezone);
-        if (!metaTag.parentNode) {
+        let metaTag = document.querySelector('meta[name="timezone"]');
+        if (!metaTag) {
+          metaTag = document.createElement('meta');
+          metaTag.setAttribute('name', 'timezone');
           document.head.appendChild(metaTag);
         }
+        metaTag.setAttribute('content', timezone);
       } catch (err) {
         console.warn('Failed to store timezone:', err);
       }

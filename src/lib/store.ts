@@ -24,23 +24,68 @@ export const useAuthStore = create<AuthState>()(
         if (get().isInitialized) return;
 
         try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            throw error;
-          }
-          
-          // If session exists but is expired, try to refresh it
-          if (session?.expires_at && new Date(session.expires_at * 1000) < new Date()) {
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError) throw refreshError;
-            
+          // First try to get session from storage
+          const storedToken = localStorage.getItem('sb-auth-token');
+          if (!storedToken) {
             set({ 
-              user: refreshData.session?.user ?? null,
+              user: null,
               isInitialized: true,
               isLoading: false
             });
             return;
+          }
+
+          // Get current session
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.warn('Failed to get session:', error);
+            // Clear invalid session data
+            localStorage.removeItem('sb-auth-token');
+            localStorage.removeItem('auth-storage');
+            set({ 
+              user: null,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
+          }
+          
+          // If session exists but is expired, try to refresh it
+          if (session?.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+            try {
+              const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshError) {
+                console.warn('Session refresh failed:', refreshError);
+                // Clear invalid session data
+                localStorage.removeItem('sb-auth-token');
+                localStorage.removeItem('auth-storage');
+                set({ 
+                  user: null,
+                  isInitialized: true,
+                  isLoading: false
+                });
+                return;
+              }
+              
+              set({ 
+                user: refreshData.session?.user ?? null,
+                isInitialized: true,
+                isLoading: false
+              });
+              return;
+            } catch (error) {
+              console.warn('Session refresh error:', error);
+              // Clear invalid session data
+              localStorage.removeItem('sb-auth-token');
+              localStorage.removeItem('auth-storage');
+              set({ 
+                user: null,
+                isInitialized: true,
+                isLoading: false
+              });
+              return;
+            }
           }
           
           set({ 
@@ -51,13 +96,13 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Failed to initialize auth store:', error);
           // Clear any invalid session data
+          localStorage.removeItem('sb-auth-token');
+          localStorage.removeItem('auth-storage');
           set({ 
             user: null,
             isInitialized: true,
             isLoading: false 
           });
-          localStorage.removeItem('sb-auth-token');
-          localStorage.removeItem('auth-storage');
         }
       }
     }),

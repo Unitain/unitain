@@ -1,12 +1,12 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { Header } from './components/Header';
 import { AuthProvider } from './components/AuthProvider';
-import { useAuthStore } from './lib/store';
 import { useTranslation } from 'react-i18next';
+import { CheckCircle, Clock, EuroIcon } from 'lucide-react';
 
-// Lazy load components
+// Lazy load components with error boundaries
 const Testimonials = lazy(() => import('./components/Testimonials'));
 const EligibilityChecker = lazy(() => import('./components/EligibilityChecker'));
 const PaymentPage = lazy(() => import('./components/PaymentPage'));
@@ -17,97 +17,62 @@ const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
 const DashboardChatGPT = lazy(() => import('./components/DashboardChatGPT'));
 
-function AppContent() {
-  const [showPayment, setShowPayment] = useState(false);
-  const [showContact, setShowContact] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
-  const { user, isLoading } = useAuthStore();
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleShowContact = () => {
-    setShowContact(true);
-    setShowPayment(false);
-    setShowPrivacy(false);
-    setShowTerms(false);
-    navigate('/');
-  };
-
-  const handleShowPayment = () => {
-    setShowPayment(true);
-    setShowContact(false);
-    setShowPrivacy(false);
-    setShowTerms(false);
-    navigate('/');
-  };
-
-  const handleBack = () => {
-    setShowPayment(false);
-    setShowContact(false);
-    setShowPrivacy(false);
-    setShowTerms(false);
-    navigate('/');
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <Suspense fallback={<LoadingSpinner size="lg" />}>
-        <Routes>
-          <Route 
-            path="/dashboard/:userId/gpt" 
-            element={
-              <Suspense fallback={<LoadingSpinner size="lg" />}>
-                <DashboardChatGPT />
-              </Suspense>
-            } 
-          />
-          <Route path="/privacy" element={<PrivacyPolicy onBack={handleBack} />} />
-          <Route path="/terms" element={<TermsOfService onBack={handleBack} />} />
-          <Route
-            path="/"
-            element={
-              showContact ? (
-                <ContactPage onBack={handleBack} />
-              ) : showPayment ? (
-                <PaymentPage onBack={handleBack} />
-              ) : (
-                <MainContent
-                  handleShowContact={handleShowContact}
-                  handleShowPayment={handleShowPayment}
-                />
-              )
-            }
-          />
-        </Routes>
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <CookieConsent />
-      </Suspense>
-    </div>
-  );
+interface Feature {
+  icon: typeof CheckCircle;
+  title: string;
+  description: string;
 }
 
-function MainContent({ handleShowContact, handleShowPayment }: { 
+interface MainContentProps {
   handleShowContact: () => void;
   handleShowPayment: () => void;
-}) {
-  const { t } = useTranslation();
+}
 
-  const features = React.useMemo(() => [
+function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  const [hasError, setHasError] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleError = () => setHasError(true);
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function MainContent({ handleShowContact, handleShowPayment }: MainContentProps) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const features: Feature[] = React.useMemo(() => [
     {
+      icon: CheckCircle,
       title: t('benefits.tax.title'),
       description: t('benefits.tax.description'),
     },
     {
+      icon: Clock,
       title: t('benefits.paperwork.title'),
       description: t('benefits.paperwork.description'),
     },
     {
+      icon: EuroIcon,
       title: t('benefits.process.title'),
       description: t('benefits.process.description'),
     },
@@ -161,32 +126,38 @@ function MainContent({ handleShowContact, handleShowPayment }: {
         </div>
       </header>
 
-      {/* Features Section */}
-      <section className="py-20">
+      {/* Benefits Section */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="text-center p-6">
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div key={index} className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <Icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Eligibility Checker Section */}
-      <section id="eligibility-checker" className="py-20 bg-white">
+      <section id="eligibility-checker" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">
             {t('eligibility.title')}
           </h2>
-          <Suspense fallback={<LoadingSpinner />}>
-            <EligibilityChecker 
-              onShowPayment={handleShowPayment}
-              onShowContact={handleShowContact}
-            />
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <EligibilityChecker 
+                onShowPayment={handleShowPayment}
+                onShowContact={handleShowContact}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </section>
 
@@ -202,7 +173,7 @@ function MainContent({ handleShowContact, handleShowPayment }: {
                 <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                   {item.step}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">
+                <h3 className="font-semibold mb-2">
                   {t(item.titleKey)}
                 </h3>
                 <p className="text-gray-600">
@@ -216,9 +187,11 @@ function MainContent({ handleShowContact, handleShowPayment }: {
 
       {/* Testimonials Section */}
       <section className="py-20 bg-gray-50">
-        <Suspense fallback={<LoadingSpinner />}>
-          <Testimonials />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Testimonials />
+          </Suspense>
+        </ErrorBoundary>
       </section>
 
       {/* CTA Section */}
@@ -248,9 +221,79 @@ function MainContent({ handleShowContact, handleShowPayment }: {
         </div>
       </section>
 
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <Footer />
+        </Suspense>
+      </ErrorBoundary>
+    </div>
+  );
+}
+
+function AppContent() {
+  const [showPayment, setShowPayment] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+  const navigate = useNavigate();
+
+  const handleShowContact = React.useCallback(() => {
+    setShowContact(true);
+    setShowPayment(false);
+    navigate('/');
+  }, [navigate]);
+
+  const handleShowPayment = React.useCallback(() => {
+    setShowPayment(true);
+    setShowContact(false);
+    navigate('/');
+  }, [navigate]);
+
+  const handleBack = React.useCallback(() => {
+    setShowPayment(false);
+    setShowContact(false);
+    navigate('/');
+  }, [navigate]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner size="lg" />}>
+          <Routes>
+            <Route 
+              path="/dashboard/:userId/gpt" 
+              element={
+                <Suspense fallback={<LoadingSpinner size="lg" />}>
+                  <DashboardChatGPT />
+                </Suspense>
+              } 
+            />
+            <Route path="/privacy" element={<PrivacyPolicy onBack={handleBack} />} />
+            <Route path="/terms" element={<TermsOfService onBack={handleBack} />} />
+            <Route
+              path="/"
+              element={
+                showContact ? (
+                  <ContactPage onBack={handleBack} />
+                ) : showPayment ? (
+                  <PaymentPage onBack={handleBack} />
+                ) : (
+                  <MainContent
+                    handleShowContact={handleShowContact}
+                    handleShowPayment={handleShowPayment}
+                  />
+                )
+              }
+            />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <CookieConsent />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

@@ -62,19 +62,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Try to recover existing session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.warn('Failed to get session:', sessionError);
+          if (mounted) {
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
 
         if (session) {
           // If session exists but is expired, try to refresh it
-          if (new Date(session.expires_at!) < new Date()) {
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError) throw refreshError;
-            if (refreshData.session) {
-              setUser(refreshData.session.user);
+          if (session.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+            try {
+              const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshError) {
+                console.warn('Session refresh failed:', refreshError);
+                if (mounted) {
+                  setUser(null);
+                  setLoading(false);
+                }
+                // Clear invalid session data
+                localStorage.removeItem('sb-auth-token');
+                localStorage.removeItem('auth-storage');
+                return;
+              }
+              if (mounted && refreshData.session) {
+                setUser(refreshData.session.user);
+              }
+            } catch (error) {
+              console.warn('Session refresh error:', error);
+              if (mounted) {
+                setUser(null);
+                setLoading(false);
+              }
+              return;
             }
           } else {
-            setUser(session.user);
+            if (mounted) {
+              setUser(session.user);
+            }
           }
+        }
+
+        if (mounted) {
+          setLoading(false);
         }
 
         return () => {
@@ -84,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Auth initialization error:', error);
         if (mounted) {
+          setUser(null);
           setLoading(false);
           if (error instanceof Error) {
             toast.error(error.message);
