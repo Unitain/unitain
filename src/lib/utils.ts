@@ -14,19 +14,17 @@ export function getTimezone(): string {
     // Try to get from Intl API
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone) {
-      // Store for future use
       try {
         localStorage.setItem('app_timezone', timezone);
       } catch (err) {
-        console.warn('Failed to store timezone:', err);
+        console.debug('Failed to store timezone:', err);
       }
       return timezone;
     }
 
-    // Fallback to UTC if all else fails
     return 'UTC';
   } catch (error) {
-    console.warn('Failed to detect timezone:', error);
+    console.debug('Failed to detect timezone:', error);
     return 'UTC';
   }
 }
@@ -41,7 +39,7 @@ export function formatDate(date: string | Date, locale: string = 'en-US'): strin
       timeZone: getTimezone()
     }).format(dateObj);
   } catch (error) {
-    console.warn('Date formatting failed:', error);
+    console.debug('Date formatting failed:', error);
     return new Date(date).toLocaleDateString();
   }
 }

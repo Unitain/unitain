@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from './supabase';
-import toast from 'react-hot-toast';
 
 interface AuthState {
   user: User | null;
@@ -31,10 +30,9 @@ export const useAuthStore = create<AuthState>()(
           if (sessionError) {
             // Silently handle missing session
             if (sessionError.name !== 'AuthSessionMissingError') {
-              console.warn('Auth error:', sessionError.message);
+              console.debug('Auth error:', sessionError.message);
             }
             
-            // Clear any invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
             set({ 
@@ -63,10 +61,9 @@ export const useAuthStore = create<AuthState>()(
               if (refreshError) {
                 // Silently handle missing session
                 if (refreshError.name !== 'AuthSessionMissingError') {
-                  console.warn('Session refresh error:', refreshError.message);
+                  console.debug('Session refresh error:', refreshError.message);
                 }
                 
-                // Clear invalid session data
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
                 set({ 
@@ -93,29 +90,26 @@ export const useAuthStore = create<AuthState>()(
                 isInitialized: true,
                 isLoading: false
               });
-              return;
             } catch (error) {
-              // Clear invalid session data
               localStorage.removeItem('sb-auth-token');
               localStorage.removeItem('auth-storage');
               set({ 
                 user: null,
                 isInitialized: true,
-                isLoading: false
+                isLoading: false 
               });
               return;
             }
+          } else {
+            // Valid session exists
+            localStorage.setItem('sb-auth-token', session.access_token);
+            set({ 
+              user: session.user,
+              isInitialized: true,
+              isLoading: false
+            });
           }
-
-          // Valid session exists
-          localStorage.setItem('sb-auth-token', session.access_token);
-          set({ 
-            user: session.user,
-            isInitialized: true,
-            isLoading: false
-          });
         } catch (error) {
-          // Clear any invalid session data
           localStorage.removeItem('sb-auth-token');
           localStorage.removeItem('auth-storage');
           set({ 
