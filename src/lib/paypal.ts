@@ -52,37 +52,59 @@ export class PayPalService {
     }
   }
 
-  private getConfig(): PayPalConfig {
-    const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID?.trim();
+  private validateClientId(clientId: string | undefined): string {
     if (!clientId) {
-      throw new Error('PayPal client ID not configured. Please check your environment variables.');
+      throw new Error('PayPal client ID is missing. Please check your environment variables.');
     }
 
-    // Get language from i18next with fallback
-    let locale = 'en_US';
+    const trimmedId = clientId.trim();
+    if (!trimmedId) {
+      throw new Error('PayPal client ID is empty. Please check your environment variables.');
+    }
+
+    // Basic format validation for PayPal client ID
+    if (!/^[A-Za-z0-9_-]{20,}$/.test(trimmedId)) {
+      throw new Error('Invalid PayPal client ID format. Please check your environment variables.');
+    }
+
+    return trimmedId;
+  }
+
+  private getConfig(): PayPalConfig {
     try {
-      const lang = i18next.language || document.documentElement?.lang || navigator.language;
-      locale = lang.toLowerCase().startsWith('de') ? 'de_DE' : 'en_US';
+      // Use the correct client ID
+      const clientId = "AZIyqfEJN1lnumZt41tTtIMBgv8U0VHYUyMq-IIgoJNnzX7E83-5w6TT4RG_9TTaI0RGZzfRcL7it5QZ";
+
+      // Get language from i18next with fallback
+      let locale = 'en_US';
+      try {
+        const lang = i18next.language || document.documentElement?.lang || navigator.language;
+        locale = lang.toLowerCase().startsWith('de') ? 'de_DE' : 'en_US';
+      } catch (error) {
+        console.warn('Failed to detect language:', error);
+      }
+
+      const config = {
+        "client-id": clientId,
+        currency: "EUR",
+        intent: "capture" as const,
+        components: "buttons",
+        "enable-funding": "card",
+        "disable-funding": "credit,paylater",
+        locale
+      };
+
+      console.log('PayPal Configuration:', {
+        ...config,
+        "client-id": "[REDACTED]",
+        timestamp: new Date().toISOString()
+      });
+
+      return config;
     } catch (error) {
-      console.warn('Failed to detect language:', error);
+      console.error('Failed to get PayPal configuration:', error);
+      throw error;
     }
-
-    const config = {
-      "client-id": clientId,
-      currency: "EUR",
-      intent: "capture" as const,
-      components: "buttons",
-      "enable-funding": "card",
-      "disable-funding": "credit,paylater",
-      locale
-    };
-
-    console.log('PayPal Configuration:', {
-      ...config,
-      "client-id": "[REDACTED]" // Don't log sensitive data
-    });
-
-    return config;
   }
 
   private async waitForPayPalSDK(timeoutMs: number = 5000): Promise<void> {
@@ -123,6 +145,9 @@ export class PayPalService {
         console.log('PayPal SDK already loaded');
         return window.paypal;
       }
+
+      // Clean up any existing PayPal elements before initializing
+      this.cleanup();
 
       const config = this.getConfig();
       this.loadStartTime = Date.now();

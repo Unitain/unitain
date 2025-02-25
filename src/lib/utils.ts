@@ -14,11 +14,16 @@ export function getTimezone(): string {
     // Try to get from Intl API with fallback
     let timezone = 'UTC';
     try {
-      const resolvedOptions = Intl.DateTimeFormat().resolvedOptions();
-      if (resolvedOptions && resolvedOptions.timeZone) {
-        timezone = resolvedOptions.timeZone;
+      // Check if Intl API is available and working
+      if (typeof Intl === 'object' && Intl?.DateTimeFormat) {
+        const resolvedOptions = Intl.DateTimeFormat().resolvedOptions();
+        if (resolvedOptions?.timeZone) {
+          timezone = resolvedOptions.timeZone;
+        } else {
+          console.warn('Intl API returned invalid timezone');
+        }
       } else {
-        console.warn('Intl API returned invalid timezone');
+        console.warn('Intl API not available');
       }
     } catch (err) {
       console.warn('Failed to detect timezone from Intl API:', err);
