@@ -33,6 +33,7 @@ export const useAuthStore = create<AuthState>()(
               console.debug('Auth error:', sessionError.message);
             }
             
+            // Clean up any invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
             set({ 
@@ -64,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
                   console.debug('Session refresh error:', refreshError.message);
                 }
                 
+                // Clean up any invalid session data
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
                 set({ 
@@ -91,6 +93,7 @@ export const useAuthStore = create<AuthState>()(
                 isLoading: false
               });
             } catch (error) {
+              // Clean up any invalid session data
               localStorage.removeItem('sb-auth-token');
               localStorage.removeItem('auth-storage');
               set({ 
@@ -98,7 +101,6 @@ export const useAuthStore = create<AuthState>()(
                 isInitialized: true,
                 isLoading: false 
               });
-              return;
             }
           } else {
             // Valid session exists
@@ -110,6 +112,7 @@ export const useAuthStore = create<AuthState>()(
             });
           }
         } catch (error) {
+          // Clean up any invalid session data
           localStorage.removeItem('sb-auth-token');
           localStorage.removeItem('auth-storage');
           set({ 

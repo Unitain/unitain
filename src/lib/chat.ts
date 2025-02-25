@@ -21,13 +21,18 @@ export async function saveChatMessage(userId: string, role: 'user' | 'assistant'
     });
 
     if (error) {
-      console.error(`Failed to save chat message for user ${userId}:`, error);
-      throw error;
+      console.debug(`Failed to save chat message for user ${userId}:`, error);
+      // Don't throw for non-critical errors
+      if (error.message !== 'JWT expired' && !error.message.includes('not found')) {
+        throw error;
+      }
     }
   } catch (error) {
-    console.error('Failed to save chat message:', error);
-    toast.error('Failed to save message');
-    throw error;
+    console.debug('Failed to save chat message:', error);
+    // Only show error toast for critical errors
+    if (error instanceof Error && !error.message.includes('JWT')) {
+      toast.error('Failed to save message');
+    }
   }
 }
 
@@ -40,8 +45,11 @@ export async function getChatHistory(userId: string): Promise<ChatMessage[]> {
     });
 
     if (error) {
-      console.error('Failed to fetch chat history:', error);
-      throw error;
+      // Don't throw for auth errors
+      if (error.message !== 'JWT expired' && !error.message.includes('not found')) {
+        throw error;
+      }
+      return [];
     }
 
     return data.map(msg => ({
@@ -49,8 +57,11 @@ export async function getChatHistory(userId: string): Promise<ChatMessage[]> {
       timestamp: new Date(msg.timestamp)
     }));
   } catch (error) {
-    console.error('Failed to fetch chat history:', error);
-    toast.error('Failed to load chat history');
+    console.debug('Failed to fetch chat history:', error);
+    // Only show error toast for critical errors
+    if (error instanceof Error && !error.message.includes('JWT')) {
+      toast.error('Failed to load chat history');
+    }
     return [];
   }
 }
@@ -62,14 +73,18 @@ export async function clearChatHistory(userId: string): Promise<void> {
     });
 
     if (error) {
-      console.error('Failed to clear chat history:', error);
-      throw error;
+      // Don't throw for auth errors
+      if (error.message !== 'JWT expired' && !error.message.includes('not found')) {
+        throw error;
+      }
     }
     toast.success('Chat history cleared');
   } catch (error) {
-    console.error('Failed to clear chat history:', error);
-    toast.error('Failed to clear chat history');
-    throw error;
+    console.debug('Failed to clear chat history:', error);
+    // Only show error toast for critical errors
+    if (error instanceof Error && !error.message.includes('JWT')) {
+      toast.error('Failed to clear chat history');
+    }
   }
 }
 

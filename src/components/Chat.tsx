@@ -35,8 +35,8 @@ export function Chat() {
         setMessages(history);
       }
     } catch (error) {
-      console.error('Failed to load chat history:', error);
-      toast.error('Failed to load chat history');
+      console.debug('Failed to load chat history:', error);
+      // Error is already handled in getChatHistory
     }
   };
 
@@ -57,21 +57,29 @@ export function Chat() {
     setIsLoading(true);
 
     try {
-      // Save user message
-      await saveChatMessage(user.id, 'user', userMessage);
-      setMessages(prev => [...prev, {
+      console.debug('📡 Sending message from Chat UI:', userMessage);
+
+      // Add user message to UI immediately
+      const userMessageObj = {
         id: crypto.randomUUID(),
-        role: 'user',
+        role: 'user' as const,
         content: userMessage,
         timestamp: new Date()
-      }]);
+      };
+      setMessages(prev => [...prev, userMessageObj]);
 
       // Get AI response
       const response = await fetchChatGPTResponse(userMessage);
-      
+      console.debug('📡 Received response:', response);
+
       if (mounted.current) {
-        // Save AI response
-        await saveChatMessage(user.id, 'assistant', response);
+        // Save messages to database
+        await Promise.all([
+          saveChatMessage(user.id, 'user', userMessage),
+          saveChatMessage(user.id, 'assistant', response)
+        ]);
+
+        // Add AI response to UI
         setMessages(prev => [...prev, {
           id: crypto.randomUUID(),
           role: 'assistant',
@@ -80,8 +88,11 @@ export function Chat() {
         }]);
       }
     } catch (error) {
-      console.error('Chat error:', error);
-      toast.error('Failed to send message');
+      console.debug('Chat error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to send message');
+      
+      // Remove user message from UI if AI response failed
+      setMessages(prev => prev.filter(msg => msg.content !== userMessage));
     } finally {
       if (mounted.current) {
         setIsLoading(false);
