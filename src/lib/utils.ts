@@ -7,28 +7,51 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function getTimezone(): string {
   try {
-    // First try to get from Intl API
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (timezone) return timezone;
+    // First try to get from localStorage to avoid re-detection
+    const storedTimezone = localStorage.getItem('app_timezone');
+    if (storedTimezone) return storedTimezone;
 
-    // Fallback to HTML attribute if available
-    if (typeof document !== 'undefined') {
-      const htmlElement = document.documentElement;
-      if (htmlElement && htmlElement.getAttribute('data-timezone')) {
-        return htmlElement.getAttribute('data-timezone') || 'UTC';
+    // Try to get from Intl API with fallback
+    let timezone = 'UTC';
+    try {
+      // Check if Intl API is available and working
+      if (typeof Intl === 'object' && Intl?.DateTimeFormat) {
+        const resolvedOptions = Intl.DateTimeFormat().resolvedOptions();
+        if (resolvedOptions?.timeZone) {
+          timezone = resolvedOptions.timeZone;
+        } else {
+          console.warn('Intl API returned invalid timezone');
+        }
+      } else {
+        console.warn('Intl API not available');
+      }
+    } catch (err) {
+      console.warn('Failed to detect timezone from Intl API:', err);
+    }
+
+    // Store detected timezone if valid
+    if (timezone && timezone !== 'UTC') {
+      try {
+        localStorage.setItem('app_timezone', timezone);
+      } catch (err) {
+        console.warn('Failed to store timezone:', err);
       }
     }
 
-    return 'UTC';
+    return timezone;
   } catch (error) {
-    console.warn('Failed to detect timezone:', error);
+    console.warn('Failed to handle timezone:', error);
     return 'UTC';
   }
 }
 
 export function formatDate(date: string | Date, locale: string = 'en-US'): string {
   try {
-    const dateObj = new Date(date);
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) {
+      throw new Error('Invalid date');
+    }
+
     return new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'long',

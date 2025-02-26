@@ -6,6 +6,15 @@ import toast from 'react-hot-toast';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, initialize } = useAuthStore();
+  const successMessageShownRef = React.useRef(false);
+  const mounted = React.useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -16,15 +25,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await initialize();
         }
 
-        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (mounted) {
             setUser(session?.user ?? null);
             
-            // Show appropriate notifications
             switch (event) {
               case 'SIGNED_IN':
-                toast.success('Successfully signed in!');
+                if (!successMessageShownRef.current) {
+                  toast.success('Successfully signed in!');
+                  successMessageShownRef.current = true;
+                }
                 break;
               case 'USER_UPDATED':
                 toast.success('Profile updated');
@@ -36,31 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 toast.success('Account deleted successfully');
                 break;
               case 'SIGNED_OUT':
-                // Clear all auth-related storage
+                successMessageShownRef.current = false;
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
-                localStorage.removeItem('pendingEligibilityCheck');
                 break;
             }
           }
         });
-
-        // Try to recover existing session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        if (session) {
-          // If session exists but is expired, try to refresh it
-          if (new Date(session.expires_at!) < new Date()) {
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError) throw refreshError;
-            if (refreshData.session) {
-              setUser(refreshData.session.user);
-            }
-          } else {
-            setUser(session.user);
-          }
-        }
 
         return () => {
           mounted = false;

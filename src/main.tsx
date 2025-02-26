@@ -5,6 +5,7 @@ import './index.css';
 import { initScrollTracking, initExternalLinkTracking, initSilentLinkTracking } from './lib/analytics';
 import { initializeConsent } from './lib/consent';
 import { TimezoneProvider } from './components/TimezoneProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './lib/i18n';
 
 // Initialize consent management
@@ -15,10 +16,15 @@ initScrollTracking();
 initExternalLinkTracking();
 initSilentLinkTracking();
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Failed to find root element');
+
+createRoot(rootElement).render(
   <StrictMode>
-    <TimezoneProvider>
-      <App />
-    </TimezoneProvider>
+    <ErrorBoundary>
+      <TimezoneProvider>
+        <App />
+      </TimezoneProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

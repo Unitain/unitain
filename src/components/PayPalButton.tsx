@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { paypalService } from '../lib/paypal';
-import { useAuthStore } from '../lib/store';
 import { Loader2 } from 'lucide-react';
+import { useAuthStore } from '../lib/store';
 import { useTranslation } from 'react-i18next';
+import { paypalService } from '../lib/paypal';
 import toast from 'react-hot-toast';
 
 interface PayPalButtonProps {
@@ -21,25 +21,26 @@ export function PayPalButton({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const buttonContainerRef = useRef<HTMLDivElement>(null);
-  const { user, isInitialized } = useAuthStore();
-  const { t, i18n } = useTranslation();
+  const { user } = useAuthStore();
+  const { t } = useTranslation();
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<number>();
+  const initializationAttemptRef = useRef(0);
 
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
       mountedRef.current = false;
       if (retryTimeoutRef.current) {
         window.clearTimeout(retryTimeoutRef.current);
       }
+      paypalService.cleanup();
     };
   }, []);
 
   useEffect(() => {
-    let timeoutId: number;
-
-    const initializePayPalButton = async () => {
-      if (!buttonContainerRef.current || !user || !isInitialized) {
+    const initializePayPal = async () => {
+      if (!buttonContainerRef.current || !user) {
         setError(t('payment.signInRequired'));
         setIsLoading(false);
         return;
@@ -64,60 +65,47 @@ export function PayPalButton({
           throw new Error(t('payment.signInRequired'));
         }
 
+        // Create PayPal order
         const buttons = await paypalService.createOrder(amount, user.id);
-        
-        if (!mountedRef.current) return;
 
-        if (!buttons) {
-          throw new Error(t('payment.systemError'));
+        // Render buttons
+        if (buttonContainerRef.current && buttons) {
+          await buttons.render(buttonContainerRef.current);
+        } else {
+          throw new Error('Failed to initialize PayPal buttons');
         }
 
-        await buttons.render(buttonContainerRef.current);
-        
-        if (!mountedRef.current) return;
-        setIsLoading(false);
+        if (mountedRef.current) {
+          setIsLoading(false);
+          initializationAttemptRef.current = 0; // Reset attempts on success
+        }
       } catch (error) {
-        if (!mountedRef.current) return;
+        console.error('Failed to initialize PayPal:', error);
         
-        console.error('Failed to initialize PayPal button:', error);
-        setIsLoading(false);
+        if (mountedRef.current) {
+          setIsLoading(false);
+          setError(error instanceof Error ? error.message : 'Failed to initialize payment');
+          toast.error(t('payment.error'));
 
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : t('payment.systemError');
-
-        setError(errorMessage);
-        
-        if (error instanceof Error) {
-          onError?.(error);
-          toast.error(errorMessage);
-        }
-
-        // Retry initialization after a delay
-        if (retryTimeoutRef.current) {
-          window.clearTimeout(retryTimeoutRef.current);
-        }
-
-        retryTimeoutRef.current = window.setTimeout(() => {
-          if (mountedRef.current) {
-            initializePayPalButton();
+          // Retry initialization with exponential backoff
+          if (initializationAttemptRef.current < 3) {
+            const delay = Math.pow(2, initializationAttemptRef.current) * 1000;
+            initializationAttemptRef.current++;
+            
+            retryTimeoutRef.current = window.setTimeout(() => {
+              if (mountedRef.current) {
+                initializePayPal();
+              }
+            }, delay);
           }
-        }, 5000);
+        }
       }
     };
 
-    initializePayPalButton();
+    initializePayPal();
+  }, [amount, user, t, onSuccess, onError, onCancel]);
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      if (retryTimeoutRef.current) {
-        window.clearTimeout(retryTimeoutRef.current);
-      }
-      paypalService.cleanup();
-    };
-  }, [amount, user, isInitialized, onSuccess, onError, onCancel, t]);
-
-  if (!isInitialized || !user) {
+  if (!user) {
     return (
       <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
         {t('payment.signInRequired')}
@@ -130,7 +118,13 @@ export function PayPalButton({
       <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
         <p className="mb-2">{error}</p>
         <button 
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            paypalService.cleanup();
+            initializationAttemptRef.current = 0;
+            setError(null);
+            setIsLoading(true);
+            window.location.reload();
+          }}
           className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
         >
           {t('common.retry')}

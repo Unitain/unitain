@@ -12,7 +12,6 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
-// Create store with optimized persistence
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -25,27 +24,84 @@ export const useAuthStore = create<AuthState>()(
         if (get().isInitialized) return;
 
         try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            throw error;
+          // Get session from storage first
+          const storedToken = localStorage.getItem('sb-auth-token');
+          const storedSession = storedToken ? await supabase.auth.getSession() : null;
+
+          // If stored session exists and is valid, use it
+          if (storedSession?.data?.session?.user) {
+            set({ 
+              user: storedSession.data.session.user,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
           }
+
+          // Otherwise try to get a fresh session
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+          if (sessionError) {
+            // Clean up invalid session data
+            localStorage.removeItem('sb-auth-token');
+            localStorage.removeItem('auth-storage');
+            set({ 
+              user: null,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
+          }
+
+          if (!session) {
+            set({ 
+              user: null,
+              isInitialized: true,
+              isLoading: false
+            });
+            return;
+          }
+
+          // Store valid session
+          localStorage.setItem('sb-auth-token', session.access_token);
+          const { data: userDetails, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
           
-          set({ 
-            user: session?.user ?? null,
-            isInitialized: true,
-            isLoading: false
-          });
+        if (userError) {
+          console.error('Error fetching user details:', userError.message);
+        }
+
+        set({ 
+          user: { ...session.user, ...userDetails }, 
+          isInitialized: true,
+          isLoading: false
+        });
+
+          // Set up session refresh
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+              if (event === 'TOKEN_REFRESHED' && session) {
+                localStorage.setItem('sb-auth-token', session.access_token);
+                set({ user: session.user });
+              }
+            }
+          );
+
+          return () => {
+            subscription.unsubscribe();
+          };
         } catch (error) {
-          console.error('Failed to initialize auth store:', error);
-          // Clear any invalid session data
+          // Clean up on error
+          localStorage.removeItem('sb-auth-token');
+          localStorage.removeItem('auth-storage');
           set({ 
             user: null,
             isInitialized: true,
             isLoading: false 
           });
-          localStorage.removeItem('sb-auth-token');
-          localStorage.removeItem('auth-storage');
         }
       }
     }),
@@ -55,7 +111,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({ user: state.user }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Initialize auth state
           state.initialize();
         }
       },

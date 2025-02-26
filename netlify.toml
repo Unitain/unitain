@@ -2,6 +2,15 @@
   publish = "dist"
   command = "npm run build"
 
+[functions]
+  directory = "supabase/functions"
+
+[[redirects]]
+  from = "/api/chatgpt"
+  to = "/.netlify/functions/chatgpt-proxy"
+  status = 200
+  force = true
+
 # Redirect for privacy page with trailing slash
 [[redirects]]
   from = "/privacy/"

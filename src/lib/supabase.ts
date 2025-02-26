@@ -1,22 +1,34 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables with validation
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate configuration
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase configuration. Please check your environment variables.');
+  console.error('Supabase configuration missing:', {
+    url: supabaseUrl ? 'present' : 'missing',
+    key: supabaseAnonKey ? 'present' : 'missing'
+  });
+  
+  if (import.meta.env.DEV) {
+    console.info(`
+      Please ensure your .env file exists and contains:
+      VITE_SUPABASE_URL=your-project-url
+      VITE_SUPABASE_ANON_KEY=your-anon-key
+    `);
+  }
+  
+  throw new Error('Missing Supabase configuration');
 }
 
-// Create the Supabase client with enhanced error handling
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
     storage: localStorage,
-    storageKey: 'sb-auth-token'
+    storageKey: 'sb-auth-token',
+    flowType: 'pkce',
+    debug: import.meta.env.DEV
   },
   global: {
     headers: {
@@ -24,20 +36,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       'x-client-info': 'unitain',
       'Origin': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'
     }
-  },
-  db: {
-    schema: 'public'
   }
 });
 
-// Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => {
   return Boolean(supabaseUrl && supabaseAnonKey);
 };
 
-// Helper to handle Supabase errors
 export const handleSupabaseError = (error: any): string => {
-  console.error('Supabase error:', error);
+  if (error?.name === 'AuthSessionMissingError') {
+    return 'Please sign in to continue.';
+  }
 
   if (error?.message?.includes('Failed to fetch') || error?.message?.includes('CORS')) {
     return 'Network error. Please check your connection and try again.';
@@ -45,22 +54,6 @@ export const handleSupabaseError = (error: any): string => {
 
   if (error?.message?.includes('JWT expired')) {
     return 'Your session has expired. Please sign in again.';
-  }
-
-  if (error?.code === '42P01') {
-    return 'System is being updated. Please try again in a few minutes.';
-  }
-
-  if (error?.code === '23505') {
-    return 'A record with this information already exists.';
-  }
-
-  if (error?.code === '23503') {
-    return 'Invalid reference. Please try again.';
-  }
-
-  if (error?.status === 404) {
-    return 'The requested resource was not found.';
   }
 
   return error?.message || 'An unexpected error occurred. Please try again.';
