@@ -43,7 +43,6 @@ const Success = () => {
       }
     }
   }, [paymentDetail, paymentDetails]);
-  
 
   const updatePaymentStatus = async (paymentId: string, newStatus: string, id: string) => {
     const { error } = await supabase
