@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-
+import { Header } from './Header';
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -27,6 +27,8 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return this.props.fallback || (
+        <div>
+          <Header/>
         <div className="min-h-[200px] flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
@@ -51,6 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </button>
           </div>
           </div>
+        </div>
         </div>
       );
     }

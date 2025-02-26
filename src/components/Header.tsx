@@ -48,8 +48,8 @@ export function Header() {
         const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("id", parsedUser)
-          .maybeSingle(); // Assumes user is unique by 'id'
+          .eq("id", user?.id)
+          .single(); // Assumes user is unique by 'id'
 
         console.log("🚀 ~ fetchUserData ~ data:", data);
 
@@ -63,10 +63,13 @@ export function Header() {
       } catch (error) {
         console.error("Error during session check:", error);
       }
+          console.log("🚀 ~ fetchUserData ~ parsedUser:", parsedUser)
     };
 
     fetchUserData();
-  }, [setUser, parsedUser]); // Add parsedUser as a dependency
+  }, [parsedUser]);
+  
+  // Add parsedUser as a dependency
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent double-clicks
 

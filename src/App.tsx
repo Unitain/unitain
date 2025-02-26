@@ -154,7 +154,6 @@ function MainContent({
     ],
     []
   );
-  console.log("🚀 ~ user.payment_status:", user.payment_status)
   return (
     <div className="pb-10">
       {/* Hero Section */}
