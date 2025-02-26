@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { uploadVehicleFile } from '../lib/storage';
 import { useAuthStore } from '../lib/store';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 export function Upload() {
   const [isUploading, setIsUploading] = useState(false);
@@ -13,12 +14,34 @@ export function Upload() {
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
-
+  
     setIsUploading(true);
     try {
+      // Upload file and get URL
       const url = await uploadVehicleFile(file, user.id);
       if (url) {
-        toast.success('File uploaded successfully!');
+        // Insert record into Supabase
+        // documents
+        const { error } = await supabase
+          .from('submission')
+          .insert([
+            {
+              id: user.id,
+              document: url,
+              created_at: new Date().toISOString(),  
+              payment_status: 'paid', 
+              submission_complete: true,
+              guide_downloaded: false
+            },
+          ]);
+              console.log("🚀 ~ handleUpload ~ url:", url)
+  
+        if (error) {
+          console.error('Database insert failed:', error);
+          toast.error('Failed to save document record.');
+        } else {
+          toast.success('File uploaded and document record created!');
+        }
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -30,6 +53,8 @@ export function Upload() {
       }
     }
   };
+  
+  
 
   return (
     <div className="flex flex-col items-center gap-4">

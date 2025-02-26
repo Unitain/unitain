@@ -17,6 +17,8 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false)
+  const getStatus = JSON.parse(localStorage.getItem('userData'))
+  console.log("🚀 ~ DashboardChatGPT ~ getStatus:", getStatus)
 
   const handleSubmit = (e: { preventDefault: () => void; }) =>{
 
@@ -59,9 +61,29 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
       </div>
     );
   }
-
+  // if (user.payment_status === 'approved') {
+  //   return (
+  //     <div className="max-w-2xl mx-auto p-8 text-center">
+  //       <h1 className="text-2xl font-bold mb-4 text-green-600">Payment Already Completed</h1>
+  //       <p className="mb-4">Your payment has been successfully processed. You can go back to the dashboard.</p>
+  //       <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700 text-white">
+  //         Go to Dashboard
+  //       </Button>
+  //     </div>
+  //   );
+  // }
   return (
     <div className="max-w-2xl mx-auto p-8">
+      {getStatus.payment_status === 'approved' ? (
+        <div className="max-w-2xl mx-auto p-8 text-center">
+           <h1 className="text-2xl font-bold mb-4 text-green-600">Payment Already Completed</h1>
+           <p className="mb-4">Your payment has been successfully processed. You can go back to the dashboard.</p>
+           <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700 text-white">
+             Go to Dashboard
+           </Button>
+         </div>
+      ):(
+      <div>
       <h1 className="text-3xl font-bold mb-2">{t('payment.title')}</h1>
       <p className="text-gray-600 mb-8">{t('payment.subtitle')}</p>
 
@@ -119,6 +141,8 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           {t('payment.back')}
         </Button>
       </div>
+    </div>
+      )}
     </div>
   );
 }

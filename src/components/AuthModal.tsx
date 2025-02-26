@@ -94,6 +94,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
+import { useAuthStore } from '../lib/store';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -105,6 +106,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
+  const { setUser } = useAuthStore.getState();
 
   const handleAuth = async (e) => {
     e.preventDefault(); // Prevent form submission
@@ -121,7 +123,29 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (error) {
           throw error;
         }
+  
+        if (data.user) {
 
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+            localStorage.setItem('userData', JSON.stringify(userData));
+            setUser(userData);
+
+          if (userError) {
+            console.error('Error fetching user data from users table:', userError);
+            throw userError;
+          }
+  
+          if (userData) {
+            console.log('User data fetched from users table:', userData);
+          } else {
+            console.error('User data not found in users table');
+          }
+        }  
         toast.success('Login successful!');
       } else {
         // Handle Signup
@@ -134,19 +158,56 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           throw error;
         }
 
-        // Insert user into your `users` table (optional)
         if (data.user) {
-          const { id, email } = data.user;
-          const { error: insertError } = await supabase
+          const { data: existingUserData, error: existingUserError } = await supabase
             .from('users')
-            .insert([{ id, email, created_at: new Date().toISOString() }]);
+            .select('*')
+            .eq('id', data.user.id)
+            .maybeSingle();
 
-          if (insertError) {
-            throw insertError;
+            localStorage.setItem('userData', JSON.stringify(existingUserData));
+            setUser(existingUserData);
+
+          if (existingUserError) {
+            console.error('Error checking if user exists in users table:', existingUserError);
+            throw existingUserError;
+          }
+  
+          if (!existingUserData) {
+            console.log('User not found in users table, inserting user...');
+            const { error: insertError } = await supabase
+              .from('users')
+              .insert([
+                {
+                  id: data.user.id,
+                  email: data.user.email,
+                  created_at: new Date().toISOString(),
+                },
+              ]);
+  
+            if (insertError) {
+              console.error('Error inserting user into users table:', insertError);
+              throw insertError;
+            }
+            const { data: userData, error: fetchError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .maybeSingle();
+    
+            localStorage.setItem('userData', JSON.stringify(userData));
+            setUser(userData);
+
+            if (fetchError) {
+              console.error('Error fetching user data: ', fetchError);
+              return;
+            }
+
+            toast.success('Signup successful! Please check your email for confirmation.');
+          } else {
+            console.log('User already exists in users table:', existingUserData);
           }
         }
-
-        toast.success('Signup successful! Please check your email for confirmation.');
       }
 
       onClose(); // Close the modal after successful login/signup

@@ -64,11 +64,21 @@ export const useAuthStore = create<AuthState>()(
 
           // Store valid session
           localStorage.setItem('sb-auth-token', session.access_token);
-          set({ 
-            user: session.user,
-            isInitialized: true,
-            isLoading: false
-          });
+          const { data: userDetails, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (userError) {
+          console.error('Error fetching user details:', userError.message);
+        }
+
+        set({ 
+          user: { ...session.user, ...userDetails }, 
+          isInitialized: true,
+          isLoading: false
+        });
 
           // Set up session refresh
           const { data: { subscription } } = supabase.auth.onAuthStateChange(

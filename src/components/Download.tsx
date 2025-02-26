@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { downloadGuide } from '../lib/storage';
 import { useAuthStore } from '../lib/store';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 export function Download() {
   const [isDownloading, setIsDownloading] = React.useState(false);
@@ -20,6 +21,16 @@ export function Download() {
       const success = await downloadGuide();
       if (success) {
         toast.success('Guide downloaded successfully!');
+
+        const { error } = await supabase
+        .from('submission')
+        .update({ guide_downloaded: true })
+        .eq('id', user.id)
+
+        if(error){
+          toast.error('Failed to update guide status. Please try again.');
+        }
+
       }
     } catch (error) {
       console.error('Download failed:', error);
