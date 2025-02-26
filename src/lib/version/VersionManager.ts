@@ -71,13 +71,21 @@ export class VersionManager {
 
   shouldShowChangelog(): boolean {
     if (!this.lastShownVersion) return true;
-    return semver.gt(this.currentVersion, this.lastShownVersion);
+    
+    try {
+      // Use semver for proper version comparison
+      return semver.gt(this.currentVersion, this.lastShownVersion);
+    } catch (error) {
+      console.error('Version comparison error:', error);
+      return true; // Show changelog on error to be safe
+    }
   }
 
   markChangelogShown(): void {
     try {
       localStorage.setItem('changelog_last_shown_version', this.currentVersion);
       this.lastShownVersion = this.currentVersion;
+      console.log(`Changelog marked as shown for version ${this.currentVersion}`);
     } catch (error) {
       console.error('Failed to mark changelog as shown:', error);
     }
@@ -128,6 +136,51 @@ export class VersionManager {
     } catch (error) {
       console.error('Failed to fetch latest version:', error);
       return this.currentVersion;
+    }
+  }
+
+  async trackChange(type: 'added' | 'changed' | 'fixed', message: string): Promise<string> {
+    await this.lock.acquire();
+    try {
+      let newVersion = this.currentVersion;
+      
+      if (this.autoIncrementEnabled) {
+        // Determine version increment type based on change type
+        let incrementType: 'major' | 'minor' | 'patch';
+        
+        switch (type) {
+          case 'added':
+            incrementType = 'minor'; // New features increment minor version
+            break;
+          case 'changed':
+          case 'fixed':
+            incrementType = 'patch'; // Changes and fixes increment patch version
+            break;
+          default:
+            incrementType = 'patch';
+        }
+        
+        newVersion = semver.inc(this.currentVersion, incrementType) || this.currentVersion;
+      }
+      
+      // Record change in database
+      const { error } = await supabase
+        .from('changelog')
+        .insert({
+          version: newVersion,
+          type,
+          message,
+          date: new Date().toISOString().split('T')[0]
+        });
+        
+      if (error) {
+        throw new Error(`Failed to record change: ${error.message}`);
+      }
+      
+      this.currentVersion = newVersion;
+      return newVersion;
+    } finally {
+      this.lock.release();
     }
   }
 }
