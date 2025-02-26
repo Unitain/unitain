@@ -17,8 +17,8 @@ export async function handleSignUp(email: string, password: string) {
     });
 
     if (error) throw error;
-
-    if (data?.user) {
+if (data?.user) {
+  console.log('data.user.id', data.user.id);
       toast.success('Please check your email to confirm your account.');
       return true;
     }

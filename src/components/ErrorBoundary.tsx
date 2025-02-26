@@ -39,6 +39,17 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               Try again
             </button>
+            <div>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.href = '/';
+              }}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              Back to Home
+            </button>
+          </div>
           </div>
         </div>
       );

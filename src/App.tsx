@@ -6,6 +6,8 @@ import { AuthProvider } from './components/AuthProvider';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from './lib/store';
 import { CheckCircle, Clock, EuroIcon } from 'lucide-react';
+import Success from './Success';
+import Failed from './Failed';
 
 // Lazy load components
 const Testimonials = lazy(() => import('./components/Testimonials'));
@@ -25,19 +27,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/auth/signin');
-    }
-  }, [user, isLoading, navigate]);
+  // React.useEffect(() => {
+  //   if (!isLoading && !user) {
+  //     navigate('/auth/signin');
+  //   }
+  // }, [user, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <LoadingSpinner size="lg" />
+  //     </div>
+  //   );
+  // }
 
   return user ? <>{children}</> : null;
 }
@@ -60,7 +62,7 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
           <button
             onClick={() => {
               setHasError(false);
-              navigate('/');
+              // navigate('/');
             }}
             className="text-blue-600 hover:text-blue-800"
           >
@@ -313,6 +315,8 @@ function AppContent() {
             } />
             <Route path="/privacy" element={<PrivacyPolicy onBack={handleBack} />} />
             <Route path="/terms" element={<TermsOfService onBack={handleBack} />} />
+            <Route path="/success" element={<Success onBack={handleBack} />} />
+            <Route path="/failed" element={<Failed onBack={handleBack} />} />
             <Route
               path="/"
               element={
@@ -329,6 +333,7 @@ function AppContent() {
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
+            {/* <Route path="*" element={<div>Page Not Found. Redirecting...</div>} /> */}
           </Routes>
         </Suspense>
       </ErrorBoundary>
