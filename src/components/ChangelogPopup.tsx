@@ -6,6 +6,7 @@ import { formatDate } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { nanoid } from 'nanoid';
+import semver from 'semver';
 
 interface ChangelogEntry {
   id: string;
@@ -199,7 +200,7 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
       >
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 flex justify-between items-center rounded-t-xl">
-          <h2 id="changelog-title" className="text-xl font-semibold flex items-center gap-2">
+          <h2 id="changelog-title" className="text-xl font-semibold flex items-center gap-2 text-blue-600">
             <Clock className="w-5 h-5 text-blue-600" />
             What's New
           </h2>

@@ -1,95 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { Auth } from '@supabase/auth-ui-react';
-// import { ThemeSupa } from '@supabase/auth-ui-shared';
-// import { supabase } from '../lib/supabase';
-// import { X } from 'lucide-react';
-// import toast from 'react-hot-toast';
-// import { useAuthStore } from '../lib/store';
-
-// interface AuthModalProps {
-//   isOpen: boolean;
-//   onClose: () => void;
-// }
-
-// export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-//   const [isLoading, setIsLoading] = useState(false);
-//   const { user } = useAuthStore();
-
-//   // Auto-close modal when user becomes authenticated
-//   useEffect(() => {
-//     if (user && isOpen) {
-//       onClose();
-//     }
-//   }, [user, isOpen, onClose]);
-
-//   if (!isOpen) return null;
-
-//   const handleAuthSuccess = () => {
-//     toast.success('Successfully signed in!');
-//     setIsLoading(false);
-//     onClose();
-
-//     // Get stored redirect URL or generate default dashboard URL
-//     const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${user?.id}/submission`;
-//     localStorage.removeItem('nextUrl');
-//     window.location.href = redirectUrl;
-//   };
-
-//   const handleAuthError = (error: Error) => {
-//     toast.error(error.message);
-//     setIsLoading(false);
-//   };
-
-//   return (
-//     <div className="fixed inset-0 z-50 overflow-y-auto">
-//       <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-//         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
-
-//         <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-//           <div className="absolute right-0 top-0 pr-4 pt-4">
-//             <button
-//               type="button"
-//               className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-//               onClick={onClose}
-//             >
-//               <span className="sr-only">Close</span>
-//               <X className="h-6 w-6" />
-//             </button>
-//           </div>
-
-//           <div className="sm:flex sm:items-start">
-//             <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-//               <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">
-//                 Sign In or Create Account
-//               </h3>
-//               <Auth
-//                 supabaseClient={supabase}
-//                 appearance={{
-//                   theme: ThemeSupa,
-//                   variables: {
-//                     default: {
-//                       colors: {
-//                         brand: '#2563eb',
-//                         brandAccent: '#1d4ed8',
-//                       },
-//                     },
-//                   },
-//                 }}
-//                 providers={[]}
-//                 redirectTo={`${window.location.origin}/auth/callback`}
-//                 onlyThirdPartyProviders={false}
-//                 onSuccess={handleAuthSuccess}
-//                 onError={handleAuthError}
-//               />
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
@@ -106,9 +14,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
-  const { setUser } = useAuthStore.getState();
+  const { setUser } = useAuthStore();
 
-  const handleAuth = async (e) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
     setLoading(true);
 
@@ -125,28 +33,25 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }
   
         if (data.user) {
-
+          // Fetch user data from users table
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', data.user.id)
             .maybeSingle();
 
-            localStorage.setItem('userData', JSON.stringify(userData));
-            setUser(userData);
-
           if (userError) {
             console.error('Error fetching user data from users table:', userError);
-            throw userError;
           }
   
-          if (userData) {
-            console.log('User data fetched from users table:', userData);
-          } else {
-            console.error('User data not found in users table');
-          }
-        }  
-        toast.success('Login successful!');
+          // Store user data and update state
+          const mergedUser = { ...data.user, ...(userData || {}) };
+          localStorage.setItem('userData', JSON.stringify(mergedUser));
+          setUser(mergedUser);
+          
+          toast.success('Login successful!');
+          onClose();
+        }
       } else {
         // Handle Signup
         const { data, error } = await supabase.auth.signUp({
@@ -159,60 +64,51 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }
 
         if (data.user) {
+          // Check if user already exists in users table
           const { data: existingUserData, error: existingUserError } = await supabase
             .from('users')
             .select('*')
             .eq('id', data.user.id)
             .maybeSingle();
 
-            localStorage.setItem('userData', JSON.stringify(existingUserData));
-            setUser(existingUserData);
-
-          if (existingUserError) {
+          if (existingUserError && existingUserError.code !== 'PGRST116') {
             console.error('Error checking if user exists in users table:', existingUserError);
-            throw existingUserError;
           }
   
           if (!existingUserData) {
             console.log('User not found in users table, inserting user...');
+            // Create new user record
+            const newUser = {
+              id: data.user.id,
+              email: data.user.email,
+              created_at: new Date().toISOString(),
+              payment_status: 'pending'
+            };
+            
             const { error: insertError } = await supabase
               .from('users')
-              .insert([
-                {
-                  id: data.user.id,
-                  email: data.user.email,
-                  created_at: new Date().toISOString(),
-                },
-              ]);
+              .insert([newUser]);
   
             if (insertError) {
               console.error('Error inserting user into users table:', insertError);
-              throw insertError;
+            } else {
+              // Set user with the newly created data
+              setUser({ ...data.user, ...newUser });
+              localStorage.setItem('userData', JSON.stringify(newUser));
             }
-            const { data: userData, error: fetchError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .maybeSingle();
-    
-            localStorage.setItem('userData', JSON.stringify(userData));
-            setUser(userData);
-
-            if (fetchError) {
-              console.error('Error fetching user data: ', fetchError);
-              return;
-            }
-
-            toast.success('Signup successful! Please check your email for confirmation.');
           } else {
-            console.log('User already exists in users table:', existingUserData);
+            // User already exists, use existing data
+            setUser({ ...data.user, ...existingUserData });
+            localStorage.setItem('userData', JSON.stringify(existingUserData));
           }
+
+          toast.success('Signup successful! Please check your email for confirmation.');
+          onClose();
         }
       }
-
-      onClose(); // Close the modal after successful login/signup
     } catch (error) {
-      toast.error(`${isLogin ? 'Login' : 'Signup'} failed: ${error.message}`);
+      console.error(`${isLogin ? 'Login' : 'Signup'} error:`, error);
+      toast.error(error instanceof Error ? error.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }

@@ -27,7 +27,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (mounted) {
-            setUser(session?.user ?? null);
+            if (session?.user) {
+              // Fetch user data from users table when auth state changes
+              try {
+                const { data: userData, error: userError } = await supabase
+                  .from('users')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .maybeSingle();
+                
+                if (userError) {
+                  console.error('Error fetching user data on auth change:', userError);
+                }
+                
+                // Merge auth user with database user data
+                const mergedUser = {
+                  ...session.user,
+                  ...(userData || {})
+                };
+                
+                setUser(mergedUser);
+                localStorage.setItem('userData', JSON.stringify(mergedUser));
+              } catch (error) {
+                console.error('Error processing auth state change:', error);
+                setUser(session.user);
+              }
+            } else {
+              setUser(null);
+            }
             
             switch (event) {
               case 'SIGNED_IN':
@@ -49,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 successMessageShownRef.current = false;
                 localStorage.removeItem('sb-auth-token');
                 localStorage.removeItem('auth-storage');
+                localStorage.removeItem('userData');
                 break;
             }
           }

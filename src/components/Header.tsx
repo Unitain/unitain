@@ -8,68 +8,48 @@ import { LanguageSelector } from "./LanguageSelector";
 import { useTranslation } from "react-i18next";
 import { Logo } from "./Logo";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 export function Header() {
   const { user, isLoading, setUser } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = React.useState(false);
-  const [parsedUser, setParsedUser] = React.useState("");
-  console.log("🚀 ~ Header ~ parsedUser:", parsedUser);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const { t } = useTranslation();
+
   useEffect(() => {
-    const savedUser = localStorage.getItem("userData");
-
-    // Check if savedUser exists and is valid
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-
-        // Ensure parsedUser has a valid id (UUID)
-        if (
-          parsedUser?.id &&
-          typeof parsedUser.id === "string" &&
-          parsedUser.id.trim() !== ""
-        ) {
-          setParsedUser(parsedUser.id);
-        } else {
-          console.error("Invalid user ID in localStorage:", parsedUser);
-          return; // Exit if the ID is invalid
-        }
-      } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
-        return; // Exit if parsing fails
-      }
-    }
-
     const fetchUserData = async () => {
       try {
-        // Ensure parsedUser is a valid UUID before making the query
+        // Only fetch user data if we have a valid user ID
+        if (!user?.id) {
+          return;
+        }
 
         const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("id", user?.id)
-          .single(); // Assumes user is unique by 'id'
-
-        console.log("🚀 ~ fetchUserData ~ data:", data);
+          .eq("id", user.id)
+          .single();
 
         if (error) {
           console.error("Error fetching user from users table:", error);
           return;
         }
 
-        setUser(data);
-        localStorage.setItem("userData", JSON.stringify(data));
+        if (data) {
+          setUser({ ...user, ...data });
+          localStorage.setItem("userData", JSON.stringify(data));
+        }
       } catch (error) {
         console.error("Error during session check:", error);
       }
-          console.log("🚀 ~ fetchUserData ~ parsedUser:", parsedUser)
     };
 
-    fetchUserData();
-  }, [parsedUser]);
+    // Only fetch user data if we have a user
+    if (user?.id) {
+      fetchUserData();
+    }
+  }, [user?.id, setUser]);
   
-  // Add parsedUser as a dependency
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent double-clicks
 
@@ -92,7 +72,6 @@ export function Header() {
         }
       } else {
         // Only show success message here, not in AuthProvider
-        localStorage.removeItem("userData");
         toast.success("Successfully signed out");
       }
     } catch (error) {
@@ -112,6 +91,9 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
+            <Link to="/demo" className="text-blue-600 hover:text-blue-800 font-medium">
+              Demo
+            </Link>
             <LanguageSelector />
 
             {isLoading ? (

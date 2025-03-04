@@ -30,8 +30,25 @@ export const useAuthStore = create<AuthState>()(
 
           // If stored session exists and is valid, use it
           if (storedSession?.data?.session?.user) {
+            // Try to get user data from localStorage first
+            let userData = null;
+            try {
+              const storedUserData = localStorage.getItem('userData');
+              if (storedUserData) {
+                userData = JSON.parse(storedUserData);
+              }
+            } catch (error) {
+              console.error('Failed to parse stored user data:', error);
+            }
+
+            // Merge auth user with stored user data
+            const mergedUser = {
+              ...storedSession.data.session.user,
+              ...(userData || {})
+            };
+
             set({ 
-              user: storedSession.data.session.user,
+              user: mergedUser,
               isInitialized: true,
               isLoading: false
             });
@@ -45,6 +62,7 @@ export const useAuthStore = create<AuthState>()(
             // Clean up invalid session data
             localStorage.removeItem('sb-auth-token');
             localStorage.removeItem('auth-storage');
+            localStorage.removeItem('userData');
             set({ 
               user: null,
               isInitialized: true,
@@ -64,21 +82,37 @@ export const useAuthStore = create<AuthState>()(
 
           // Store valid session
           localStorage.setItem('sb-auth-token', session.access_token);
-          const { data: userDetails, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
           
-        if (userError) {
-          console.error('Error fetching user details:', userError.message);
-        }
+          // Only fetch user details if we have a valid user ID
+          let userDetails = null;
+          if (session.user?.id) {
+            const { data: fetchedUserDetails, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .maybeSingle();
+            
+            if (userError) {
+              console.error('Error fetching user details:', userError.message);
+            } else {
+              userDetails = fetchedUserDetails;
+            }
+          }
 
-        set({ 
-          user: { ...session.user, ...userDetails }, 
-          isInitialized: true,
-          isLoading: false
-        });
+          // Merge auth user with database user details
+          const mergedUser = { 
+            ...session.user, 
+            ...(userDetails || {}) 
+          };
+
+          // Store the merged user data
+          localStorage.setItem('userData', JSON.stringify(mergedUser));
+          
+          set({ 
+            user: mergedUser, 
+            isInitialized: true,
+            isLoading: false
+          });
 
           // Set up session refresh
           const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -94,9 +128,11 @@ export const useAuthStore = create<AuthState>()(
             subscription.unsubscribe();
           };
         } catch (error) {
+          console.error('Auth initialization error:', error);
           // Clean up on error
           localStorage.removeItem('sb-auth-token');
           localStorage.removeItem('auth-storage');
+          localStorage.removeItem('userData');
           set({ 
             user: null,
             isInitialized: true,

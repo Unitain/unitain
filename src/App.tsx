@@ -15,6 +15,7 @@ import { Button } from "./components/Button";
 import { CheckCircle, Clock, EuroIcon } from "lucide-react";
 import Success from "./Success";
 import Failed from "./Failed";
+import { showTaxCheckModal } from "./components/TaxCheckModal";
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -31,6 +32,7 @@ const CookieConsent = lazy(() => import("./components/CookieConsent"));
 const FAQ = lazy(() => import("./components/FAQ"));
 const DashboardChatGPT = lazy(() => import("./components/DashboardChatGPT"));
 const AuthCallback = lazy(() => import("./components/AuthCallback"));
+const DemoPage = lazy(() => import("./components/DemoPage"));
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -167,11 +169,9 @@ function MainContent({
               {t("hero.subtitle")}
             </p>
             <button
-              onClick={() => {
-                const element = document.getElementById("eligibility-checker");
-                element?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
+              onClick={() => showTaxCheckModal()}
               className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              id="start-tax-check-button"
             >
               {t("hero.cta")}
             </button>
@@ -377,6 +377,14 @@ function AppContent() {
             />
             <Route path="/success" element={<Success onBack={handleBack} />} />
             <Route path="/failed" element={<Failed onBack={handleBack} />} />
+            <Route
+              path="/demo"
+              element={
+                <Suspense fallback={<LoadingSpinner size="lg" />}>
+                  <DemoPage />
+                </Suspense>
+              }
+            />
             <Route
               path="/"
               element={
