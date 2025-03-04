@@ -54,7 +54,7 @@ export function AuthCallback() {
         toast.error(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
       }
     };
-
+    
     handleCallback();
   }, [setUser]);
 
