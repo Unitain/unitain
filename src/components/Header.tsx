@@ -60,6 +60,9 @@ export function Header() {
       localStorage.removeItem("userData");
       localStorage.removeItem("auth-storage");
       localStorage.removeItem("pendingEligibilityCheck");
+      localStorage.removeItem("feedbackSubmitted");
+      localStorage.removeItem("payment_success");
+      localStorage.removeItem("app_timezone");
       // Clear user state
       setUser(null);
       // Sign out from Supabase
