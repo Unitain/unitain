@@ -18,7 +18,6 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false)
   const getStatus = JSON.parse(localStorage.getItem('userData'))
-  console.log("🚀 ~ DashboardChatGPT ~ getStatus:", getStatus)
 
   const handleSubmit = (e: { preventDefault: () => void; }) =>{
 

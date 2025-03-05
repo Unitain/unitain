@@ -60,11 +60,11 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   const [hasError, setHasError] = React.useState(false);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    const handleError = () => setHasError(true);
-    window.addEventListener("error", handleError);
-    return () => window.removeEventListener("error", handleError);
-  }, []);
+  // React.useEffect(() => {
+  //   const handleError = () => setHasError(true);
+  //   window.addEventListener("error", handleError);
+  //   return () => window.removeEventListener("error", handleError);
+  // }, []);
 
   if (hasError) {
     return (
