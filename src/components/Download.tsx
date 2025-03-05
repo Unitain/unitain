@@ -16,7 +16,7 @@ export function Download() {
       return;
     }
 
-    setIsDownloading(true);
+    // setIsDownloading(true);
     try {
       const success = await downloadGuide();
       if (success) {
@@ -36,7 +36,7 @@ export function Download() {
       console.error('Download failed:', error);
       toast.error('Failed to download guide. Please try again.');
     } finally {
-      setIsDownloading(false);
+      // setIsDownloading(false);
     }
   };
 
@@ -44,7 +44,7 @@ export function Download() {
     <div className="flex flex-col items-center gap-4">
       <Button
         onClick={handleDownload}
-        disabled={isDownloading}
+        // disabled={isDownloading}
         className="w-full flex items-center justify-center gap-2"
       >
         {isDownloading ? (
