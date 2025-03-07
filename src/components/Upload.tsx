@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Upload as UploadIcon, Loader2, FileText, Trash2 } from "lucide-react";
+import { Upload as UploadIcon, Loader2, FileText, Trash2, X } from "lucide-react";
 import { Button } from "./Button";
 import {
   uploadVehicleFile,
@@ -20,6 +20,7 @@ export function Upload() {
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userFiles, setUserFiles] = useState<FileItem[]>([]);
+    const [uploadGuide, setUploadGuide] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const fileInputRef = useRef<any>(null);
   const { user } = useAuthStore();
@@ -40,7 +41,6 @@ export function Upload() {
       console.warn("⚠️ No user ID found, skipping fetch.");
       return;
     }
-
     try {
       setIsLoading(true);
 
@@ -103,9 +103,9 @@ export function Upload() {
 
   const handleUpload = async (event: any) => {
     setIsUploading(true);
-
     const file = event?.target?.files?.[0];
     if (!file || !user) return;
+
     try {
       // Upload file and get URL
       const url = await uploadVehicleFile(file, user.id);
@@ -218,8 +218,47 @@ export function Upload() {
   };
   
 
+  const handleOpenModal = () => {
+    const modalShown = localStorage.getItem('UploadGuideShown');
+    if (modalShown === 'true') {
+      // Already shown before; trigger file input directly
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    } else {
+      setUploadGuide(true);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center gap-4">
+      {uploadGuide && (
+      <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
+          <div className='absolute right-6 top-5' onClick={()=> setUploadGuide(false)}><X/></div>
+          <h2 className="text-2xl font-bold mb-4">Upload Documents</h2>
+          <p className="mb-5">Here you can test our upload process by uploading any files— these can be placeholder files (e.g., an empty PDF) or real documents if you wish. We process all data securely and discreetly. It’s not mandatory for the beta test, but it demonstrates how the upload step works in a real scenario.</p>
+          <div className="flex justify-end gap-4">
+            <Button variant="secondary" onClick={() => setUploadGuide(false)}>
+              Cancel
+            </Button>
+            <Button
+                variant="primary"
+                onClick={() => {
+                  // Mark modal as shown and trigger file input
+                  localStorage.setItem('UploadGuideShown', 'true');
+                  setUploadGuide(false);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+               Upload document
+            </Button>
+          </div>
+        </div>
+      </div>
+      )}
       <div className="flex flex-col items-center gap-4">
         {/* Hidden File Input */}
         <input
@@ -231,16 +270,16 @@ export function Upload() {
           id="file-upload"
         />
 
-        {/* Label as Clickable Upload Icon */}
-        <label htmlFor="file-upload" className="cursor-pointer">
-          <div className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
+           {/* Clickable div to open modal */}
+           <div className="cursor-pointer" onClick={handleOpenModal}>
+           <div className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition" >
             {isUploading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <UploadIcon className="w-6 h-6" />
             )}
           </div>
-        </label>
+        </div>
 
         <p className="text-sm text-gray-500">
           Supported formats: PDF, JPEG, PNG, DOC

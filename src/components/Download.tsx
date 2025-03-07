@@ -16,6 +16,13 @@ export function Download() {
       toast.error('Please sign in to download the guide');
       return;
     }
+    const guideModalShown = localStorage.getItem('GuideModal')
+    if(guideModalShown === 'true'){
+    setGuideModal(false);
+    }else{
+    setGuideModal(true);
+    localStorage.setItem('GuideModal', 'true')
+    }
     // if(user) {
     //   setGuideModal(true)
     //   return
@@ -53,7 +60,7 @@ export function Download() {
             <Button variant="secondary" onClick={() => setGuideModal(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleDownloadConfirm}>
+            <Button variant="primary" onClick={handleDownload}>
               Download Guide
             </Button>
           </div>
