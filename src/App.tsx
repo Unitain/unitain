@@ -16,6 +16,7 @@ import { CheckCircle, Clock, EuroIcon } from "lucide-react";
 import Success from "./Success";
 import Failed from "./Failed";
 import { showTaxCheckModal } from "./components/TaxCheckModal";
+import {AuthModal} from "./components/AuthModal"; 
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -321,6 +322,7 @@ function AppContent() {
   const [showContact, setShowContact] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [showAuthModal, setShowAuthModal] = useState(false); 
 
   const handleShowContact = React.useCallback(() => {
     setShowContact(true);
@@ -330,7 +332,8 @@ function AppContent() {
 
   const handleShowPayment = React.useCallback(() => {
     if (!user) {
-      navigate("/auth/signin");
+      // navigate("/auth/signin");
+      setShowAuthModal(true);
       return;
     }
     setShowPayment(true);
@@ -347,7 +350,11 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
