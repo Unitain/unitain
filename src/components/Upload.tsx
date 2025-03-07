@@ -169,26 +169,54 @@ export function Upload() {
     }
   };
 
-  const handleDeleteFile = async (fileName: string) => {
-    if (!user?.id) return;
+  // const handleDeleteFile = async (fileName: string) => {
+  //   if (!user?.id) return;    
 
+  //   setIsDeleting(fileName);
+  //   try {
+  //     const success = await deleteVehicleFile(user.id, fileName);
+  //     if (success) {
+  //       toast.success("File deleted successfully");
+  //       console.log("✅ deleting");
+        
+  //       fetchUserFiles();
+  //     } else {
+  //       throw new Error("Failed to delete file");
+  //       console.log("✅ not deleteing");
+        
+  //     }
+  //   } catch (error) {
+  //     console.error("Delete failed:", error.message);
+  //     toast.error("Failed to delete file. Please try again.");
+  //   } finally {
+  //     setIsDeleting(null);
+  //   }
+  // };
+  const handleDeleteFile = async (fileName: string) => {
+    if (!user?.id) return;    
     setIsDeleting(fileName);
     try {
       const success = await deleteVehicleFile(user.id, fileName);
       if (success) {
+        // Remove or update the submission record if it exists
+        await supabase
+          .from("submission")
+          .update({ document: null })
+          .eq("id", user.id);
+          
         toast.success("File deleted successfully");
-        // Refresh the file list
         fetchUserFiles();
       } else {
         throw new Error("Failed to delete file");
       }
     } catch (error) {
-      console.error("Delete failed:", error);
+      console.error("Delete failed:", error.message);
       toast.error("Failed to delete file. Please try again.");
     } finally {
       setIsDeleting(null);
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -284,15 +312,15 @@ export function Upload() {
 
                   <button
                     onClick={() => handleDeleteFile(file.name)}
-                    disabled={isDeleting === file.name}
+                    // disabled={isDeleting === file.name}
                     className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-gray-200 transition-colors"
                     aria-label="Delete file"
                   >
-                    {isDeleting === file.name ? (
+                    {/* {isDeleting === file.name ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
+                    ) : ( */}
                       <Trash2 className="w-4 h-4" />
-                    )}
+                    {/* )} */}
                   </button>
                 </div>
               </div>

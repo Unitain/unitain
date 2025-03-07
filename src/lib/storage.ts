@@ -279,11 +279,11 @@ export async function deleteVehicleFile(
     if (!userId || !filename) {
       throw new Error("User ID and filename are required");
     }
-
-    const { error } = await supabase.storage
+    const filePath = `${userId}/${filename}`;
+    console.log("✅filePath", filePath);
+    const { data, error } = await supabase.storage
       .from("vehicle_uploads")
-      .remove([`${userId}/${filename}`]);
-
+      .remove([filePath]);
     if (error) throw error;
 
     return true;
