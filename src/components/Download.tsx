@@ -11,53 +11,59 @@ export function Download() {
   const [guideModal, setGuideModal] = useState(false)
   const { user } = useAuthStore();
 
-  const handleDownload = async () => {
-    if (!user) {
-      toast.error('Please sign in to download the guide');
-      return;
-    }
-    // if(user) {
-    //   setGuideModal(true)
-    //   return
-    // }
-    // setIsDownloading(true);
+  const handleDownloadConfirm = async () => {
+    setGuideModal(false);
+    setIsDownloading(true);
     try {
       const success = await downloadGuide();
       if (success) {
         toast.success('Guide downloaded successfully!');
-
         const { error } = await supabase
-        .from('submission')
-        .update({ guide_downloaded: true })
-        .eq('id', user.id)
-
-        if(error){
+          .from('submission')
+          .update({ guide_downloaded: true })
+          .eq('id', user.id);
+        if (error) {
           toast.error('Failed to update guide status. Please try again.');
         }
-
       }
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download guide. Please try again.');
     } finally {
-      // setIsDownloading(false);
+      setIsDownloading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!user) {
+      toast.error('Please sign in to download the guide');
+      return;
+    }
+    setGuideModal(true);
   };
 
   return (
     <div className="flex flex-col items-center gap-4">
       {guideModal && (
-      <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
         <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
           <div className='absolute right-6 top-5' onClick={()=> setGuideModal(false)}><X/></div>
-          <h2 className="text-2xl font-bold mb-4">Almost Done! Let’s Start the Test Purchase</h2>
-          <p className="mb-5">Great news—you may qualify for a tax exemption. To test our payment process, we’ll now do a test purchase that doesn’t cost you anything.</p>
+          <h2 className="text-2xl font-bold mb-4">Download Guide</h2>
+          <p className="mb-5">Here’s our comprehensive document about importing a vehicle into Portugal. Downloading it is not required for the beta test, but feel free to read it to learn which documents you’d need in a real application. If you like, we’d appreciate any feedback on whether it was helpful!</p>
+          <div className="flex justify-end gap-4">
+            <Button variant="secondary" onClick={() => setGuideModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleDownloadConfirm}>
+              Download Guide
+            </Button>
+          </div>
         </div>
       </div>
       )}
       <Button
         onClick={handleDownload}
-        // disabled={isDownloading}
+        disabled={isDownloading}
         className="w-full flex items-center justify-center gap-2"
       >
         {isDownloading ? (
@@ -67,7 +73,6 @@ export function Download() {
         )}
         {isDownloading ? 'Downloading...' : 'Download Guide'}
       </Button>
-      
       <p className="text-sm text-gray-500">
         Download our comprehensive vehicle tax exemption guide
       </p>
