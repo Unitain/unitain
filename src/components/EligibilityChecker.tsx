@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, X } from 'lucide-react';
 import { Button } from './Button';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { AuthModal } from './AuthModal';
@@ -108,11 +108,19 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { t } = useTranslation();
-
+  const [showImportantModal, setShowImportantModal] = useState(false)
+  const [paymentProcessModal, setPaymentProcessModal] = useState(false)
+  const [isEmailCopied, setIsEmailCopied] = useState(false);
+  const [isPasswordCopied, setIsPasswordCopied] = useState(false);  const paypalEmail = "sb-no7fn37881668@personal.example.com";
+  const paypalPassword = "xx!T%A5C";
   const currentQuestion = questions[currentStep];
 
   const handleAnswer = useCallback(async (answer: string) => {
     if (!currentQuestion) return;
+
+    if(currentStep === 1){
+      setShowImportantModal(true)
+    }
 
     try {
       trackEvent('eligibility_answer', {
@@ -121,7 +129,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         step: currentStep + 1,
         total_steps: questions.length
       });
-
+        
       const newAnswers = {
         ...answers,
         [currentQuestion.id]: answer,
@@ -162,14 +170,13 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         platform: navigator.platform
       }
     };
-
     try {
       const saved = await saveEligibilityCheck({
         answers: finalAnswers,
         isEligible,
         metadata
       });
-
+      setPaymentProcessModal(true)
       if (!saved && !isSupabaseConfigured()) {
         localStorage.setItem('pendingEligibilityCheck', JSON.stringify({
           answers: finalAnswers,
@@ -227,6 +234,12 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     }
   }, [calculateEligibility, onShowPayment, onShowContact]);
 
+  const handleImportantModalClose = () =>{
+    setShowImportantModal(false);
+  }
+
+  console.log(showImportantModal);
+  
   if (!currentQuestion) {
     return <div>{t('eligibility.errors.loadingFailed')}</div>;
   }
@@ -246,6 +259,83 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
             <p>{t('eligibility.results.needsMoreInfo')}</p>
           </div>
         ) : isEligible ? (
+          <div>
+            {paymentProcessModal && (
+              <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+               <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
+                 <div className='absolute right-6 top-5' onClick={()=> setPaymentProcessModal(false)}><X/></div>
+                 <h2 className="text-2xl font-bold mb-4">Almost Done! Let’s Start the Test Purchase</h2>
+                 <p className="mb-5">Great news—you may qualify for a tax exemption. To test our payment process, we’ll now do a test purchase that doesn’t cost you anything.</p>
+                 <div className="mb-5">
+                    <label className="block text-left  text-sm font-medium text-gray-700 mb-1">
+                      PayPal Sandbox Email
+                    </label>
+                    <div className="flex">
+                      <input
+                        id="paypal-email"
+                        type="text"
+                        value={paypalEmail}
+                        readOnly
+                        className="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      />
+                      <button 
+                        className="bg-gray-100 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 hover:bg-gray-200 flex items-center justify-center"
+                        type="button"
+                        onClick={() =>  {navigator.clipboard.writeText(paypalEmail); setIsEmailCopied(true)}}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-600">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    {isEmailCopied && (
+                    <div className="text-xs mt-2 text-green-600 text-left">Copied!</div>
+                  )}
+                  </div>
+        
+                  <div className="mb-5">
+                    <label className="block text-left text-sm font-medium text-gray-700 mb-1">
+                      PayPal Sandbox Password
+                    </label>
+                    <div className="flex">
+                      <input
+                        id="paypal-password"
+                        type="text"
+                        value={paypalPassword}
+                        readOnly
+                        className="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      />
+                      <button 
+                        className="bg-gray-100 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 hover:bg-gray-200 flex items-center justify-center"
+                        type="button"
+                        onClick={() =>  {navigator.clipboard.writeText(paypalPassword); setIsPasswordCopied(true)}}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-600">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    {isPasswordCopied && (
+                    <div className="text-xs mt-2 text-green-600 text-left">Copied!</div>
+                  )}
+                  </div>
+        
+                  <div className="bg-blue-50 p-3 rounded-md mb-5">
+                    <div className="flex">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      <p className="text-sm text-blue-700">Copy and save these details (e.g., in a new browser tab) so you can easily log in</p>
+                    </div>
+                  </div>
+                 <Button onClick={()=> setPaymentProcessModal(false)}>OK</Button>
+               </div>
+             </div>
+            )}
           <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md">
             <p className="font-semibold">{t('eligibility.results.eligible')}</p>
             <p className="mt-2">{t('eligibility.results.nextSteps')}:</p>
@@ -254,6 +344,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
               <li>{t('eligibility.results.steps.consultation')}</li>
               <li>{t('eligibility.results.steps.application')}</li>
             </ul>
+          </div>
           </div>
         ) : (
           <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
@@ -286,6 +377,20 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+       {showImportantModal && (
+            <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+              <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
+                <div className='absolute right-6 top-5' onClick={handleImportantModalClose}><X/></div>
+                <h2 className="text-2xl font-bold mb-4">Important Info About the Questionnaire</h2>
+                <p className="mb-4">
+                  Our eligibility checker consists of 12 quick questions. Most users can
+                  proceed by answering "Yes," but please provide truthful answers.
+                </p>
+                <Button onClick={handleImportantModalClose}>OK</Button>
+              </div>
+            </div>
+          )}
+
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-medium text-gray-500">

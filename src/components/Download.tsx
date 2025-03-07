@@ -1,5 +1,5 @@
-import React from 'react';
-import { Download as DownloadIcon, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download as DownloadIcon, Loader2, X } from 'lucide-react';
 import { Button } from './Button';
 import { downloadGuide } from '../lib/storage';
 import { useAuthStore } from '../lib/store';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 
 export function Download() {
   const [isDownloading, setIsDownloading] = React.useState(false);
+  const [guideModal, setGuideModal] = useState(false)
   const { user } = useAuthStore();
 
   const handleDownload = async () => {
@@ -15,7 +16,10 @@ export function Download() {
       toast.error('Please sign in to download the guide');
       return;
     }
-
+    // if(user) {
+    //   setGuideModal(true)
+    //   return
+    // }
     // setIsDownloading(true);
     try {
       const success = await downloadGuide();
@@ -42,6 +46,15 @@ export function Download() {
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {guideModal && (
+      <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
+          <div className='absolute right-6 top-5' onClick={()=> setGuideModal(false)}><X/></div>
+          <h2 className="text-2xl font-bold mb-4">Almost Done! Let’s Start the Test Purchase</h2>
+          <p className="mb-5">Great news—you may qualify for a tax exemption. To test our payment process, we’ll now do a test purchase that doesn’t cost you anything.</p>
+        </div>
+      </div>
+      )}
       <Button
         onClick={handleDownload}
         // disabled={isDownloading}
