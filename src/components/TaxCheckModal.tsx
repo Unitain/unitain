@@ -1,80 +1,27 @@
 import React from 'react';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../lib/store';
 
 /**
  * TaxCheckModal component
  * 
  * This component provides functionality to:
- * 1. Open a modal informing about the beta test
- * 2. Provide PayPal sandbox credentials for testing
+ * 1. Show different modals based on authentication state
+ * 2. Handle beta test start process
+ * 3. Manage terms acceptance for new users
  */
 export function showTaxCheckModal() {
-  // PayPal sandbox credentials
-  const paypalEmail = "sb-no7fn37881668@personal.example.com";
-  const paypalPassword = "xx!T%A5C";
-  
-  // Configure SweetAlert2 modal with PayPal sandbox credentials
-  Swal.fire({
-    title: 'Start your test to improve unitain.net',
-    html: `
-      <div class="text-left">
-        <p class="mb-4">Copy the following credentials to use them later to pay via PayPal sandbox:</p>
-        
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            PayPal Sandbox Email
-          </label>
-          <div class="flex">
-            <input
-              id="paypal-email"
-              type="text"
-              value="${paypalEmail}"
-              readonly
-              class="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-            />
-            <button 
-              onclick="navigator.clipboard.writeText('${paypalEmail}').then(() => document.getElementById('email-copy-success').classList.remove('hidden'))"
-              class="bg-gray-100 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 hover:bg-gray-200 flex items-center justify-center"
-              type="button"
-              aria-label="Copy email"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
-          </div>
-          <span id="email-copy-success" class="text-xs text-green-600 hidden">Copied!</span>
-        </div>
-        
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            PayPal Sandbox Password
-          </label>
-          <div class="flex">
-            <input
-              id="paypal-password"
-              type="text"
-              value="${paypalPassword}"
-              readonly
-              class="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-            />
-            <button 
-              onclick="navigator.clipboard.writeText('${paypalPassword}').then(() => document.getElementById('password-copy-success').classList.remove('hidden'))"
-              class="bg-gray-100 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 hover:bg-gray-200 flex items-center justify-center"
-              type="button"
-              aria-label="Copy password"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
-          </div>
-          <span id="password-copy-success" class="text-xs text-green-600 hidden">Copied!</span>
-        </div>
-        
+  const { user } = useAuthStore.getState();
+
+  if (user) {
+    // Show simpler modal for authenticated users
+    Swal.fire({
+      title: 'Start your test to improve unitain.net',
+      html: `
+        <div class="text-left">
+          <p class="mb-4">You're about to start the beta test for our tax exemption service.</p>
+          
         <div class="bg-blue-50 p-3 rounded-md mb-4">
           <div class="flex">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -83,7 +30,7 @@ export function showTaxCheckModal() {
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
             <p class="text-sm text-blue-700">
-              These credentials will be used to test the PayPal payment process. Please save them for later use.
+              During this test, you'll be using our PayPal sandbox environment to simulate the payment process.
             </p>
           </div>
         </div>
@@ -101,41 +48,117 @@ export function showTaxCheckModal() {
       // Show success message
       toast.success('Beta test started!');
       
-      // Scroll to eligibility checker with a slight delay to ensure proper scrolling
+      // Scroll to eligibility checker
+      scrollToEligibilityChecker();
+      }
+    });
+  } else {
+    // Show authentication modal for unauthenticated users
+    Swal.fire({
+      title: 'Start your test to improve unitain.net',
+      html: `
+        <div class="text-left">
+          <p class="mb-4">To start the beta test, you'll need to create an account or sign in.</p>
+          
+          <div class="mb-4">
+            <div class="flex items-start mb-4">
+              <div class="flex items-center h-5">
+                <input
+                  id="terms"
+                  type="checkbox"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="terms" class="font-medium text-gray-700">
+                  I accept the 
+                  <a href="/terms" target="_blank" class="text-blue-600 hover:text-blue-800 ml-1">
+                    Terms of Use
+                  </a>
+                </label>
+                <p class="text-gray-500">
+                  By continuing, you agree to our terms and conditions.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 p-3 rounded-md mb-4">
+            <div class="flex">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <p class="text-sm text-blue-700">
+                During this test, you'll be using our PayPal sandbox environment to simulate the payment process.
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+      width: 600,
+      padding: '1.5em',
+      showCloseButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Continue to Sign Up',
+      cancelButtonText: 'Sign In Instead',
+      confirmButtonColor: '#2563eb',
+      focusConfirm: true,
+      preConfirm: () => {
+        const termsAccepted = document.getElementById('terms') as HTMLInputElement;
+        if (!termsAccepted?.checked) {
+          Swal.showValidationMessage('Please accept the Terms of Use to continue');
+          return false;
+        }
+        return true;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // User chose to sign up
+        document.getElementById('auth-button')?.click();
+        const authModal = document.querySelector('[data-auth-modal]');
+        if (authModal) {
+          (authModal as HTMLElement).dataset.initialMode = 'signup';
+        }
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // User chose to sign in
+        document.getElementById('auth-button')?.click();
+        const authModal = document.querySelector('[data-auth-modal]');
+        if (authModal) {
+          (authModal as HTMLElement).dataset.initialMode = 'login';
+        }
+      }
+    });
+  }
+}
+
+function scrollToEligibilityChecker() {
+  setTimeout(() => {
+    const element = document.getElementById("eligibility-checker");
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      const scrollPosition = window.pageYOffset + rect.top - 20;
+      
+      window.scrollTo({
+        top: scrollPosition,
+        behavior: "smooth"
+      });
+      
       setTimeout(() => {
-        const element = document.getElementById("eligibility-checker");
-        if (element) {
-          // Get the element's position
-          const rect = element.getBoundingClientRect();
+        const checkerContent = element.querySelector('.bg-white');
+        if (checkerContent) {
+          const contentRect = checkerContent.getBoundingClientRect();
+          const contentPosition = window.pageYOffset + contentRect.top - 120;
           
-          // Calculate the target scroll position to show the eligibility checker content
-          // We want to scroll to the element plus some additional offset to show the title
-          const scrollPosition = window.pageYOffset + rect.top - 20;
-          
-          // Scroll to the calculated position
           window.scrollTo({
-            top: scrollPosition,
+            top: contentPosition,
             behavior: "smooth"
           });
-          
-          // For better visibility, scroll a bit more to show the actual checker content
-          setTimeout(() => {
-            // Find the actual checker content (the first child with bg-white class)
-            const checkerContent = element.querySelector('.bg-white');
-            if (checkerContent) {
-              const contentRect = checkerContent.getBoundingClientRect();
-              const contentPosition = window.pageYOffset + contentRect.top - 120;
-              
-              window.scrollTo({
-                top: contentPosition,
-                behavior: "smooth"
-              });
-            }
-          }, 300);
         }
-      }, 100);
+      }, 300);
     }
-  });
+  }, 100);
 }
 
 export default showTaxCheckModal;
