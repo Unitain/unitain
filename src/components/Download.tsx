@@ -11,9 +11,16 @@ export function Download() {
   const [guideModal, setGuideModal] = useState(false)
   const { user } = useAuthStore();
 
-  const handleDownloadConfirm = async () => {
-    setGuideModal(false);
-    setIsDownloading(true);
+  const handleDownload = async () => {
+    if (!user) {
+      toast.error('Please sign in to download the guide');
+      return;
+    }
+    // if(user) {
+    //   setGuideModal(true)
+    //   return
+    // }
+    // setIsDownloading(true);
     try {
       const success = await downloadGuide();
       if (success) {
@@ -30,22 +37,14 @@ export function Download() {
       console.error('Download failed:', error);
       toast.error('Failed to download guide. Please try again.');
     } finally {
-      setIsDownloading(false);
+      // setIsDownloading(false);
     }
-  };
-
-  const handleDownload = () => {
-    if (!user) {
-      toast.error('Please sign in to download the guide');
-      return;
-    }
-    setGuideModal(true);
   };
 
   return (
     <div className="flex flex-col items-center gap-4">
       {guideModal && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+      <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
         <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
           <div className='absolute right-6 top-5' onClick={()=> setGuideModal(false)}><X/></div>
           <h2 className="text-2xl font-bold mb-4">Download Guide</h2>
@@ -63,7 +62,7 @@ export function Download() {
       )}
       <Button
         onClick={handleDownload}
-        disabled={isDownloading}
+        // disabled={isDownloading}
         className="w-full flex items-center justify-center gap-2"
       >
         {isDownloading ? (
