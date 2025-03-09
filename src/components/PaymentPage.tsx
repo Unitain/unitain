@@ -20,15 +20,15 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   const getStatus = JSON.parse(localStorage.getItem('userData'))
 
   const handleSubmit = (e: { preventDefault: () => void; }) =>{
-
+    const url = window.location.href
     if (!user?.id) {
       throw new Error('User ID not found');
     }
 
     setLoading(true)
     e.preventDefault()
-    // axios.post('http://localhost:8000/api/payment', { user_id: user?.id })
-    axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id })
+    // axios.post('http://localhost:8000/api/payment', { user_id: user?.id, successUrl: url })
+    axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id, successUrl: url })
     .then(res => {
       window.location.href = res.data;
       localStorage.setItem('payment_success', 'true');
