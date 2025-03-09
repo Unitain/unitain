@@ -27,6 +27,8 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
 
     setLoading(true)
     e.preventDefault()
+    console.log("successUrl", successUrl);
+    
     // axios.post('http://localhost:8000/api/payment', { user_id: user?.id, successUrl: url })
     axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id, successUrl: url })
     .then(res => {
