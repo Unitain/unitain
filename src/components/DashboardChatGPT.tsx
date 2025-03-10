@@ -10,6 +10,8 @@ import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { X } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
+import { FileProvider } from '../context/FileContext';
+import {FileList} from "./FileList"
 
 export function DashboardChatGPT() {
   interface PaymentDetails {
@@ -171,30 +173,35 @@ export function DashboardChatGPT() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 relative">
+    <FileProvider>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {paymentDetails?.status === "approved" ||
       (uid && getStatus.payment_status) ? (
-        <div>
-          <h1 className="text-2xl font-bold mb-8">Welcome to Your Dashboard</h1>
-
-          {/* Upload and Download Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Upload Documents</h2>
-              <Upload />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+         <div className="bg-white/80 backdrop-blur-glass rounded-2xl shadow-glass p-6 sm:p-8 animate-fade-in">
+         
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent mb-6 sm:mb-10">
+              Document Management
+            </h1>
+            
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up">
+                 <Upload />
+              </div>
+              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                <FileList />
+              </div>
             </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Download Guide</h2>
-              <Download />
+            
+            <div className="space-y-6 sm:space-y-8">
+              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                <Download />
+              </div>
             </div>
           </div>
-
-          {/* Chat Interface */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Chat Support</h2>
-            <Chat />
-          </div>
+        </div>
         </div>
       ) : (
         <div>
@@ -212,6 +219,7 @@ export function DashboardChatGPT() {
         />
       )}
     </div>
+    </FileProvider>
   );
 }
 
