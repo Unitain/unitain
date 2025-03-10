@@ -105,9 +105,7 @@ function MainContent({
   handleShowPayment,
 }: MainContentProps) {
   const { user } = useAuthStore();
-  console.log("🚀 ~ user:", user)
   const [isChecking, setIsChecking] = useState(false);
-  console.log("🚀 ~ isChecking:", isChecking)
   const { t } = useTranslation();
   const navigate = useNavigate();
 

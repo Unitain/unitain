@@ -115,12 +115,15 @@ export function showTaxCheckModal() {
       }
     }).then((result) => {
       if (result.isConfirmed) {
+        console.log("result", result.isConfirmed);
+        
         // User chose to sign up
         document.getElementById('auth-button')?.click();
-        const authModal = document.querySelector('[data-auth-modal]');
-        if (authModal) {
-          (authModal as HTMLElement).dataset.initialMode = 'signup';
-        }
+        
+        // const authModal = document.querySelector('[data-auth-modal]');
+        // if (authModal) {
+        //   (authModal as HTMLElement).dataset.initialMode = 'signup';
+        // }
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         // User chose to sign in
         document.getElementById('auth-button')?.click();
