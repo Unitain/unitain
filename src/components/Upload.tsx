@@ -24,7 +24,7 @@ interface UploadProgress {
 
 export function Upload() {
   const { addFile } = useFiles();
-    const [uploadGuide, setUploadGuide] = useState(true)
+  const [uploadGuide, setUploadGuide] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
 
   const validateFile = (file: File) => {
@@ -53,8 +53,6 @@ export function Upload() {
     for (const file of acceptedFiles) {
       try {
         validateFile(file);
-        
-        // Start progress simulation
         simulateUploadProgress(file.name);
         
         const newFile = {
@@ -84,38 +82,50 @@ export function Upload() {
     onDrop,
     accept: ALLOWED_TYPES,
     maxSize: MAX_FILE_SIZE,
-    onError: (error) => handleError(error, 'Dropzone')
+    onError: (error) => handleError(error, 'Dropzone'),
+    noClick: true,
   });
-  const handleOpenModal = () => {
+
+  // or trigger the file input click directly.
+  const handleContainerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     const modalShown = localStorage.getItem('UploadGuideShown');
-    if (modalShown === 'true') {
-    } else {
+    if (modalShown !== 'true') {
       setUploadGuide(true);
+    } else {
+      document.getElementById('fileInput')?.click();
     }
+  };
+
+  // Combine Dropzone's root props with our custom onClick
+  const rootPropsWithClick = {
+    ...getRootProps(),
+    onClick: handleContainerClick,
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
     {uploadGuide && (
-      <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
+      <div className="fixed inset-0 flex items-center justify-center rounded-xl bg-black bg-opacity-20 z-50">
         <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
-          <div className='absolute right-6 top-5' onClick={()=> setUploadGuide(false)}><X/></div>
+          <div className="absolute right-6 top-5 cursor-pointer" onClick={() => setUploadGuide(false)}><X /></div>
           <h2 className="text-2xl font-bold mb-4">Upload Documents</h2>
-          <p className="mb-5">Here you can test our upload process by uploading any files— these can be placeholder files (e.g., an empty PDF) or real documents if you wish. We process all data securely and discreetly. It’s not mandatory for the beta test, but it demonstrates how the upload step works in a real scenario.</p>
+          <p className="mb-5">
+            Here you can test our upload process by uploading any files— these can be placeholder files (e.g., an empty PDF) or real documents if you wish. We process all data securely and discreetly. It’s not mandatory for the beta test, but it demonstrates how the upload step works in a real scenario.
+          </p>
           <div className="flex justify-end gap-4">
-            <button onClick={() => setUploadGuide(false)} className='border p-3 rounded-md border-black'>
+            <button onClick={() => setUploadGuide(false)} className="border p-3 rounded-md border-black">
               Cancel
             </button>
             <button
-            className='border p-3 rounded-md bg-black text-white'
+              className="border p-3 rounded-md bg-black text-white"
                 onClick={() => {
-                  
-                  // Mark modal as shown and trigger file input
                   localStorage.setItem('UploadGuideShown', 'true');
                   setUploadGuide(false);
+                  document.getElementById('fileInput')?.click();
                 }}
               >
-               Upload document
+              Upload document
             </button>
           </div>
         </div>
@@ -124,15 +134,14 @@ export function Upload() {
 
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Documents</h2>
       <div
-      onClick={handleOpenModal}
-        {...getRootProps()}
+        {...rootPropsWithClick}
         className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out touch-manipulation
           ${isDragActive 
             ? 'border-blue-500 bg-blue-50 scale-102' 
             : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
           }`}
       >
-        <input {...getInputProps()} />
+        <input id="fileInput" {...getInputProps()} />
         <UploadIcon 
           className={`mx-auto h-10 sm:h-12 w-10 sm:w-12 transition-colors duration-300
             ${isDragActive ? 'text-blue-500' : 'text-gray-400'}`}
