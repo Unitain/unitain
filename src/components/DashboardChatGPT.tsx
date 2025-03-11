@@ -34,51 +34,51 @@ export function DashboardChatGPT() {
 
   const getStatus = JSON.parse(localStorage.getItem("userData"));
 
-  useEffect(() => {
-    if (!uid && getStatus.payment_status) {
-      toast.error("No user ID found. Redirecting to home...");
-      navigate("/");
-    } else {
-      setIsLoading(false);
-    }
-  }, [uid, navigate]);
+  // useEffect(() => {
+  //   if (!uid && getStatus.payment_status) {
+  //     toast.error("No user ID found. Redirecting to home...");
+  //     navigate("/");
+  //   } else {
+  //     setIsLoading(false);
+  //   }
+  // }, [uid, navigate]);
 
-  useEffect(() => {
-    if (sessionId && status && uid) {
-      setIsLoading(true);
-      try {
-        if (uid === user?.id) {
-          const detail = { sessionId: sessionId, status: status, uid: uid };
-          setPaymentDetails(detail);
+  // useEffect(() => {
+  //   if (sessionId && status && uid) {
+  //     setIsLoading(true);
+  //     try {
+  //       if (uid === user?.id) {
+  //         const detail = { sessionId: sessionId, status: status, uid: uid };
+  //         setPaymentDetails(detail);
 
-          updatePaymentStatus(sessionId, status, uid);
-          toast.success("Payment Successful!");
-        } else {
-          toast.error("Invalid payment details received.");
-        }
-      } catch (error) {
-        toast.error("Failed to process payment details.");
-        navigate("/");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }, [sessionId, status, uid, user?.id]);
+  //         updatePaymentStatus(sessionId, status, uid);
+  //         toast.success("Payment Successful!");
+  //       } else {
+  //         toast.error("Invalid payment details received.");
+  //       }
+  //     } catch (error) {
+  //       toast.error("Failed to process payment details.");
+  //       navigate("/");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   }
+  // }, [sessionId, status, uid, user?.id]);
 
-  const updatePaymentStatus = async (
-    paymentId: string,
-    newStatus: string,
-    id: string
-  ) => {
-    const { error } = await supabase
-      .from("users")
-      .update({ payment_id: paymentId, payment_status: newStatus })
-      .eq("id", id);
-    if (error) {
-      toast.error("Error updating payment: " + error.message);
-      return null;
-    }
-  };
+  // const updatePaymentStatus = async (
+  //   paymentId: string,
+  //   newStatus: string,
+  //   id: string
+  // ) => {
+  //   const { error } = await supabase
+  //     .from("users")
+  //     .update({ payment_id: paymentId, payment_status: newStatus })
+  //     .eq("id", id);
+  //   if (error) {
+  //     toast.error("Error updating payment: " + error.message);
+  //     return null;
+  //   }
+  // };
 
   useEffect(() => {
     return () => {
@@ -174,8 +174,8 @@ export function DashboardChatGPT() {
   return (
     <FileProvider>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {paymentDetails?.status === "approved" ||
-      (uid && getStatus.payment_status) ? (
+      {/* {paymentDetails?.status === "approved" || */}
+      {/* (uid && getStatus.payment_status) ? ( */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
          <div className="bg-white/80 backdrop-blur-glass rounded-2xl shadow-glass p-6 sm:p-8 animate-fade-in">
          
@@ -202,14 +202,7 @@ export function DashboardChatGPT() {
           </div>
         </div>
         </div>
-      ) : (
-        <div>
-          {/* <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-          /> */}
-        </div>
-      )}
+      {/* )} */}
       
       {isFeedbackModal && (
         <FeedbackModal 

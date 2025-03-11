@@ -17,6 +17,7 @@ import Success from "./Success";
 import Failed from "./Failed";
 import { showTaxCheckModal } from "./components/TaxCheckModal";
 import {AuthModal} from "./components/AuthModal"; 
+import { EligibilityModal } from './components/EligibilityModal.tsx';
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -108,7 +109,11 @@ function MainContent({
   const [isChecking, setIsChecking] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+  const onNavigateToDashboard = React.useCallback(() => {
+    navigate("/dashboard");
+  }, [navigate]);
+  
   const features: Feature[] = React.useMemo(
     () => [
       {
@@ -156,7 +161,7 @@ function MainContent({
     []
   );
   return (
-    <div className="pb-10">
+    <div>
       {/* Hero Section */}
       <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -168,14 +173,19 @@ function MainContent({
               {t("hero.subtitle")}
             </p>
             <button
-              onClick={() => showTaxCheckModal()}
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+            onClick={() => setShowEligibilityModal(true)}
+            className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
               id="start-tax-check-button"
             >
               {t("hero.cta")}
             </button>
           </div>
         </div>
+        <EligibilityModal
+        isOpen={showEligibilityModal}
+        onClose={() => setShowEligibilityModal(false)}
+        onNavigateToDashboard={onNavigateToDashboard}
+      />
       </header>
 
       {/* Benefits Section */}
@@ -201,9 +211,9 @@ function MainContent({
         </div>
       </section>
       {/* Eligibility Checker Section */}
-      <section id="eligibility-checker" className="py-20 bg-gray-50">
+      {/* <section id="eligibility-checker" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Show a loader while checking the user's status */}
+
           {isChecking ? (
             <h2 className="text-3xl font-bold text-center mb-12">
               Checking eligibility...
@@ -217,7 +227,6 @@ function MainContent({
             </h2>
           )}
 
-          {/* Show Eligibility Checker when there's no user or when the user is not approved */}
           {!isChecking && (!user || user?.payment_status !== "approved") && (
             <ErrorBoundary>
               <Suspense fallback={<LoadingSpinner />}>
@@ -229,7 +238,6 @@ function MainContent({
             </ErrorBoundary>
           )}
 
-          {/* Button to Navigate to Dashboard */}
           {!isChecking && user?.payment_status === "approved" && (
             <div className="text-center mt-8">
               <Button
@@ -245,7 +253,7 @@ function MainContent({
             </div>
           )}
         </div>
-      </section>
+      </section> */}
 
       {/* Process Section */}
       <section className="py-20 bg-white">
@@ -289,19 +297,26 @@ function MainContent({
           <h2 className="text-3xl font-bold mb-4">{t("cta.title")}</h2>
           <p className="text-xl mb-8 text-blue-100">{t("cta.subtitle")}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
+           <button
+            onClick={() => setShowEligibilityModal(true)}
+            className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              data-contact-form
+            >
+              {t("hero.cta")}
+              </button>
             <button
               onClick={handleShowContact}
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               data-contact-form
             >
               {t("cta.contact")}
             </button>
-            <button
+            {/* <button
               onClick={() => navigate("/privacy")}
               className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               {t("cta.privacy")}
-            </button>
+            </button> */}
           </div>
         </div>
       </section>
