@@ -53,10 +53,10 @@ export function Upload() {
   };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    alert("ftgyhuj");
+    
     for (const file of acceptedFiles) {
       try {
-        console.log("🚨 🚨 🚨 file", file.name);
-        
         if (files.some((existingFile) => existingFile.name === file.name)) {
           toast.error(`"${file.name}" already exists!`);
           continue;
@@ -104,10 +104,11 @@ export function Upload() {
           size: file.size,
           type: file.type,
           created_at: new Date().toISOString(),
-          url: publicUrlData?.publicUrl
+          url: publicUrlData?.publicUrl,
+          path: data.path
         };
         
-        console.log("🚨🚨🚨newFile", newFile);
+        console.log("🚨newFile", newFile);
 
         // Validate file data against schema
         FileSchema.parse(newFile);
@@ -128,24 +129,23 @@ export function Upload() {
     accept: ALLOWED_TYPES,
     maxSize: MAX_FILE_SIZE,
     onError: (error) => handleError(error, 'Dropzone'),
-    noClick: true,
   });
 
   // or trigger the file input click directly.
-  const handleContainerClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const modalShown = localStorage.getItem('UploadGuideShown');
-    if (modalShown !== 'true') {
-      setUploadGuide(true);
-    } else {
-      document.getElementById('fileInput')?.click();
-    }
-  };
+  // const handleContainerClick = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   const modalShown = localStorage.getItem('UploadGuideShown');
+  //   if (modalShown !== 'true') {
+  //     setUploadGuide(true);
+  //   } else {
+  //     document.getElementById('fileInput')?.click();
+  //   }
+  // };
 
   // Combine Dropzone's root props with our custom onClick
   const rootPropsWithClick = {
     ...getRootProps(),
-    onClick: handleContainerClick,
+    // onClick: handleContainerClick,
   };
 
   return (

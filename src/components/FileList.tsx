@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, Trash2, FileText, Download } from 'lucide-react';
 import { useFiles } from '../context/FileContext';
 import { Lightbox } from './Lightbox';
+import { supabase } from "../lib/supabase";
 import type { FileItem } from '../types';
 
 export function FileList() {
@@ -13,14 +14,27 @@ export function FileList() {
     setPreviewFile(file);
   };
 
-  const handleDelete = async (file: FileItem) => {
-    console.log(file);
-    
+const handleDelete = async (file: FileItem) => {
     try {
-      setDeletingId(file.id);
+      if (!file || !file.path) {
+          throw new Error("File and file.path are required for deletion");
+        }
+
+      const { data, error } = await supabase.storage
+        .from("vehicle_uploads")
+        .remove(file.path);
+      
+      console.log("🚀 🚀 Deletion response:", data, error);
+      
+      if (error) throw error;
+      
       await removeFile(file.id);
-    } finally {
-      setDeletingId(null);
+    //   toast.success(`"${file.name}" wurde erfolgreich gelöscht`);
+      return true;
+    } catch (error) {
+      console.error("🚀 🚀 Failed to delete vehicle file:", error);
+      alert("Failed to delete file");
+      return false;
     }
   };
 
