@@ -12,6 +12,7 @@ import { X } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import { FileProvider } from '../context/FileContext';
 import {FileList} from "./FileList"
+import { ChatSupport } from './ChatSupport';
 
 export function DashboardChatGPT() {
   interface PaymentDetails {
@@ -216,6 +217,8 @@ export function DashboardChatGPT() {
           setShowFeedbackModal={setIsFeedbackModal} 
         />
       )}
+
+      <ChatSupport/>
     </div>
     </FileProvider>
   );
