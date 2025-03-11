@@ -107,11 +107,6 @@ function Footer() {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
                 <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
@@ -147,11 +142,6 @@ function Footer() {
               <li>
                 <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">
                   Legal Notice
-                </Link>
-              </li>
-              <li>
-                <Link to="/imprint" className="text-gray-400 hover:text-white transition-colors">
-                  Imprint
                 </Link>
               </li>
             </ul>

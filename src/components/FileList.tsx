@@ -14,6 +14,8 @@ export function FileList() {
   };
 
   const handleDelete = async (file: FileItem) => {
+    console.log(file);
+    
     try {
       setDeletingId(file.id);
       await removeFile(file.id);
