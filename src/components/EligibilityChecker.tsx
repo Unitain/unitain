@@ -377,7 +377,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-       {showImportantModal && (
+       {/* {showImportantModal && (
             <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
               <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
                 <div className='absolute right-6 top-5' onClick={handleImportantModalClose}><X/></div>
@@ -389,7 +389,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
                 <Button onClick={handleImportantModalClose}>OK</Button>
               </div>
             </div>
-          )}
+          )} */}
 
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">

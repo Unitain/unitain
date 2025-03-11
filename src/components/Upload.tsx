@@ -105,7 +105,7 @@ export function Upload() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-    {uploadGuide && (
+    {/* {uploadGuide && (
       <div className="fixed inset-0 flex items-center justify-center rounded-xl bg-black bg-opacity-20 z-50">
         <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
           <div className="absolute right-6 top-5 cursor-pointer" onClick={() => setUploadGuide(false)}><X /></div>
@@ -130,7 +130,7 @@ export function Upload() {
           </div>
         </div>
       </div>
-      )}
+      )} */}
 
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Documents</h2>
       <div

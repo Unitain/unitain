@@ -50,7 +50,7 @@ export function Download() {
 
   return (
     <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6">
-      {guideModal && (
+      {/* {guideModal && (
       <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-xl z-50">
         <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
           <div className='absolute right-6 top-5' onClick={()=> setGuideModal(false)}><X/></div>
@@ -66,7 +66,7 @@ export function Download() {
           </div>
         </div>
       </div>
-      )}
+      )} */}
 
       <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6">
       <h2 className="text-xl font-semibold text-primary-900 mb-4">Download Guide</h2>
