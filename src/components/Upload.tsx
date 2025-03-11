@@ -4,6 +4,7 @@ import { Upload as UploadIcon, X } from 'lucide-react';
 import { useFiles } from '../context/FileContext';
 import { handleError } from '../utils/errorHandling';
 import { FileSchema } from '../types/type';
+import { supabase } from "../lib/supabase";
 import { UploadProgress } from './UploadProgress';
 import { FileList } from './FileList';
 import toast from 'react-hot-toast';
@@ -24,8 +25,11 @@ interface UploadProgress {
 
 export function Upload() {
   const { addFile } = useFiles();
+  console.log(addFile);
+  
   const [uploadGuide, setUploadGuide] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [files, setFiles] = useState<FileItem[]>([]);
 
   const validateFile = (file: File) => {
     if (file.size > MAX_FILE_SIZE) {
@@ -52,8 +56,48 @@ export function Upload() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
       try {
+        console.log("🚨 🚨 🚨 file", file.name);
+        
+        if (files.some((existingFile) => existingFile.name === file.name)) {
+          toast.error(`"${file.name}" already exists!`);
+          continue;
+        }
+
         validateFile(file);
         simulateUploadProgress(file.name);
+        console.log("Uploading file:", file.name);
+      
+        const timestamp = Date.now();
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const uniqueFileName = `${timestamp}_${sanitizedFileName}`;        
+
+
+          const { data, error } = await supabase.storage
+              .from("vehicle_uploads")
+              .upload(uniqueFileName, file, {
+                cacheControl: "3600",
+                upsert: false,
+              });
+        
+            console.log("🔹 Upload response received. Data:", data, "Error:", error);
+        
+            if (error) {
+              console.error("🚨 Supabase upload error:", error);
+              throw error;
+            }
+        
+            if (!data?.path) {
+              throw new Error("Upload failed - no path returned");
+            }
+        
+            const { data: publicUrlData } = supabase.storage
+              .from("vehicle_uploads")
+              .getPublicUrl(data.path);
+               console.log("🔹 Public URL Data:", publicUrlData);
+        
+            if (!publicUrlData?.publicUrl) {
+              throw new Error("Failed to generate public URL");
+            }
         
         const newFile = {
           id: crypto.randomUUID(),
@@ -61,8 +105,10 @@ export function Upload() {
           size: file.size,
           type: file.type,
           created_at: new Date().toISOString(),
-          url: URL.createObjectURL(file)
+          url: publicUrlData?.publicUrl
         };
+        
+        console.log("🚨🚨🚨newFile", newFile);
 
         // Validate file data against schema
         FileSchema.parse(newFile);
@@ -76,7 +122,7 @@ export function Upload() {
         handleError(error, 'FileUpload');
       }
     }
-  }, [addFile]);
+  }, [addFile, files]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

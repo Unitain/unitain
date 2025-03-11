@@ -14,6 +14,7 @@ const FileContext = createContext<FileContextType | undefined>(undefined);
 
 export function FileProvider({ children }: { children: React.ReactNode }) {
   const [files, setFiles] = useState<FileItem[]>([]);
+  console.log("🚀🚀🚀🚀🚀 ~  files:", files)
 
   const addFile = useCallback(async (file: FileItem) => {
     try {

@@ -37,34 +37,65 @@ export function FileList() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Preview
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Name
                     </th>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Size
                     </th>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Date
                     </th>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {files.map((file) => (
-                    <tr 
-                      key={file.id} 
-                      className={`hover:bg-gray-50 transition-colors duration-150
-                        ${deletingId === file.id ? 'opacity-50' : ''}`}
+                    <tr
+                      key={file.id}
+                      className={`hover:bg-gray-50 transition-colors duration-150 ${
+                        deletingId === file.id ? 'opacity-50' : ''
+                      }`}
                     >
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <FileText className="h-5 w-5 text-gray-400 mr-2 sm:mr-3 flex-shrink-0" />
-                          <span className="text-sm text-gray-900 truncate max-w-[120px] sm:max-w-xs">
-                            {file.name}
-                          </span>
+                          {file.type.startsWith('image/') ? (
+                            <img
+                              src={file.url}
+                              alt={file.name}
+                              className="h-10 w-10 object-cover mr-2 rounded"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 mr-2 flex items-center justify-center bg-gray-100 rounded">
+                              <FileText className="h-5 w-5 text-gray-400" />
+                            </div>
+                          )}
                         </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900 truncate max-w-[120px] sm:max-w-xs">
+                          {file.name}
+                        </span>
                       </td>
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatFileSize(file.size)}
@@ -76,7 +107,7 @@ export function FileList() {
                         <div className="flex items-center justify-end space-x-2 sm:space-x-4">
                           <button
                             onClick={() => handleView(file)}
-                            className="p-2 text-blue-600 hover:text-blue-900 transition-colors duration-150 touch-manipulation"
+                            className="p-2 text-blue-600 hover:text-blue-900 transition-colors duration-150"
                             aria-label={`View ${file.name}`}
                             disabled={deletingId === file.id}
                           >
@@ -92,11 +123,13 @@ export function FileList() {
                           </a>
                           <button
                             onClick={() => handleDelete(file)}
-                            className="p-2 text-red-600 hover:text-red-900 transition-colors duration-150 touch-manipulation"
+                            className="p-2 text-red-600 hover:text-red-900 transition-colors duration-150"
                             aria-label={`Delete ${file.name}`}
                             disabled={deletingId === file.id}
                           >
-                            <Trash2 className={`h-5 w-5 ${deletingId === file.id ? 'animate-spin' : ''}`} />
+                            <Trash2
+                              className={`h-5 w-5 ${deletingId === file.id ? 'animate-spin' : ''}`}
+                            />
                           </button>
                         </div>
                       </td>
@@ -106,7 +139,9 @@ export function FileList() {
               </table>
               {files.length === 0 && (
                 <div className="text-center py-12">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="mx-auto h-12 w-12 flex items-center justify-center bg-gray-100 rounded">
+                    <FileText className="h-6 w-6 text-gray-400" />
+                  </div>
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No files</h3>
                   <p className="mt-1 text-sm text-gray-500">Upload files to get started</p>
                 </div>
@@ -116,10 +151,7 @@ export function FileList() {
         </div>
       </div>
 
-      <Lightbox
-        file={previewFile}
-        onClose={() => setPreviewFile(null)}
-      />
+      <Lightbox file={previewFile} onClose={() => setPreviewFile(null)} />
     </>
   );
 }
