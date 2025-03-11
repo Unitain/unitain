@@ -53,8 +53,7 @@ export function Upload() {
   };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    alert("ftgyhuj");
-    
+
     for (const file of acceptedFiles) {
       try {
         if (files.some((existingFile) => existingFile.name === file.name)) {

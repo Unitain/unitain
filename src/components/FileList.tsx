@@ -22,7 +22,7 @@ const handleDelete = async (file: FileItem) => {
 
       const { data, error } = await supabase.storage
         .from("vehicle_uploads")
-        .remove(file.path);
+        .remove([file.path]);
       
       console.log("🚀 🚀 Deletion response:", data, error);
       
