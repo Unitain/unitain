@@ -25,8 +25,7 @@ interface UploadProgress {
 
 export function Upload() {
   const { addFile } = useFiles();
-  console.log(addFile);
-  
+
   const [uploadGuide, setUploadGuide] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
