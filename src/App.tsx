@@ -368,15 +368,15 @@ function AppContent() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
-      <ErrorBoundary>
-        <Suspense fallback={<LoadingSpinner size="lg" />}>
+      {/* <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner size="lg" />}> */}
           <Routes>
             <Route
               path="/dashboard/*"
               element={
-                <ProtectedRoute>
+                // <ProtectedRoute>
                   <DashboardChatGPT />
-                </ProtectedRoute>
+                // </ProtectedRoute>
               }
             />
             <Route
@@ -423,8 +423,8 @@ function AppContent() {
             <Route path="*" element={<Navigate to="/" replace />} />
             {/* <Route path="*" element={<div>Page Not Found. Redirecting...</div>} /> */}
           </Routes>
-        </Suspense>
-      </ErrorBoundary>
+        {/* </Suspense>
+      </ErrorBoundary> */}
 
       <ErrorBoundary>
         <Suspense fallback={null}>

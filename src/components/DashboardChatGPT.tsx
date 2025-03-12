@@ -13,6 +13,7 @@ import FeedbackModal from "./FeedbackModal";
 import { FileProvider } from '../context/FileContext';
 import {FileList} from "./FileList"
 import { ChatSupport } from './ChatSupport';
+import { ProgressTile } from './ProgressTile';
 
 export function DashboardChatGPT() {
   interface PaymentDetails {
@@ -184,18 +185,26 @@ export function DashboardChatGPT() {
             </h1>
             
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up">
                  <Upload />
               </div>
-              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              {/* <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                 <FileList />
-              </div>
+              </div> */}
             </div>
             
-            <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3  gap-6 sm:gap-8 lg:col-span-2">
+            <div className="bg-white lg:col-span-2 rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                <FileList />
+              </div>
               <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                  <ProgressTile />
+                </div>
+            </div>
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
                 <Download />
               </div>
             </div>
