@@ -1,14 +1,16 @@
 import React from 'react';
 import { X, ArrowRight } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 interface EligibilityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigateToDashboard: () => void;
+  // onNavigateToDashboard: () => void;
 }
 
-export function EligibilityModal({ isOpen, onClose, onNavigateToDashboard }: EligibilityModalProps) {
+export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
   if (!isOpen) return null;
+  const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 text-black font-medium">
@@ -52,8 +54,7 @@ export function EligibilityModal({ isOpen, onClose, onNavigateToDashboard }: Eli
 
           <button
             onClick={() => {
-              onClose();
-              onNavigateToDashboard();
+             navigate('/dashboard')
             }}
             className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
           >

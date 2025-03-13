@@ -104,7 +104,7 @@ export async function saveEligibilityCheck(
         return saveEligibilityCheck(data, retryCount + 1);
       }
 
-      toast.error('Failed to save your eligibility check. Please try again.');
+      // toast.error('Failed to save your eligibility check. Please try again.');
       return false;
     }
 
