@@ -98,9 +98,9 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
-            <Link to="/demo" className="text-blue-600 hover:text-blue-800 font-medium">
+            {/* <Link to="/demo" className="text-blue-600 hover:text-blue-800 font-medium">
               Demo
-            </Link>
+            </Link> */}
             <LanguageSelector />
 
             {isLoading ? (
