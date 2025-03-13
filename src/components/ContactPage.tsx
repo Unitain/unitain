@@ -34,7 +34,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
           {/* Features */}
           <div className="space-y-8">
             <div className="flex items-start gap-4">
-              <ShieldCheck className="w-6 h-6 text-blue-600 flex-shrink-0" />
+              <ShieldCheck className="w-6 h-6 text-primary-600 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold mb-1">
                   {t('contact.features.consultation.title')}
@@ -46,7 +46,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
             </div>
 
             <div className="flex items-start gap-4">
-              <ShieldCheck className="w-6 h-6 text-blue-600 flex-shrink-0" />
+              <ShieldCheck className="w-6 h-6 text-primary-600 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold mb-1">
                   {t('contact.features.response.title')}
@@ -58,7 +58,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
             </div>
 
             <div className="flex items-start gap-4">
-              <ShieldCheck className="w-6 h-6 text-blue-600 flex-shrink-0" />
+              <ShieldCheck className="w-6 h-6 text-primary-600 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold mb-1">
                   {t('contact.features.security.title')}

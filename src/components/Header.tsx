@@ -132,7 +132,7 @@ export function Header() {
                   className="flex items-center gap-2 whitespace-nowrap"
                 >
                   {isSigningOut ? (
-                    <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary-900 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
@@ -143,7 +143,7 @@ export function Header() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 whitespace-nowrap"
+                className="flex items-center gap-2 bg-primary-900 hover:bg-primary-800 whitespace-nowrap"
                 id="auth-button"
               >
                 <UserCircle2 className="w-4 h-4" />

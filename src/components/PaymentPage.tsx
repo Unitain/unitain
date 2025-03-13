@@ -67,7 +67,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
   //     <div className="max-w-2xl mx-auto p-8 text-center">
   //       <h1 className="text-2xl font-bold mb-4 text-green-600">Payment Already Completed</h1>
   //       <p className="mb-4">Your payment has been successfully processed. You can go back to the dashboard.</p>
-  //       <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700 text-white">
+  //       <Button onClick={() => navigate('/dashboard')} className="bg-primary-600 hover:bg-primary-700 text-white">
   //         Go to Dashboard
   //       </Button>
   //     </div>
@@ -79,7 +79,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
         <div className="max-w-2xl mx-auto p-8 text-center">
            <h1 className="text-2xl font-bold mb-4 text-green-600">Payment Already Completed</h1>
            <p className="mb-4">Your payment has been successfully processed. You can go back to the dashboard.</p>
-           <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700 text-white">
+           <Button onClick={() => navigate('/dashboard')} className="bg-primary-600 hover:bg-primary-700 text-white">
              Go to Dashboard
            </Button>
          </div>
@@ -90,7 +90,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
 
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
         <div className="text-center mb-8">
-          <div className="text-4xl font-bold text-blue-600 mb-2">
+          <div className="text-4xl font-bold text-primary-600 mb-2">
             {t('payment.amount')}
           </div>
           <div className="text-gray-500">{t('payment.oneTime')}</div>
@@ -103,7 +103,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
           <Button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              className="w-full max-w-md bg-primary-600 hover:bg-primary-700 text-white transition-colors"
               >
               {loading ? (
                 <>
@@ -127,11 +127,11 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
 
         <div className="text-center text-sm text-gray-500 mt-8">
           {t('payment.legal')}{' '}
-          <a href="/terms" className="text-blue-600 hover:underline">
+          <a href="/terms" className="text-primary-600 hover:underline">
             {t('payment.termsLink')}
           </a>
           {t('payment.andText')}{' '}
-          <a href="/privacy" className="text-blue-600 hover:underline">
+          <a href="/privacy" className="text-primary-600 hover:underline">
             {t('payment.privacyLink')}
           </a>
         </div>

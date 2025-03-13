@@ -19,7 +19,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
     setLoading(true);
-
+    console.log("loading", loading);
+    
     try {
       if (isLogin) {
         // Handle Login
@@ -143,7 +144,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               required
             />
           </div>
@@ -157,7 +158,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               required
             />
           </div>
@@ -165,7 +166,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             {loading
               ? isLogin
@@ -181,7 +182,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="mt-4 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-blue-600 hover:text-blue-700 focus:outline-none"
+            className="text-sm text-primary-600 hover:text-primary-700 focus:outline-none"
           >
             {isLogin
               ? "Don't have an account? Sign Up"

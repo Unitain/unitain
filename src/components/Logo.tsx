@@ -8,7 +8,7 @@ export function Logo() {
       viewBox="0 0 120 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="text-blue-900"
+      className="text-primary-900"
       aria-label="Unitain logo"
     >
       <text

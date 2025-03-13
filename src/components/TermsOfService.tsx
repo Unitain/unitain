@@ -138,7 +138,7 @@ export function TermsOfService({ onBack }: TermsOfServiceProps) {
         UNITAIN LLC<br />
         5830 E 2nd St, Ste 7000 #22789<br />
         Casper, Wyoming 82609, USA<br />
-        Email: <a href="mailto:info@unitain.net" className="text-blue-600 hover:underline">info@unitain.net</a>
+        Email: <a href="mailto:info@unitain.net" className="text-primary-600 hover:underline">info@unitain.net</a>
       </p>
     </>
   );

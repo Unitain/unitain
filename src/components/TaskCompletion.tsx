@@ -88,9 +88,9 @@ export function TaskCompletion() {
           {isCompleting ? 'Completing Task...' : 'Complete Task'}
         </Button>
         
-        <div className="flex items-start mt-4 bg-blue-50 p-3 rounded-md">
-          <AlertCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-700">
+        <div className="flex items-start mt-4 bg-primary-50 p-3 rounded-md">
+          <AlertCircle className="w-5 h-5 text-primary-600 mr-2 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-primary-700">
             When you click the button, a modal will appear with an embedded Google Form.
             In a real application, this would be triggered after a user completes a specific task.
           </p>

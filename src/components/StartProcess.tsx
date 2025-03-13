@@ -9,7 +9,7 @@ export function StartProcess() {
         {/* Headline */}
         <h1 className="text-4xl font-bold text-center text-gray-900 mb-8">
           Expert Vehicle Tax Exemption Check
-          <span className="block text-2xl text-blue-600 mt-2">
+          <span className="block text-2xl text-primary-600 mt-2">
             Save on Import Fees
           </span>
         </h1>
@@ -42,7 +42,7 @@ export function StartProcess() {
               key={index}
               className="flex items-start p-6 bg-gray-50 rounded-lg"
             >
-              <benefit.icon className="w-6 h-6 text-blue-600 mt-1 mr-4 flex-shrink-0" />
+              <benefit.icon className="w-6 h-6 text-primary-600 mt-1 mr-4 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-gray-900">{benefit.title}</h3>
                 <p className="text-gray-600">{benefit.description}</p>
@@ -73,7 +73,7 @@ export function StartProcess() {
               },
             ].map((step, index) => (
               <div key={index} className="text-center">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                   {step.step}
                 </div>
                 <h3 className="font-semibold mb-2">{step.title}</h3>
@@ -87,7 +87,7 @@ export function StartProcess() {
         <div className="text-center mb-12">
           <Button
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-12"
+            className="bg-primary-600 hover:bg-primary-700 text-white px-12"
             onClick={() => {
               window.location.href = '/#eligibility-checker';
             }}
@@ -104,7 +104,7 @@ export function StartProcess() {
             'Data Protection Compliant',
           ].map((trust, index) => (
             <div key={index} className="flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-blue-600 mr-2" />
+              <ShieldCheck className="w-4 h-4 text-primary-600 mr-2" />
               <span>{trust}</span>
             </div>
           ))}

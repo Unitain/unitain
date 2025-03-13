@@ -24,7 +24,7 @@ const Failed = () => {
           </button>
           <p className="mt-4 text-sm">
             Have a question?{" "}
-            <a href="/support" className="text-blue-600 hover:underline">
+            <a href="/support" className="text-primary-600 hover:underline">
               Contact Support
             </a>
           </p>

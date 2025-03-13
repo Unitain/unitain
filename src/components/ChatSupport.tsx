@@ -136,7 +136,7 @@ export function ChatSupport() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 bg-blue-600 text-white rounded-full p-3 md:p-4 shadow-lg hover:bg-blue-700 transition-colors touch-manipulation"
+        className="fixed bottom-4 right-4 bg-primary-600 text-white rounded-full p-3 md:p-4 shadow-lg hover:bg-primary-700 transition-colors touch-manipulation"
         aria-label="Open chat support"
       >
         <MessageCircle className="h-6 w-6" />
@@ -175,7 +175,7 @@ export function ChatSupport() {
                 <div
                   className={`max-w-[85%] rounded-lg p-3 break-words ${
                     msg.sender === 'user'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary-600 text-white'
                       : 'bg-gray-100 text-gray-700'
                   }`}
                 >
@@ -200,7 +200,7 @@ export function ChatSupport() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                 style={{
                   fontSize: '16px', // Prevents iOS zoom on focus
                   WebkitAppearance: 'none' // Removes iOS styling
@@ -208,7 +208,7 @@ export function ChatSupport() {
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors touch-manipulation"
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors touch-manipulation"
                 aria-label="Send message"
               >
                 <Send className="h-5 w-5" />

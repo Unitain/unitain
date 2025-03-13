@@ -280,7 +280,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         </div>
         <div className="h-2 bg-gray-200 rounded-full">
           <div
-            className="h-2 bg-blue-600 rounded-full transition-all duration-300"
+            className="h-2 bg-primary-600 rounded-full transition-all duration-300"
             style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
           />
         </div>
@@ -295,7 +295,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
           <button
             key={option}
             onClick={() => handleAnswer(option)}
-            className="w-full p-4 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-full p-4 text-left border rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             type="button"
           >
             {t(`eligibility.options.${option}`)}

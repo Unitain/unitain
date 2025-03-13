@@ -125,7 +125,7 @@ export function PayPalButton({
             setIsLoading(true);
             window.location.reload();
           }}
-          className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+          className="px-4 py-2 text-sm text-primary-600 hover:text-primary-800 transition-colors"
         >
           {t('common.retry')}
         </button>
@@ -137,7 +137,7 @@ export function PayPalButton({
     <div className="relative min-h-[150px]">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-75 rounded-lg">
-          <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
         </div>
       )}
       <div 

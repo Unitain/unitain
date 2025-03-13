@@ -154,14 +154,14 @@ function Footer() {
             <div className="flex items-center space-x-4">
               <button 
                 onClick={handleVersionClick}
-                className="text-gray-400 text-sm hover:text-blue-400 transition-colors flex items-center gap-1"
+                className="text-gray-400 text-sm hover:text-primary-400 transition-colors flex items-center gap-1"
                 aria-label="View changelog"
               >
                 <span>Version {currentVersion}</span>
                 {hasNewChanges && (
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                   </span>
                 )}
               </button>

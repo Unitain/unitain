@@ -25,16 +25,16 @@ export function DemoPage() {
           </p>
         </header>
 
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">
+        <div className="bg-primary-50 border-l-4 border-primary-500 p-4 mb-8">
           <div className="flex">
             <div className="flex-shrink-0">
-              <Info className="h-5 w-5 text-blue-500" />
+              <Info className="h-5 w-5 text-primary-500" />
             </div>
             <div className="ml-3">
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-primary-700">
                 This demo includes three main features:
               </p>
-              <ul className="mt-2 list-disc list-inside text-sm text-blue-700 ml-2">
+              <ul className="mt-2 list-disc list-inside text-sm text-primary-700 ml-2">
                 <li>Storing sandbox credentials in localStorage</li>
                 <li>Simulating a task completion that triggers a feedback form</li>
                 <li>Manually opening a Google Form in a modal</li>

@@ -48,7 +48,7 @@ export function GoogleFormModal() {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <ExternalLink className="w-5 h-5 mr-2 text-blue-600" />
+        <ExternalLink className="w-5 h-5 mr-2 text-primary-600" />
         Google Form Modal
       </h2>
       

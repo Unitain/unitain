@@ -78,7 +78,7 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
               setHasError(false);
               // navigate('/');
             }}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-primary-600 hover:text-primary-800"
           >
             Return Home
           </button>
@@ -161,15 +161,16 @@ function MainContent({
     []
   );
   return (
-    <div className="pb-10">
+    <div>
       {/* Hero Section */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      {/* <header className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20"> */}
+      <header className="bg-primary-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6">
               {t("hero.title")}
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+            <p className="text-xl mb-8 max-w-3xl mx-auto">
               {t("hero.subtitle")}
             </p>
             <button
@@ -177,7 +178,7 @@ function MainContent({
               const element = document.getElementById("eligibility-checker");
               element?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+            className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-50 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               id="start-tax-check-button"
             >
               {t("hero.cta")}
@@ -202,7 +203,7 @@ function MainContent({
                   key={index}
                   className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <Icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <Icon className="w-12 h-12 text-primary-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">
                     {feature.title}
                   </h3>
@@ -244,7 +245,7 @@ function MainContent({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {processSteps.map((item) => (
               <div key={item.step} className="text-center">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                   {item.step}
                 </div>
                 <h3 className="font-semibold mb-2">{t(item.titleKey)}</h3>
@@ -272,28 +273,32 @@ function MainContent({
       </section>
 
       {/* CTA Section */}
-      <section id="contact" className="py-20 bg-blue-600 text-white">
+      <section id="contact" className="py-20 bg-primary-600 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-4">{t("cta.title")}</h2>
-          <p className="text-xl mb-8 text-blue-100">{t("cta.subtitle")}</p>
+          <p className="text-xl mb-8 text-primary-100">{t("cta.subtitle")}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
            <button
-            onClick={() => setShowEligibilityModal(true)}
-            className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+            // onClick={() => setShowEligibilityModal(true)}
+            onClick={() => {
+              const element = document.getElementById("eligibility-checker");
+              element?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="px-8 py-3 bg-white text-primary-600 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
               data-contact-form
             >
               {t("hero.cta")}
               </button>
             <button
               onClick={handleShowContact}
-              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
               data-contact-form
             >
               {t("cta.contact")}
             </button>
             {/* <button
               onClick={() => navigate("/privacy")}
-              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
             >
               {t("cta.privacy")}
             </button> */}

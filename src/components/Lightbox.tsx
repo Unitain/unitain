@@ -94,7 +94,7 @@ export function Lightbox({ file, onClose }: LightboxProps) {
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   Open PDF in new tab
@@ -121,7 +121,7 @@ export function Lightbox({ file, onClose }: LightboxProps) {
             <a
               href={file.url}
               download={file.name}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <Download className="h-4 w-4 mr-2" />
               Download Document
@@ -130,7 +130,7 @@ export function Lightbox({ file, onClose }: LightboxProps) {
               href={`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(file.url)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <Eye className="h-4 w-4 mr-2" />
               View Online
@@ -150,7 +150,7 @@ export function Lightbox({ file, onClose }: LightboxProps) {
               href={file.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <Eye className="h-4 w-4 mr-2" />
               Open in new tab
@@ -178,7 +178,7 @@ export function Lightbox({ file, onClose }: LightboxProps) {
         }`}>
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transform hover:scale-110 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transform hover:scale-110 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             aria-label="Vorschau schließen"
             title="Schließen (ESC)"
             tabIndex={0}

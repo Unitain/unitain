@@ -181,14 +181,14 @@ export function Upload() {
         {...rootPropsWithClick}
         className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out touch-manipulation
           ${isDragActive 
-            ? 'border-blue-500 bg-blue-50 scale-102' 
-            : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+            ? 'border-primary-500 bg-primary-50 scale-102' 
+            : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
           }`}
       >
         <input id="fileInput" {...getInputProps()} />
         <UploadIcon 
           className={`mx-auto h-10 sm:h-12 w-10 sm:w-12 transition-colors duration-300
-            ${isDragActive ? 'text-blue-500' : 'text-gray-400'}`}
+            ${isDragActive ? 'text-primary-500' : 'text-gray-400'}`}
         />
         <p className="mt-4 text-sm sm:text-base text-gray-600">
           {isDragActive ? (
@@ -197,7 +197,7 @@ export function Upload() {
             <>
               <span className="hidden sm:inline">Drag & drop files here, or </span>
               <span className="sm:hidden">Tap to upload or </span>
-              <span className="text-blue-600 hover:text-blue-700 transition-colors duration-300">
+              <span className="text-primary-600 hover:text-primary-700 transition-colors duration-300">
                 browse files
               </span>
             </>

@@ -121,7 +121,7 @@ const handleDelete = async (file: FileItem) => {
                         <div className="flex items-center justify-end space-x-2 sm:space-x-4">
                           <button
                             onClick={() => handleView(file)}
-                            className="p-2 text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                            className="p-2 text-primary-600 hover:text-primary-900 transition-colors duration-150"
                             aria-label={`View ${file.name}`}
                             disabled={deletingId === file.id}
                           >

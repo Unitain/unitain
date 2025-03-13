@@ -58,7 +58,7 @@ export function FAQ() {
               className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200"
             >
               <summary 
-                className="flex justify-between items-center cursor-pointer p-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="flex justify-between items-center cursor-pointer p-6 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 role="button"
                 aria-expanded="false"
               >

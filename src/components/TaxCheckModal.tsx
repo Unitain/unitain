@@ -22,14 +22,14 @@ export function showTaxCheckModal() {
         <div class="text-left">
           <p class="mb-4">You're about to start the beta test for our tax exemption service.</p>
           
-        <div class="bg-blue-50 p-3 rounded-md mb-4">
+        <div class="bg-primary-50 p-3 rounded-md mb-4">
           <div class="flex">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
-            <p class="text-sm text-blue-700">
+            <p class="text-sm text-primary-700">
               During this test, you'll be using our PayPal sandbox environment to simulate the payment process.
             </p>
           </div>
@@ -66,13 +66,13 @@ export function showTaxCheckModal() {
                 <input
                   id="terms"
                   type="checkbox"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
               </div>
               <div class="ml-3 text-sm">
                 <label for="terms" class="font-medium text-gray-700">
                   I accept the 
-                  <a href="/terms" target="_blank" class="text-blue-600 hover:text-blue-800 ml-1">
+                  <a href="/terms" target="_blank" class="text-primary-600 hover:text-primary-800 ml-1">
                     Terms of Use
                   </a>
                 </label>
@@ -83,14 +83,14 @@ export function showTaxCheckModal() {
             </div>
           </div>
 
-          <div class="bg-blue-50 p-3 rounded-md mb-4">
+          <div class="bg-primary-50 p-3 rounded-md mb-4">
             <div class="flex">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-600 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
-              <p class="text-sm text-blue-700">
+              <p class="text-sm text-primary-700">
                 During this test, you'll be using our PayPal sandbox environment to simulate the payment process.
               </p>
             </div>

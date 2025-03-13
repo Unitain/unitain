@@ -220,7 +220,7 @@ export class PayPalService {
       const buttons = paypal.Buttons({
         style: {
           layout: 'vertical',
-          color: 'blue',
+          color: 'primary',
           shape: 'rect',
           label: 'pay'
         },

@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 this.setState({ hasError: false, error: null });
                 window.location.reload();
               }}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-primary-600 hover:text-primary-800"
             >
               Try again
             </button>
@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 this.setState({ hasError: false, error: null });
                 window.location.href = '/';
               }}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-primary-600 hover:text-primary-800"
             >
               Back to Home
             </button>

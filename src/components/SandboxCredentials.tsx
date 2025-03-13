@@ -50,7 +50,7 @@ export function SandboxCredentials() {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <Key className="w-5 h-5 mr-2 text-blue-600" />
+        <Key className="w-5 h-5 mr-2 text-primary-600" />
         Sandbox Credentials
       </h2>
       
@@ -68,7 +68,7 @@ export function SandboxCredentials() {
               type="text"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
               placeholder="Enter your Sandbox User ID"
             />
           </div>
@@ -87,7 +87,7 @@ export function SandboxCredentials() {
               type="password"
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
               placeholder="Enter your Sandbox Token"
             />
           </div>
