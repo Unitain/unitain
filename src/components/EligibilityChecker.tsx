@@ -158,7 +158,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         setShowResults(true);
 
         const { isEligible } = calculateEligibility();
-        if (isEligible) {
+        if (isEligible && session?.user ) {
           setShowEligibilityModal(true);
         }
 
