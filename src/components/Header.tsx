@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 import { Button } from "./Button";
-import { UserCircle2, LogOut, X } from "lucide-react";
+import { UserCircle2, LogOut, X, User } from "lucide-react";
 import { AuthModal } from "./AuthModal";
 import { LanguageSelector } from "./LanguageSelector";
 import { useTranslation } from "react-i18next";
-import { Logo } from "./Logo";
+// import { Logo } from "./Logo";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
@@ -89,30 +89,41 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200">
-
+  <>
+    <header className="bg-white/80 backdrop-blur-glass border-b border-gray-200/50 sticky top-0 z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="flex justify-between items-center h-16 sm:h-20">
           <div className="flex-shrink-0" onClick={() => (location.href = "/")}>
-            <Logo />
+          <button className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity duration-200">
+              unitain
+            </button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
-            {/* <Link to="/demo" className="text-blue-600 hover:text-blue-800 font-medium">
-              Demo
-            </Link> */}
             <LanguageSelector />
 
             {isLoading ? (
               <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
             ) : user ? (
-              <div className="flex items-center gap-2 sm:gap-3 max-w-full overflow-hidden">
-                <div className="hidden sm:flex items-center gap-2 min-w-0">
-                  <UserCircle2 className="w-5 h-5 text-blue-900 flex-shrink-0" />
-                  <span className="text-sm text-blue-900 truncate">
-                    {user.email}
-                  </span>
-                </div>
+            <div className="relative flex items-center gap-2 sm:gap-3 max-w-full">
+              <button type="button"
+                className="flex items-center space-x-2 sm:space-x-3 text-gray-700 hover:text-gray-900 transition-colors duration-200 touch-manipulation group"
+               >
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className="h-9 w-9 rounded-full ring-2 ring-primary-200 group-hover:ring-primary-300 transition-all duration-200"
+                  />
+                ) : (
+                  <div className="h-9 w-9 rounded-full bg-primary-50 ring-2 ring-primary-200 group-hover:ring-primary-300 transition-all duration-200 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary-600" />
+                  </div>
+                )}
+                <span className="hidden sm:block text-sm font-medium truncate max-w-[150px]">
+                  {user?.email}
+                </span>
+              </button>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -125,10 +136,6 @@ export function Header() {
                   ) : (
                     <LogOut className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline">
-                    {isSigningOut ? t("nav.signingout") : t("nav.signout")}
-                  </span>
-                  <span className="sm:hidden">Sign Out</span>
                 </Button>
               </div>
             ) : (
@@ -146,11 +153,12 @@ export function Header() {
           </div>
         </div>
       </div>
+    </header>
 
-      <AuthModal
+    <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
-    </header>
+  </>
   );
 }
