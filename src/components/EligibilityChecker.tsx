@@ -160,7 +160,9 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         const { isEligible } = calculateEligibility();
         if (isEligible && session?.user ) {
           setShowEligibilityModal(true);
-        }
+        }else{
+          toast.error('Based on your responses, you may not be eligible for tax exemption.'); 
+        } 
 
         // setShowEligibilityModal(true)
 
