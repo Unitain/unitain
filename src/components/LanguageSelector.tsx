@@ -34,7 +34,8 @@ export function LanguageSelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+        // className="flex border items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+        className="rounded-md border-black flex border items-center gap-2 px-3 py-2 text-sm"
         aria-label="Select language"
         aria-expanded={isOpen}
         aria-controls="language-menu"
