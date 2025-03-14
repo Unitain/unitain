@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { ChevronLeft, X } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from './Button';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { AuthModal } from './AuthModal';
@@ -109,31 +109,38 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
-  const [showImportantModal, setShowImportantModal] = useState(false)
-  const [paymentProcessModal, setPaymentProcessModal] = useState(false)
   // const [isEmailCopied, setIsEmailCopied] = useState(false);
   // const [isPasswordCopied, setIsPasswordCopied] = useState(false);  const paypalEmail = "sb-no7fn37881668@personal.example.com";
   // const paypalPassword = "xx!T%A5C";
+  const [showImportantModal, setShowImportantModal] = useState(false);
+  const [paymentProcessModal, setPaymentProcessModal] = useState(false);
   const currentQuestion = questions[currentStep];
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(null);
+
+  // Check user session on component mount and when auth modal is shown
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error fetching session:', error);
+      }
+
+      if (session?.user) {
+        setUser(session.user);
+      }
+    };
+    checkUser();
+  }, [showAuthModal]);
 
   const handleAnswer = useCallback(async (answer: string) => {
     if (!currentQuestion) return;
-
     if(currentStep === 1){
       setShowImportantModal(true)
     }
 
     try {
-      trackEvent('eligibility_answer', {
-        question_id: currentQuestion.id,
-        answer: answer,
-        step: currentStep + 1,
-        total_steps: questions.length
-      });
-        
       const newAnswers = {
         ...answers,
         [currentQuestion.id]: answer,
@@ -143,35 +150,39 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       if (currentStep < questions.length - 1) {
         setCurrentStep((prev) => prev + 1);
       } else {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error fetching session:', error);
-          return;
-        }
-
-        console.log("session", session);
-        if (!session?.user) {
-          setShowAuthModal(true);
-        }
-
         await handleSaveResults(newAnswers);
         setShowResults(true);
 
         const { isEligible } = calculateEligibility();
-        if (isEligible && session?.user ) {
-          setShowEligibilityModal(true);
+        if (isEligible && user) {
+          
+        console.log("user?.id", user?.id);
+
+        const { error } = await supabase
+        .from('users')
+        .update({is_eligible: true })
+        .eq('id', user?.id)
+
+        if(!error){
+          toast.success("eligibility saved")
+        }
+        if(error){
+          toast.error('Failed to save eligibility check:', error);
+        }
+          setShowEligibilityModal(true); 
+      } else {
+        if (!user) {
+          setShowAuthModal(true); // Show login modal if user is not logged in
         }else{
-          toast.error('Based on your responses, you may not be eligible for tax exemption.'); 
-        } 
-
-        // setShowEligibilityModal(true)
-
+          toast.error('Based on your responses, you may not be eligible for tax exemption.');
+        }
+        }
       }
     } catch (error) {
       console.error('Error handling answer:', error);
       toast.error(t('eligibility.errors.answerFailed'));
     }
-  }, [currentQuestion, answers, currentStep, questions.length, t]);
+  }, [currentQuestion, answers, currentStep, questions.length, t, user]);
 
   const handleSaveResults = async (finalAnswers: Record<string, string>) => {
     if (!finalAnswers || Object.keys(finalAnswers).length === 0) {
@@ -183,33 +194,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     setError(null);
 
     const { isEligible, needsMoreInfo } = calculateEligibility();
-    
-    const metadata = {
-      completedAt: new Date().toISOString(),
-      questionsAnswered: Object.keys(finalAnswers).length,
-      totalQuestions: questions.length,
-      needsMoreInfo,
-      browserInfo: {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        platform: navigator.platform
-      }
-    };
     try {
-      const saved = await saveEligibilityCheck({
-        answers: finalAnswers,
-        isEligible,
-        metadata
-      });
-      setPaymentProcessModal(true)
-      if (!saved && !isSupabaseConfigured()) {
-        localStorage.setItem('pendingEligibilityCheck', JSON.stringify({
-          answers: finalAnswers,
-          isEligible,
-          metadata
-        }));
-        setShowAuthModal(true);
-      }
+      // Save results logic here
     } catch (err) {
       console.error('Error in handleSaveResults:', err);
       setError(t('eligibility.errors.saveFailed'));
@@ -221,7 +207,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const handlePrevious = useCallback(() => {
     trackButtonClick('previous_question', {
       current_step: currentStep,
-      category: currentQuestion?.category
+      category: currentQuestion?.category,
     });
     setCurrentStep((prev) => Math.max(0, prev - 1));
     setShowResults(false);
@@ -235,11 +221,17 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       'ownership_duration',
       'registered_name',
       'eu_registration',
-      'vat_paid'
+      'vat_paid',
     ];
 
     const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
     const needsMoreInfo = Object.keys(answers).length < questions.length;
+
+    if (!isEligible) {
+      setError('Based on your responses, you may not be eligible for tax exemption.');
+    } else {
+      setError(null);
+    }
 
     return {
       isEligible,
@@ -250,7 +242,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const handleActionButton = useCallback(() => {
     const { isEligible } = calculateEligibility();
     trackButtonClick(isEligible ? 'proceed_to_payment' : 'contact_support', {
-      is_eligible: isEligible
+      is_eligible: isEligible,
     });
     if (isEligible) {
       onShowPayment();
@@ -259,9 +251,9 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     }
   }, [calculateEligibility, onShowPayment, onShowContact]);
 
-  const handleImportantModalClose = () =>{
+  const handleImportantModalClose = () => {
     setShowImportantModal(false);
-  }
+  };
 
   if (!currentQuestion) {
     return <div>{t('eligibility.errors.loadingFailed')}</div>;
@@ -305,7 +297,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
       {currentStep > 0 && (
         <div className="mt-6">
-          <Button 
+       <Button 
             onClick={handlePrevious} 
             variant="secondary"
             type="button"
@@ -320,12 +312,11 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       isOpen={showAuthModal}
       onClose={() => setShowAuthModal(false)}
     />
-    
-    <EligibilityModal 
-     isOpen={showEligibilityModal}
-     onClose={() => setShowEligibilityModal(false)}
-    />
 
+    <EligibilityModal 
+    isOpen={showEligibilityModal}
+    onClose={() => setShowEligibilityModal(false)}
+    />
     </div>
   );
 }

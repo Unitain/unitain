@@ -6,6 +6,7 @@ export interface EligibilityCheckData {
   isEligible: boolean;
   metadata?: Record<string, unknown>;
 }
+console.log("error getting");
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
@@ -68,6 +69,29 @@ export async function saveEligibilityCheck(
       return false;
     }
 
+    // Check for pending results in localStorage
+    const pendingCheck = localStorage.getItem('pendingEligibilityCheck');
+    if (pendingCheck) {
+      const pendingData = JSON.parse(pendingCheck);
+      const { error: insertError } = await supabase
+        .from('eligibility_checks')
+        .insert({
+          user_id: session.user.id,
+          answers: pendingData.answers,
+          is_eligible: pendingData.isEligible,
+          metadata: pendingData.metadata
+        });
+
+      if (insertError) {
+        console.error('Save error:', insertError);
+        toast.error('Failed to save your eligibility check. Please try again.');
+        return false;
+      }
+
+      // Clear pending results from localStorage
+      localStorage.removeItem('pendingEligibilityCheck');
+    }
+
     // Validate data before sending
     if (!data.answers || Object.keys(data.answers).length === 0) {
       console.error('Invalid answers data');
@@ -104,7 +128,7 @@ export async function saveEligibilityCheck(
         return saveEligibilityCheck(data, retryCount + 1);
       }
 
-      // toast.error('Failed to save your eligibility check. Please try again.');
+      toast.error('Failed to save your eligibility check. Please try again.');
       return false;
     }
 

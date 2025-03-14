@@ -77,16 +77,16 @@ export function Header() {
     } finally {
       setIsSigningOut(false);
       // Show feedback modal if not already submitted
-      if (!localStorage.getItem("feedbackSubmitted")) {
-        setShowFeedbackModal(true);
-      }
+      // if (!localStorage.getItem("feedbackSubmitted")) {
+      //   setShowFeedbackModal(true);
+      // }
     }
   };
 
   // Handler for closing the feedback modal
-  const handleFeedbackClose = () => {
-    setShowFeedbackModal(false);
-  };
+  // const handleFeedbackClose = () => {
+  //   setShowFeedbackModal(false);
+  // };
 
   return (
   <>
