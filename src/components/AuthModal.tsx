@@ -7,9 +7,10 @@ import { useAuthStore } from '../lib/store';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAuthSuccess?: () => void;
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,8 +20,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
     setLoading(true);
-    console.log("loading", loading);
-    
     try {
       if (isLogin) {
         // Handle Login
@@ -44,14 +43,29 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           if (userError) {
             console.error('Error fetching user data from users table:', userError);
           }
-  
+
           // Store user data and update state
           const mergedUser = { ...data.user, ...(userData || {}) };
           localStorage.setItem('userData', JSON.stringify(mergedUser));
           setUser(mergedUser);
-          
+
           toast.success('Login successful!');
           onClose();
+
+          onAuthSuccess?.();
+
+          console.log("🚀 ~ handleAuth ~ insertError:", insertError)
+
+          if(onAuthSuccess && userData?.is_eligible === false){
+            const { error:eligibleError } = await supabase
+            .from('users')
+            .update({is_eligible: true })
+            .eq('id', userData?.id)
+    
+            if(eligibleError){
+              toast.error('Failed to save eligibility check:', eligibleError);
+            }
+          }
         }
       } else {
         // Handle Signup
@@ -60,53 +74,57 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           password,
         });
 
-        if (error) {
-          throw error;
-        }
+        console.log("🚀🚀data", data);
+        
+        if (error) {throw error;}
 
-        if (data.user) {
-          // Check if user already exists in users table
-          const { data: existingUserData, error: existingUserError } = await supabase
+          const { error: insertError } = await supabase
+              .from('users')
+              .insert([
+                {
+                  id: data?.user.id,
+                  email: data?.user.email,
+                  created_at: new Date().toISOString(),
+                  payment_status: 'pending',
+                  is_eligible: false,
+                },
+              ]);
+
+            if (insertError) {
+              console.error('Error inserting user into users table:', insertError);
+              throw insertError;
+            }
+            const { data: userData, error: fetchError } = await supabase
             .from('users')
             .select('*')
             .eq('id', data.user.id)
             .maybeSingle();
+    
+            localStorage.setItem('userData', JSON.stringify(userData));
+            setUser(userData);
 
-          if (existingUserError && existingUserError.code !== 'PGRST116') {
-            console.error('Error checking if user exists in users table:', existingUserError);
-          }
-  
-          if (!existingUserData) {
-            console.log('User not found in users table, inserting user...');
-            // Create new user record
-            const newUser = {
-              id: data.user.id,
-              email: data.user.email,
-              created_at: new Date().toISOString(),
-              payment_status: 'pending'
-            };
-            
-            const { error: insertError } = await supabase
-              .from('users')
-              .insert([newUser]);
-  
-            if (insertError) {
-              console.error('Error inserting user into users table:', insertError);
-            } else {
-              // Set user with the newly created data
-              setUser({ ...data.user, ...newUser });
-              localStorage.setItem('userData', JSON.stringify(newUser));
+            if (fetchError) {
+              console.error('Error fetching user data: ', fetchError);
+              return;
             }
-          } else {
-            // User already exists, use existing data
-            setUser({ ...data.user, ...existingUserData });
-            localStorage.setItem('userData', JSON.stringify(existingUserData));
-          }
 
-          toast.success('Signup successful! Please check your email for confirmation.');
-          onClose();
-        }
-      }
+            toast.success('Signup successful! Please check your email for confirmation.');
+            onClose(); 
+            onAuthSuccess?.();
+
+            console.log("🚀 ~ handleAuth ~ insertError:", insertError)
+
+            if(onAuthSuccess && userData?.is_eligible === false){
+              const { error:eligibleError } = await supabase
+              .from('users')
+              .update({is_eligible: true })
+              .eq('id', userData?.id)
+      
+              if(eligibleError){
+                toast.error('Failed to save eligibility check:', eligibleError);
+              }
+            }
+          } 
     } catch (error) {
       console.error(`${isLogin ? 'Login' : 'Signup'} error:`, error);
       toast.error(error instanceof Error ? error.message : 'Authentication failed');

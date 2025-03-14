@@ -63,6 +63,7 @@ export function Header() {
       localStorage.removeItem("UploadGuideShown");
       // Clear user state
       setUser(null);
+      window.location.reload()
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error && error.message !== "session_not_found") {

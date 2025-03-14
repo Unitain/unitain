@@ -118,6 +118,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
   const [user, setUser] = useState(null);
+  const [isEligible, setIsEligible] = useState(false)
 
   // Check user session on component mount and when auth modal is shown
   useEffect(() => {
@@ -129,12 +130,30 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
       if (session?.user) {
         setUser(session.user);
+      } else {
+        setUser(null); 
       }
     };
+
     checkUser();
-  }, [showAuthModal]);
+
+    // Listen for auth state changes (e.g., login or logout)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null); // Reset user state on logout
+      }
+    });
+
+    return () => {
+      // Cleanup the auth listener
+      authListener.subscription.unsubscribe();
+    };
+  }, [user]);
 
   const handleAnswer = useCallback(async (answer: string) => {
+    // console.log("🚀 this is isEligible", isEligible);
     if (!currentQuestion) return;
     if(currentStep === 1){
       setShowImportantModal(true)
@@ -155,21 +174,20 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
         const { isEligible } = calculateEligibility();
         if (isEligible && user) {
-          
-        console.log("user?.id", user?.id);
+          setIsEligible(true)
+          console.log("🚀 user?.id", user, "🚀isEligible", isEligible);
 
         const { error } = await supabase
         .from('users')
         .update({is_eligible: true })
         .eq('id', user?.id)
 
-        if(!error){
-          toast.success("eligibility saved")
-        }
-        if(error){
+        if (!error) {
+          toast.success("Eligibility saved");
+          setShowEligibilityModal(true); // Show eligibility modal
+        } else {
           toast.error('Failed to save eligibility check:', error);
         }
-          setShowEligibilityModal(true); 
       } else {
         if (!user) {
           setShowAuthModal(true); // Show login modal if user is not logged in
@@ -182,7 +200,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       console.error('Error handling answer:', error);
       toast.error(t('eligibility.errors.answerFailed'));
     }
-  }, [currentQuestion, answers, currentStep, questions.length, t, user]);
+  }, [currentQuestion, answers, currentStep, questions.length, t, user ,isEligible]);
 
   const handleSaveResults = async (finalAnswers: Record<string, string>) => {
     if (!finalAnswers || Object.keys(finalAnswers).length === 0) {
@@ -225,6 +243,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     ];
 
     const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
+    setIsEligible(true)
     const needsMoreInfo = Object.keys(answers).length < questions.length;
 
     if (!isEligible) {
@@ -258,7 +277,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   if (!currentQuestion) {
     return <div>{t('eligibility.errors.loadingFailed')}</div>;
   }
-
+  
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
       <div className="mb-8">
@@ -297,7 +316,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
       {currentStep > 0 && (
         <div className="mt-6">
-       <Button 
+      <Button 
             onClick={handlePrevious} 
             variant="secondary"
             type="button"
@@ -311,6 +330,13 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     <AuthModal
       isOpen={showAuthModal}
       onClose={() => setShowAuthModal(false)}
+      onAuthSuccess={() => {
+        if(isEligible){
+        setShowEligibilityModal(true);
+        }else{
+          toast.error('Based on your responses, you may not be eligible for tax exemption.');
+        }
+      }}
     />
 
     <EligibilityModal 
