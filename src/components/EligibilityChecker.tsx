@@ -119,6 +119,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
   const [user, setUser] = useState(null);
   const [isEligible, setIsEligible] = useState(false)
+  
+  // console.log("🚀 ~ showEligibilityModal:", showEligibilityModal)
 
   // Check user session on component mount and when auth modal is shown
   useEffect(() => {
@@ -152,6 +154,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     };
   }, [user]);
 
+  
   const handleAnswer = useCallback(async (answer: string) => {
     if (!currentQuestion) return;
     if(currentStep === 1){
@@ -171,7 +174,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
       // Recalculate eligibility after updating answers
       const { isEligible: newIsEligible } = calculateEligibility(newAnswers); // Pass newAnswers to calculateEligibility
-      setIsEligible(newIsEligible); // Update isEligible state
+      setIsEligible(newIsEligible);
 
       console.log("🚀 this is isEligible", newIsEligible); // Debugging: Log the updated isEligible value
 
@@ -183,7 +186,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
         if (newIsEligible && user) {
           console.log("🚀 user?.id", user, "🚀isEligible", newIsEligible);
-
+          setShowEligibilityModal(true); 
+          
         const { error } = await supabase
         .from('users')
         .update({is_eligible: true })
@@ -204,7 +208,6 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
           .from('users')
           .update({ is_eligible: false })
           .eq('id', user?.id);
-
         if (error) {
           console.error("Error updating is_eligible to false:", error);
         }
