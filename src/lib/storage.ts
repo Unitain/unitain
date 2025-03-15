@@ -1,6 +1,5 @@
 import { supabase } from "./supabase";
 import toast from "react-hot-toast";
-import { addSystemMessage } from "./chat";
 
 const GUIDE_URL =
   "https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/public/guides_open/unitan-guide.pdf";
@@ -29,9 +28,6 @@ export async function downloadGuide(): Promise<boolean> {
     document.body.removeChild(link);
     URL.revokeObjectURL(blobUrl);
 
-    addSystemMessage(
-      "✅ Guide downloaded successfully! You can now proceed with the next steps."
-    );
     return true;
   } catch (error) {
     console.error("Guide download failed:", error);
@@ -40,7 +36,6 @@ export async function downloadGuide(): Promise<boolean> {
         ? error.message
         : "Failed to download guide. Please check your internet connection and try again.";
 
-    addSystemMessage("❌ Failed to download guide. Please try again.");
     toast.error(errorMessage);
     return false;
   }
@@ -115,7 +110,6 @@ export async function uploadVehicleFile(
       throw new Error("Failed to generate public URL");
     }
 
-    addSystemMessage(`✅ File "${file.name}" uploaded successfully!`);
     return publicUrlData.publicUrl;
   } catch (error) {
     console.error("❌ Vehicle file upload failed:", error);
@@ -124,7 +118,6 @@ export async function uploadVehicleFile(
         ? error.message
         : "Failed to upload file. Please try again.";
 
-    addSystemMessage("❌ Upload failed. Please try again.");
     toast.error(errorMessage);
     return null;
   }

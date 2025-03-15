@@ -3,7 +3,6 @@ import { useAuthStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 import { Button } from "./Button";
 import { UserCircle2, LogOut, X, User } from "lucide-react";
-import { AuthModal } from "./AuthModal";
 import { LanguageSelector } from "./LanguageSelector";
 import { useTranslation } from "react-i18next";
 // import { Logo } from "./Logo";
@@ -17,76 +16,13 @@ export function Header() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Only fetch user data if we have a valid user ID
-        if (!user?.id) {
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        if (error) {
-          console.error("Error fetching user from users table:", error);
-          return;
-        }
-        if (data) {
-          setUser({ ...user, ...data });
-          localStorage.setItem("userData", JSON.stringify(data));
-        }
-      } catch (error) {
-        console.error("Error during session check:", error);
-      }
-    };
-
-    if (user?.id) {
-      fetchUserData();
-    }
-  }, [user?.id, setUser]);
+   
+  }, []);
   
   const handleSignOut = async () => {
-    if (isSigningOut) return; // Prevent double-clicks
-    try {
-      setIsSigningOut(true);
-      // Clear local storage first
-      localStorage.removeItem("sb-auth-token");
-      localStorage.removeItem("userData");
-      localStorage.removeItem("auth-storage");
-      localStorage.removeItem("pendingEligibilityCheck");
-      localStorage.removeItem("feedbackSubmitted");
-      localStorage.removeItem("payment_success");
-      localStorage.removeItem("app_timezone");
-      localStorage.removeItem("GuideModal");
-      localStorage.removeItem("UploadGuideShown");
-      // Clear user state
-      setUser(null);
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error && error.message !== "session_not_found") {
-        console.error("Sign out error:", error);
-        toast.error("There was a problem signing out. Please try again.");
-      } else {
-        toast.success("Successfully signed out");
-      }
-    } catch (error) {
-      console.error("Sign out error:", error);
-      toast.error("Failed to sign out. Please try again.");
-    } finally {
-      setIsSigningOut(false);
-      // Show feedback modal if not already submitted
-      // if (!localStorage.getItem("feedbackSubmitted")) {
-      //   setShowFeedbackModal(true);
-      // }
-    }
+    window.location.href = 'https://pretest.unitain.net/'
   };
 
-  // Handler for closing the feedback modal
-  // const handleFeedbackClose = () => {
-  //   setShowFeedbackModal(false);
-  // };
 
   return (
   <>
@@ -154,11 +90,6 @@ export function Header() {
         </div>
       </div>
     </header>
-
-    <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
   </>
   );
 }
