@@ -14,10 +14,6 @@ export function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { t } = useTranslation();
-
-  useEffect(() => {
-   
-  }, []);
   
   const handleSignOut = async () => {
     window.location.href = 'https://pretest.unitain.net/'
@@ -75,16 +71,7 @@ export function Header() {
                 </Button>
               </div>
             ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-2 bg-primary-900 hover:bg-primary-800 whitespace-nowrap"
-                id="auth-button"
-              >
-                <UserCircle2 className="w-4 h-4" />
-                {t("nav.signin")}
-              </Button>
+             null
             )}
           </div>
         </div>
