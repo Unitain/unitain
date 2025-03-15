@@ -169,14 +169,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       };
       setAnswers(newAnswers);
 
-      // Log the updated answers for debugging
-      console.log("🚀 Updated answers:", newAnswers);
-
-      // Recalculate eligibility after updating answers
       const { isEligible: newIsEligible } = calculateEligibility(newAnswers); // Pass newAnswers to calculateEligibility
       setIsEligible(newIsEligible);
-
-      console.log("🚀 this is isEligible", newIsEligible); // Debugging: Log the updated isEligible value
 
       if (currentStep < questions.length - 1) {
         setCurrentStep((prev) => prev + 1);
@@ -185,9 +179,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         setShowResults(true);
 
         if (newIsEligible && user) {
-          console.log("🚀 user?.id", user, "🚀isEligible", newIsEligible);
           setShowEligibilityModal(true); 
-          
+
         const { error } = await supabase
         .from('users')
         .update({is_eligible: true })
