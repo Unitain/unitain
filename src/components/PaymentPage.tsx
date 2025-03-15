@@ -79,7 +79,7 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
         <div className="max-w-2xl mx-auto p-8 text-center">
            <h1 className="text-2xl font-bold mb-4 text-green-600">Payment Already Completed</h1>
            <p className="mb-4">Your payment has been successfully processed. You can go back to the dashboard.</p>
-           <Button onClick={() => navigate('/dashboard')} className="bg-primary-600 hover:bg-primary-700 text-white">
+           <Button onClick={() => navigate('/https://app.unitain.net')} className="bg-primary-600 hover:bg-primary-700 text-white">
              Go to Dashboard
            </Button>
          </div>
