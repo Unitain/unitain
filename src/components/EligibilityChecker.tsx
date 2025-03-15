@@ -99,7 +99,7 @@ const questions: Question[] = [
     translationKey: 'eligibility.questions.additionalVehicles',
     options: ['yes', 'no'],
     category: 'additional_information'
-  }
+  },
 ];
 
 function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityCheckerProps) {
@@ -153,18 +153,27 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   }, [user]);
 
   const handleAnswer = useCallback(async (answer: string) => {
-    // console.log("🚀 this is isEligible", isEligible);
     if (!currentQuestion) return;
     if(currentStep === 1){
       setShowImportantModal(true)
     }
 
     try {
+      // Update answers with the new answer
       const newAnswers = {
         ...answers,
         [currentQuestion.id]: answer,
       };
       setAnswers(newAnswers);
+
+      // Log the updated answers for debugging
+      console.log("🚀 Updated answers:", newAnswers);
+
+      // Recalculate eligibility after updating answers
+      const { isEligible: newIsEligible } = calculateEligibility(newAnswers); // Pass newAnswers to calculateEligibility
+      setIsEligible(newIsEligible); // Update isEligible state
+
+      console.log("🚀 this is isEligible", newIsEligible); // Debugging: Log the updated isEligible value
 
       if (currentStep < questions.length - 1) {
         setCurrentStep((prev) => prev + 1);
@@ -172,10 +181,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         await handleSaveResults(newAnswers);
         setShowResults(true);
 
-        const { isEligible } = calculateEligibility();
-        if (isEligible && user) {
-          setIsEligible(true)
-          console.log("🚀 user?.id", user, "🚀isEligible", isEligible);
+        if (newIsEligible && user) {
+          console.log("🚀 user?.id", user, "🚀isEligible", newIsEligible);
 
         const { error } = await supabase
         .from('users')
@@ -193,6 +200,14 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
           setShowAuthModal(true); // Show login modal if user is not logged in
         }else{
           toast.error('Based on your responses, you may not be eligible for tax exemption.');
+          const { error } = await supabase
+          .from('users')
+          .update({ is_eligible: false })
+          .eq('id', user?.id);
+
+        if (error) {
+          console.error("Error updating is_eligible to false:", error);
+        }
         }
         }
       }
@@ -200,7 +215,36 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       console.error('Error handling answer:', error);
       toast.error(t('eligibility.errors.answerFailed'));
     }
-  }, [currentQuestion, answers, currentStep, questions.length, t, user ,isEligible]);
+  }, [currentQuestion, answers, currentStep, questions.length, t, user]);
+
+  const calculateEligibility = useCallback((answers: Record<string, string>) => {
+    const criticalQuestions = [
+      'permanent_move',
+      'previous_residence',
+      'ownership_duration',
+      'registered_name',
+      'eu_registration',
+      'vat_paid',
+    ];
+
+    // Log the critical questions and their answers for debugging
+    console.log("🚀 Critical questions and answers:", criticalQuestions.map(q => ({ q, answer: answers[q] })));
+
+    // Check if all critical questions are answered with "yes"
+    const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
+    const needsMoreInfo = Object.keys(answers).length < questions.length;
+
+    if (!isEligible) {
+      setError('Based on your responses, you may not be eligible for tax exemption.');
+    } else {
+      setError(null);
+    }
+
+    return {
+      isEligible,
+      needsMoreInfo,
+    };
+  }, []);
 
   const handleSaveResults = async (finalAnswers: Record<string, string>) => {
     if (!finalAnswers || Object.keys(finalAnswers).length === 0) {
@@ -211,7 +255,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     setIsSubmitting(true);
     setError(null);
 
-    const { isEligible, needsMoreInfo } = calculateEligibility();
+    const { isEligible, needsMoreInfo } = calculateEligibility(finalAnswers);
     try {
       // Save results logic here
     } catch (err) {
@@ -232,34 +276,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     setError(null);
   }, [currentStep, currentQuestion]);
 
-  const calculateEligibility = useCallback(() => {
-    const criticalQuestions = [
-      'permanent_move',
-      'previous_residence',
-      'ownership_duration',
-      'registered_name',
-      'eu_registration',
-      'vat_paid',
-    ];
-
-    const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
-    setIsEligible(true)
-    const needsMoreInfo = Object.keys(answers).length < questions.length;
-
-    if (!isEligible) {
-      setError('Based on your responses, you may not be eligible for tax exemption.');
-    } else {
-      setError(null);
-    }
-
-    return {
-      isEligible,
-      needsMoreInfo,
-    };
-  }, [answers]);
-
   const handleActionButton = useCallback(() => {
-    const { isEligible } = calculateEligibility();
+    const { isEligible } = calculateEligibility(answers);
     trackButtonClick(isEligible ? 'proceed_to_payment' : 'contact_support', {
       is_eligible: isEligible,
     });
@@ -268,7 +286,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     } else {
       onShowContact();
     }
-  }, [calculateEligibility, onShowPayment, onShowContact]);
+  }, [calculateEligibility, onShowPayment, onShowContact, answers]);
 
   const handleImportantModalClose = () => {
     setShowImportantModal(false);
@@ -277,7 +295,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   if (!currentQuestion) {
     return <div>{t('eligibility.errors.loadingFailed')}</div>;
   }
-  
+
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
       <div className="mb-8">
@@ -334,7 +352,17 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         if(isEligible){
         setShowEligibilityModal(true);
         }else{
+          const upadateToFalse =async () =>{
           toast.error('Based on your responses, you may not be eligible for tax exemption.');
+          const { error } = await supabase
+          .from('users')
+          .update({is_eligible: false })
+          .eq('id', user?.id)
+          }
+          if(error){
+            console.error("Error", error);
+          }
+          upadateToFalse()
         }
       }}
     />
