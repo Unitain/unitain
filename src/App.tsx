@@ -14,7 +14,7 @@ const App = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('http://localhost:8100/api/getUserData');
+        const response = await axios.get('https://app.unitain.net/api/getUserData');
         let userData = response.data;
 
         if (typeof userData === 'string') {
@@ -41,14 +41,14 @@ const App = () => {
   
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:8200/api/logout');
+      await axios.post('https://app.unitain.net/api/logout');
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
       localStorage.removeItem('userData');
       setUser(null);
       // window.location.href = 'https://pretest.unitain.net/'
-      window.location.href = 'http://localhost:5173/?returnTo=login';
+      window.location.href = 'https://pretest.unitain.net/?returnTo=login';
     }
   };
 

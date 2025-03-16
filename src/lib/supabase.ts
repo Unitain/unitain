@@ -34,7 +34,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     headers: {
       'x-application-name': 'unitain',
       'x-client-info': 'unitain',
-      'Origin': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'
+      'Origin': typeof window !== 'undefined' ? window.location.origin : 'https://pretest.unitain.net'
     }
   }
 });
