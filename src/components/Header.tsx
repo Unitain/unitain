@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useAuthStore } from "../lib/store";
-import { supabase } from "../lib/supabase";
 import { Button } from "./Button";
 import { UserCircle2, LogOut, X, User } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
@@ -9,16 +7,8 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
-export function Header() {
-  const { user, isLoading, setUser } = useAuthStore();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
+export function Header({user, onLogout}) {
   const { t } = useTranslation();
-  
-  const handleSignOut = async () => {
-    window.location.href = 'https://pretest.unitain.net/'
-  };
-
 
   return (
   <>
@@ -34,16 +24,14 @@ export function Header() {
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
             <LanguageSelector />
 
-            {isLoading ? (
-              <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-            ) : user ? (
+        {user ? ( 
             <div className="relative flex items-center gap-2 sm:gap-3 max-w-full">
               <button type="button"
                 className="flex items-center space-x-2 sm:space-x-3 text-gray-700 hover:text-gray-900 transition-colors duration-200 touch-manipulation group"
-               >
+                >
                 {user?.avatar_url ? (
                   <img
-                    src={user.avatar_url}
+                    src={user?.avatar_url}
                     alt=""
                     className="h-9 w-9 rounded-full ring-2 ring-primary-200 group-hover:ring-primary-300 transition-all duration-200"
                   />
@@ -59,21 +47,17 @@ export function Header() {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
+                  onClick={onLogout}
                   className="flex items-center gap-2 whitespace-nowrap"
                 >
-                  {isSigningOut ? (
-                    <div className="w-4 h-4 border-2 border-primary-900 border-t-transparent rounded-full animate-spin" />
-                  ) : (
                     <LogOut className="w-4 h-4" />
-                  )}
                 </Button>
               </div>
             ) : (
-             null
+              <div></div>
             )}
-          </div>
+
+        </div>
         </div>
       </div>
     </header>
