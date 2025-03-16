@@ -222,10 +222,6 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
       'eu_registration',
       'vat_paid',
     ];
-
-    // Log the critical questions and their answers for debugging
-    console.log("🚀 Critical questions and answers:", criticalQuestions.map(q => ({ q, answer: answers[q] })));
-
     // Check if all critical questions are answered with "yes"
     const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
     const needsMoreInfo = Object.keys(answers).length < questions.length;

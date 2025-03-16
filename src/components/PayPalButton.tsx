@@ -123,7 +123,6 @@ export function PayPalButton({
             initializationAttemptRef.current = 0;
             setError(null);
             setIsLoading(true);
-            window.location.reload();
           }}
           className="px-4 py-2 text-sm text-primary-600 hover:text-primary-800 transition-colors"
         >

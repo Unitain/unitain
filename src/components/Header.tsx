@@ -9,43 +9,86 @@ import { useTranslation } from "react-i18next";
 // import { Logo } from "./Logo";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export function Header() {
   const { user, isLoading, setUser } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Only fetch user data if we have a valid user ID
-        if (!user?.id) {
-          return;
-        }
+    const logoutUser = async () =>{
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnTo = urlParams.get('returnTo');
+      if (returnTo === 'login') { 
+        try {
+          setIsSigningOut(true);
 
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        if (error) {
-          console.error("Error fetching user from users table:", error);
-          return;
+          localStorage.removeItem("sb-auth-token");
+          localStorage.removeItem("userData");
+          localStorage.removeItem("auth-storage");
+          localStorage.removeItem("pendingEligibilityCheck");
+          localStorage.removeItem("feedbackSubmitted");
+          localStorage.removeItem("payment_success");
+          localStorage.removeItem("app_timezone");
+          localStorage.removeItem("GuideModal");
+          localStorage.removeItem("UploadGuideShown");
+          setUser(null);
+
+          const { error } = await supabase.auth.signOut();
+          if (error && error.message !== "session_not_found") {
+            console.error("Sign out error:", error);
+            toast.error("There was a problem signing out. Please try again.");
+          } else {
+            toast.success("Successfully signed out");
+          }
+          setShowAuthModal(true);
+        } catch (error) {
+          console.error("Sign out error:", error);
+          toast.error("Failed to sign out. Please try again.");
+        } finally {
+          setIsSigningOut(false);
         }
-        if (data) {
-          setUser({ ...user, ...data });
-          localStorage.setItem("userData", JSON.stringify(data));
-        }
-      } catch (error) {
-        console.error("Error during session check:", error);
       }
-    };
+  }
+  logoutUser()
+  }, [setUser, location.search]);
 
-    if (user?.id) {
-      fetchUserData();
-    }
-  }, [user?.id, setUser]);
+// console.log(user);
+
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     try {
+  //       // Only fetch user data if we have a valid user ID
+  //       if (!user?.id) {
+  //         return;
+  //       }
+
+  //       const { data, error } = await supabase
+  //         .from("users")
+  //         .select("*")
+  //         .eq("id", user.id)
+  //         .single();
+  //       if (error) {
+  //         console.error("Error fetching user from users table:", error);
+  //         return;
+  //       }
+  //       if (data) {
+  //         setUser({ ...user, ...data });
+  //         localStorage.setItem("userData", JSON.stringify(data));
+  //       }
+  //     } catch (error) {
+  //       console.error("Error during session check:", error);
+  //     }
+  //   };
+
+  //   if (user?.id) {
+  //     fetchUserData();
+  //   }
+  // }, [user?.id, setUser]);
   
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent double-clicks
@@ -77,17 +120,8 @@ export function Header() {
       toast.error("Failed to sign out. Please try again.");
     } finally {
       setIsSigningOut(false);
-      // Show feedback modal if not already submitted
-      // if (!localStorage.getItem("feedbackSubmitted")) {
-      //   setShowFeedbackModal(true);
-      // }
     }
   };
-
-  // Handler for closing the feedback modal
-  // const handleFeedbackClose = () => {
-  //   setShowFeedbackModal(false);
-  // };
 
   return (
   <>
@@ -103,9 +137,7 @@ export function Header() {
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
             <LanguageSelector />
 
-            {isLoading ? (
-              <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-            ) : user ? (
+            {user ? (
             <div className="relative flex items-center gap-2 sm:gap-3 max-w-full">
               <button type="button"
                 className="flex items-center space-x-2 sm:space-x-3 text-gray-700 hover:text-gray-900 transition-colors duration-200 touch-manipulation group"

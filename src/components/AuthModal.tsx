@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
 import { useAuthStore } from '../lib/store';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
   const { setUser } = useAuthStore();
+  const navigate = useNavigate()
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
@@ -51,7 +53,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
           toast.success('Login successful!');
           onClose();
-
+          navigate("/", { replace: true });
           onAuthSuccess?.();
 
           console.log("🚀 ~ handleAuth ~ insertError:", insertError)
@@ -110,6 +112,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
             toast.success('Signup successful! Please check your email for confirmation.');
             onClose(); 
+            navigate("/", { replace: true });
             onAuthSuccess?.();
 
             console.log("🚀 ~ handleAuth ~ insertError:", insertError)
@@ -140,7 +143,10 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
         {/* Close Button */}
         <button
-          onClick={onClose}
+        onClick={() => {
+          onClose();
+          navigate("/", { replace: true });
+        }}        
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100"
         >
           <X className="h-5 w-5 text-gray-500" />
@@ -199,7 +205,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         {/* Toggle between Login and Signup */}
         <div className="mt-4 text-center">
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => setIsLogin(!isLogin) }
             className="text-sm text-primary-600 hover:text-primary-700 focus:outline-none"
           >
             {isLogin

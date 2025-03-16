@@ -17,7 +17,7 @@ import Success from "./Success";
 import Failed from "./Failed";
 // import { showTaxCheckModal } from "./components/TaxCheckModal";
 import {AuthModal} from "./components/AuthModal"; 
-
+import axios from "axios"
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -164,6 +164,26 @@ function MainContent({
     ],
     []
   );
+
+  const sendData = async() =>{
+    const userData = localStorage.getItem('userData');
+    console.log("🚀 ~ sendData ~ userData:", userData)
+
+    try {
+      const response = await axios.post("http://localhost:8000/api/saveUserData", {userData: userData})
+      // const response = await axios.post("https://app.unitain.net/api/saveUserData", {userData: userData})
+      if(response && response.status === 200){
+        console.log('Data sent successfully!');
+        // window.location.href = 'https://app.unitain.net';
+        window.location.href = 'http://localhost:5174';
+      }else {
+        console.error('Failed to send data:', response);
+      }
+    }catch(error){
+      console.error('Error sending data:', error);
+    }
+  }
+  
   return (
     <div>
       {/* Hero Section */}
@@ -221,7 +241,7 @@ function MainContent({
              <div className="flex justify-center items-center flex-col">
              <h2 className="text-3xl font-bold text-center mb-12">You can now access dashboard</h2>
              <button
-               onClick={() => window.location.href ='https://app.unitain.net/'} 
+               onClick={sendData}  
                className="text-white bg-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-500 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                Go to dashboard
              </button>
