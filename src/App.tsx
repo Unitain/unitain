@@ -167,15 +167,14 @@ function MainContent({
 
   const sendData = async() =>{
     const userData = localStorage.getItem('userData');
-    console.log("🚀 ~ sendData ~ userData:", userData)
-
+    console.log("🚀 userData function calling:")
     try {
-      const response = await axios.post("http://localhost:8000/api/saveUserData", {userData: userData})
-      // const response = await axios.post("https://app.unitain.net/api/saveUserData", {userData: userData})
+      // const response = await axios.post("http://localhost:8000/api/saveUserData", {userData: userData})
+      const response = await axios.post("https://app.unitain.net/api/saveUserData", {userData: userData})
       if(response && response.status === 200){
         console.log('Data sent successfully!');
-        // window.location.href = 'https://app.unitain.net';
-        window.location.href = 'http://localhost:5174';
+        window.location.href = 'https://app.unitain.net';
+        // window.location.href = 'http://localhost:5174';
       }else {
         console.error('Failed to send data:', response);
       }
