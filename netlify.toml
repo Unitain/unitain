@@ -1,50 +1,7 @@
 [build]
-  publish = "dist"
-  command = "npm run build"
-
-[functions]
-  directory = "supabase/functions"
+    functions = "functions"
 
 [[redirects]]
-  from = "/api/chatgpt"
-  to = "/.netlify/functions/chatgpt-proxy"
-  status = 200
-  force = true
-
-# Redirect for privacy page with trailing slash
-[[redirects]]
-  from = "/privacy/"
-  to = "/index.html"
-  status = 200
-  force = true
-
-# Redirect for privacy page without trailing slash
-[[redirects]]
-  from = "/privacy"
-  to = "/index.html"
-  status = 200
-  force = true
-
-# Redirect for terms page with trailing slash
-[[redirects]]
-  from = "/terms/"
-  to = "/index.html"
-  status = 200
-  force = true
-
-# Redirect for terms page without trailing slash
-[[redirects]]
-  from = "/terms"
-  to = "/index.html"
-  status = 200
-  force = true
-
-# SPA fallback
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
-
-[build.environment]
-  NODE_VERSION = "20"
+from = "/api/*"
+to = "/.netlify/functions/:splat"
+status =  200
