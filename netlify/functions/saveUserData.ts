@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 const path = require('path');
 
@@ -10,6 +11,7 @@ export const handler = async (event) => {
 
             const filePath = path.join(__dirname, 'userData.json');
             fs.writeFileSync(filePath, JSON.stringify({ userData }), 'utf8');
+
 
             return {
                 statusCode: 200,
@@ -33,21 +35,6 @@ export const handler = async (event) => {
                 body: JSON.stringify({ error: 'Internal Server Error' }),
             };
         }
-    } else if (event.httpMethod === 'OPTIONS') {
-    return {
-        statusCode: 200,
-        headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        },
-        body: JSON.stringify({ message: 'CORS preflight successful' }),
-    };
-    } else {
-        return {
-            statusCode: 405,
-            headers: {"Access-Control-Allow-Origin": "*",},
-            body: JSON.stringify({ error: 'Method Not Allowed' }),
-        };
     }
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
 };
