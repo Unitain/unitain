@@ -18,8 +18,8 @@ export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
     console.log("🚀 ~ sendData ~ userData:", userData)
 
     try {
-      const response = await axios.post("http://localhost:8400/api/saveUserData", {userData: userData})
-      // const response = await axios.post("https://unitain-server.vercel.app/api/saveUserData", {userData: userData})
+      // const response = await axios.post("http://localhost:8400/api/saveUserData", {userData: userData})
+      const response = await axios.post("https://unitain-server.vercel.app/api/saveUserData", {userData: userData})
       if(response && response.status === 200){
         console.log('Data sent successfully!');
         window.location.href = 'https://app.unitain.net';
