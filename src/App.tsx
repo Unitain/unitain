@@ -10,7 +10,7 @@ import UnAuthorized from "./pages/UnAuthorized"
 const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  console.log("Running APP branch code!")
   useEffect(() => {
     const fetchUserData = async () => {
       try {
