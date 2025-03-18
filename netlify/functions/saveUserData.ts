@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-exports.handler = async (event) => {
+// exports.handler = async (event) => {
+export const handler = async (event) => {
     if (event.httpMethod === 'POST') {
         try {
             const { userData } = JSON.parse(event.body);
