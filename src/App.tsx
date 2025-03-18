@@ -10,11 +10,12 @@ import UnAuthorized from "./pages/UnAuthorized"
 const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  console.log("Running APP branch code!")
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('https://app.unitain.net/api/getUserData');
+        const response = await axios.get("http://localhost:8500/api/getUserData")
+        // const response = await axios.post("https://unitain-server.vercel.app/api/getUserData")
         let userData = response.data;
 
         if (typeof userData === 'string') {
