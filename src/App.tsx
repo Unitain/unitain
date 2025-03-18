@@ -44,13 +44,16 @@ const App = () => {
   
   const handleLogout = async () => {
     try {
-      await axios.post('https://app.unitain.net/api/logout');
+      console.log("user?.id", user?.id);
+      
+      await axios.post('https://unitain-server.vercel.app/api/logout', {userId: user?.id});
+      // await axios.post('http://localhost:8600/api/logout', {userId: user?.id});
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
       localStorage.removeItem('userData');
       setUser(null);
-      // window.location.href = 'https://pretest.unitain.net/'
+      // window.location.href = 'http://localhost:5173/?returnTo=login'
       window.location.href = 'https://pretest.unitain.net/?returnTo=login';
     }
   };
