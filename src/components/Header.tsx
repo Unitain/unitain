@@ -7,7 +7,17 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
-export function Header({user, onLogout}) {
+interface User {
+  avatar_url?: string;
+  email?: string;
+}
+
+interface HeaderProps {
+  user?: User;
+  onLogout: () => void;
+}
+
+export function Header({ user, onLogout }: HeaderProps) {
   const { t } = useTranslation();
 
   return (
