@@ -114,12 +114,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const host = window.location.hostname;
     console.log("🚀 ~ setUserCookie ~ host:", host);
   
-    let cookie = `userData=${value}; path=/; samesite=Lax`;
+    let cookie = `userData=${value}; path=/; samesite=Lax; secure`;
   
     if (host.endsWith('.unitain.net')) {
       cookie += `; domain=.unitain.net`;
-    } else if (host.endsWith('.unitain.test')) {
-      cookie += `; domain=.unitain.test`;
+    }
+    else if (host === 'localhost') {
+      cookie = `userData=${value}; path=/; samesite=Lax`;
     }
   
     document.cookie = cookie;
