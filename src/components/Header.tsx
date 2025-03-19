@@ -19,6 +19,16 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  function clearUserSession() {
+    console.log("🔴 Clearing cookies for all subdomains...");
+
+    document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
+    
+    document.cookie = "userData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
+
+    console.log("✅ Session cleared: Cookies & LocalStorage removed");
+}
+
   useEffect(() => {
     const logoutUser = async () =>{
       const urlParams = new URLSearchParams(window.location.search);
@@ -104,6 +114,7 @@ export function Header() {
       localStorage.removeItem("app_timezone");
       localStorage.removeItem("GuideModal");
       localStorage.removeItem("UploadGuideShown");
+      clearUserSession()
       // Clear user state
       setUser(null);
       window.location.reload()

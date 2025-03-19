@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload as UploadIcon, X } from 'lucide-react';
@@ -146,7 +147,7 @@ export function Upload() {
     ...getRootProps(),
     // onClick: handleContainerClick,
   };
-
+  
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
     {/* {uploadGuide && (
@@ -217,3 +218,5 @@ export function Upload() {
     </div>
   );
 }
+
+export default Upload;

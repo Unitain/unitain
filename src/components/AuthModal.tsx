@@ -19,9 +19,28 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
 
-  const handleAuth = async (e: React.FormEvent) => {
+  function setUserCookie(userData: any) {
+    if (!userData) {
+        console.error("🚨 No userData provided, cannot set cookie.");
+        return;
+    }
+    console.log("🚀 Setting Cookie: ", userData);
+
+    // const value = encodeURIComponent(JSON.stringify(userData)); 
+    const value = JSON.stringify(userData);
+
+    let cookie = `userData=${value}; Path=/; Domain=.unitain.net; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
+
+    document.cookie = cookie;
+    console.log("✅ Cookie successfully set:", document.cookie);
+}
+
+
+  
+  const handleAuth = async (e) => {
     e.preventDefault(); // Prevent form submission
     setLoading(true);
+
     try {
       if (isLogin) {
         // Handle Login
@@ -35,13 +54,12 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         }
   
         if (data.user) {
-          // Fetch user data from users table
+
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', data.user.id)
             .maybeSingle();
-
           if (userError) {
             console.error('Error fetching user data from users table:', userError);
           }
@@ -49,6 +67,10 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           // Store user data and update state
           const mergedUser = { ...data.user, ...(userData || {}) };
           localStorage.setItem('userData', JSON.stringify(mergedUser));
+
+          setUserCookie(mergedUser);
+          console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀 cookie set", mergedUser);
+
           setUser(mergedUser);
 
           toast.success('Login successful!');
@@ -91,7 +113,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                   is_eligible: false,
                 },
               ]);
-
+  
             if (insertError) {
               console.error('Error inserting user into users table:', insertError);
               throw insertError;
@@ -104,6 +126,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     
             localStorage.setItem('userData', JSON.stringify(userData));
             setUser(userData);
+            setUserCookie(userData);
+            console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀 cookie set", userData);
 
             if (fetchError) {
               console.error('Error fetching user data: ', fetchError);
