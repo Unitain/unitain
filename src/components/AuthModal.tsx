@@ -132,7 +132,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
     console.log("🚀 Setting Cookie: ", userData);
 
-    const value = encodeURIComponent(JSON.stringify(userData)); // Encode safely
+    // const value = encodeURIComponent(JSON.stringify(userData)); 
+    const value = JSON.stringify(userData);
 
     let cookie = `userData=${value}; Path=/; Domain=.unitain.net; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
