@@ -133,7 +133,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     console.log("🚀 Setting Cookie: ", userData);
     const value = encodeURIComponent(JSON.stringify(userData)); // Encode for safety
     const host = window.location.hostname;
-    let cookie = `userData=${value}; Path=/; SameSite=None; Secure;`;
+    let cookie = `userData=${value}; Path=/; Secure; SameSite=None;`;
 
     if (host.endsWith(".unitain.net")) {
         cookie += " Domain=.unitain.net;";
