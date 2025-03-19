@@ -131,18 +131,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         return;
     }
     console.log("🚀 Setting Cookie: ", userData);
-    const value = JSON.stringify(userData); 
+    const value = encodeURIComponent(JSON.stringify(userData)); // Encode for safety
     const host = window.location.hostname;
-    let cookie = `userData=${value}; path=/; SameSite=None`;
+    let cookie = `userData=${value}; Path=/; SameSite=None; Secure;`;
 
     if (host.endsWith(".unitain.net")) {
-        cookie += `; domain=.unitain.net; Secure`; 
-    } else {
-        cookie += `; Secure`;
+        cookie += " Domain=.unitain.net;";
     }
 
     document.cookie = cookie;
-    console.log("✅ Cookie successfully set: ", cookie);
+    console.log("✅ Cookie successfully set:", document.cookie);
 }
 
 
