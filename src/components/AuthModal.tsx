@@ -131,10 +131,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         return;
     }
     console.log("🚀 Setting Cookie: ", userData);
-    const value = encodeURIComponent(JSON.stringify(userData)); // Encode for safety
-    let cookie = `userData=${value}; Path=/; Secure; SameSite=None;`;
 
-    cookie += " Domain=.unitain.net;";
+    const value = encodeURIComponent(JSON.stringify(userData)); // Encode safely
+
+    let cookie = `userData=${value}; Path=/; Domain=.unitain.net; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
     document.cookie = cookie;
     console.log("✅ Cookie successfully set:", document.cookie);
