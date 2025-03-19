@@ -16,11 +16,21 @@ export function Header() {
   console.log("🚀 ~ Header ~ parsedUser:", parsedUser);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const { t } = useTranslation();
-
+  
   function clearUserSession() {
     console.log("🚀🚀🚀🚀🚀 clear cookie  🚀🚀🚀🚀");
-      document.cookie = `userData=; path=/; max-age=0; samesite=Lax;`;
-      document.cookie = `userData=; domain=.unitain.net; path=/; max-age=0; samesite=Lax;`;
+    const host = window.location.hostname;
+    document.cookie = `userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax; secure`;
+  
+    if (host.endsWith('.unitain.net')) {
+      document.cookie = `userData=; domain=.unitain.net; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax; secure`;
+    }
+    if (host.endsWith('.unitain.test') || host === 'localhost') {
+      document.cookie = `userData=; domain=.unitain.test; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax; secure`;
+    }
+    localStorage.removeItem('userData');
+
+    console.log("🚀 Session Cleared: Cookies & LocalStorage Removed");
     }
     
   
