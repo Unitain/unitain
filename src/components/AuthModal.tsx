@@ -108,6 +108,24 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
   const { setUser } = useAuthStore.getState();
 
+  // function setUserCookie(userData: any) {
+  //   if (!userData) {
+  //       console.error("🚨 No userData provided, cannot set cookie.");
+  //       return;
+  //   }
+  //   console.log("🚀 Setting Cookie: ", userData);
+
+  //   const value = JSON.stringify(userData);  // No encodeURIComponent
+  //   const host = window.location.hostname;
+  //   let cookie = `userData=${value}; path=/; samesite=Lax`;
+
+  //   if (host.endsWith('.unitain.net')) {
+  //     cookie += `; domain=unitain.net; secure`;  
+  //   }
+  //   document.cookie = cookie;
+  //   console.log("✅ Cookie set: ", cookie);
+  // }
+  
   function setUserCookie(userData: any) {
     if (!userData) {
         console.error("🚨 No userData provided, cannot set cookie.");
@@ -115,17 +133,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
     console.log("🚀 Setting Cookie: ", userData);
 
-    const value = JSON.stringify(userData);  // No encodeURIComponent
+    const value = JSON.stringify(userData); 
     const host = window.location.hostname;
-    let cookie = `userData=${value}; path=/; samesite=Lax`;
+    let cookie = `userData=${value}; path=/; samesite=None; secure`;  
 
-    if (host.endsWith('.unitain.net')) {
-      cookie += `; domain=unitain.net; secure`;  
+    if (host.endsWith("unitain.net")) {
+      cookie += `; domain=unitain.net`;  
     }
+
     document.cookie = cookie;
-    console.log("✅ Cookie set: ", cookie);
-  }
-  
+    console.log("✅ Cookie successfully set: ", cookie);
+}
 
   
   const handleAuth = async (e) => {
