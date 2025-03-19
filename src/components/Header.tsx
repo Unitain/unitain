@@ -1,11 +1,6 @@
-import React, { useEffect, useState } from "react";
 import { Button } from "./Button";
-import { UserCircle2, LogOut, X, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
-import { useTranslation } from "react-i18next";
-// import { Logo } from "./Logo";
-import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
 
 interface User {
   avatar_url?: string;
@@ -18,7 +13,7 @@ interface HeaderProps {
 }
 
 export function Header({ user, onLogout }: HeaderProps) {
-  const { t } = useTranslation();
+console.log("🚀 ~ Header ~ user:", user)
 
   return (
   <>

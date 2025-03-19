@@ -9,53 +9,38 @@ import UnAuthorized from "./pages/UnAuthorized"
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    console.log("fetching user... with unitain-server");
-    
-    const fetchUserData = async () => {
-      try {
-        // const response = await axios.get("http://localhost:8500/api/getUserData")
-        const response = await axios.get("https://unitain-server.vercel.app/api/getUserData")
-        let userData = response.data;
+function getUserCookie() {
+  const cookies = document.cookie.split("; ");
 
-        if (typeof userData === 'string') {
-          userData = userData.replace(/^"|"$/g, ''); 
-          userData = JSON.parse(userData); 
-        }
-        if (userData) {
-          setUser(userData);
-          localStorage.setItem('userData', JSON.stringify(userData)); 
-        } else {
-          console.log('No userData received from backend.');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
+  for (let cookie of cookies) {
+    let [name, value] = cookie.split("=");
+      if (name === "userData") {
+          try {
+            setUser(JSON.parse(value))
+            return JSON.parse(decodeURIComponent(value)); 
+          } catch (error) {
+              console.error("Error parsing userData cookie:", error);
+              return null;
+          }
       }
-    };
+  }
 
-    fetchUserData();
-  }, []);
+  return null; 
+}
 
-  console.log("user", user);
+  useEffect(()=>{
+    getUserCookie()
+  },[])
+
   
   const handleLogout = async () => {
-    try {
-      console.log("user?.id", user?.id);
-      
-      await axios.post('https://unitain-server.vercel.app/api/logout', {userId: user?.id});
-      // await axios.post('http://localhost:8600/api/logout', {userId: user?.id});
-    } catch (error) {
-      console.error('Error during logout:', error);
-    } finally {
-      localStorage.removeItem('userData');
-      setUser(null);
-      // window.location.href = 'http://localhost:5173/?returnTo=login'
-      window.location.href = 'https://pretest.unitain.net/?returnTo=login';
-    }
+    setUser(null)
+    document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
+    document.cookie = "userData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
+    console.log("✅ Session cleared: Cookies & LocalStorage removed");
+    // window.location.href = "http://localhost:5173/?returnTo=login"
+    window.location.href = "https://unitain.net/?returnTo=login"
   };
 
   return (
