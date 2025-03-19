@@ -108,15 +108,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
   const { setUser } = useAuthStore.getState();
 
-  function setUserCookie(userData) {
+  function setUserCookie(userData: any) {
+    console.log("🚀 ~ setUserCookie ~ userData:", userData);
     const value = JSON.stringify(userData);
     const host = window.location.hostname;
+    console.log("🚀 ~ setUserCookie ~ host:", host);
   
-    let cookie = `userData=${value}; path=/; samesite=Lax; secure`;
+    let cookie = `userData=${value}; path=/; samesite=Lax`;
   
     if (host.endsWith('.unitain.net')) {
       cookie += `; domain=.unitain.net`;
-    } else if (host.endsWith('.unitain.test') || host === 'localhost') {
+    } else if (host.endsWith('.unitain.test')) {
       cookie += `; domain=.unitain.test`;
     }
   

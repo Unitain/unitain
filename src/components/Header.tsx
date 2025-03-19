@@ -20,13 +20,13 @@ export function Header() {
   function clearUserSession() {
     console.log("🚀🚀🚀🚀🚀 clear cookie  🚀🚀🚀🚀");
     const host = window.location.hostname;
-    document.cookie = `userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax; secure`;
+    document.cookie = `userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax;`;
   
     if (host.endsWith('.unitain.net')) {
-      document.cookie = `userData=; domain=.unitain.net; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax; secure`;
+      document.cookie = `userData=; domain=.unitain.net; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax;`;
     }
     if (host.endsWith('.unitain.test') || host === 'localhost') {
-      document.cookie = `userData=; domain=.unitain.test; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax; secure`;
+      document.cookie = `userData=; domain=.unitain.test; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=Lax;`;
     }
     localStorage.removeItem('userData');
 
