@@ -131,18 +131,20 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         return;
     }
     console.log("🚀 Setting Cookie: ", userData);
-
     const value = JSON.stringify(userData); 
     const host = window.location.hostname;
     let cookie = `userData=${value}; path=/; SameSite=None`;
 
     if (host.endsWith(".unitain.net")) {
-      cookie += `; domain=.unitain.net; Secure`; 
+        cookie += `; domain=.unitain.net; Secure`; 
+    } else {
+        cookie += `; Secure`;
     }
 
     document.cookie = cookie;
     console.log("✅ Cookie successfully set: ", cookie);
 }
+
 
   
   const handleAuth = async (e) => {
