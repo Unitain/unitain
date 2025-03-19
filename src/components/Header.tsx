@@ -18,16 +18,8 @@ export function Header() {
   const { t } = useTranslation();
   
   function clearUserSession() {
-    console.log("🚀 Clearing cookies...");
+    document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
 
-    const host = window.location.hostname;
-    document.cookie = `userData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=None; secure`;
-
-    if (host.endsWith(".unitain.net")) {
-        document.cookie = `userData=; domain=.unitain.net; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; samesite=None; secure`;
-    }
-
-    localStorage.removeItem("userData")
     console.log("✅ Session cleared: Cookies & LocalStorage removed");
 }
 
