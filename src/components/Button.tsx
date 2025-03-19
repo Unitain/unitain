@@ -31,7 +31,7 @@ export function Button({
           'text-lg h-12 px-6': size === 'lg',
           
           // Color variants
-          'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-500':
+          'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-primary-500':
             variant === 'primary',
           'bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 focus-visible:ring-gray-400':
             variant === 'secondary',

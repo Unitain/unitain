@@ -35,7 +35,7 @@ export function AuthCallback() {
           setUser(data.session.user);
           
           // Handle redirect
-          const redirectUrl = localStorage.getItem('nextUrl') || `/dashboard/${data.session.user.id}/submission`;
+          const redirectUrl = localStorage.getItem('nextUrl') || `https://app.unitain.net`;
           localStorage.removeItem('nextUrl');
           
           console.log('AuthCallback: Redirecting to:', redirectUrl);
@@ -54,7 +54,7 @@ export function AuthCallback() {
         toast.error(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
       }
     };
-
+    
     handleCallback();
   }, [setUser]);
 

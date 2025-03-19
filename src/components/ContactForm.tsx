@@ -59,7 +59,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
           required
           value={formData.name}
           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           placeholder={t('contact.form.namePlaceholder')}
           disabled={isSubmitting}
           minLength={2}
@@ -77,7 +77,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
           required
           value={user?.email || formData.email}
           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           placeholder={t('contact.form.emailPlaceholder')}
           disabled={isSubmitting || !!user?.email}
         />
@@ -98,7 +98,7 @@ export function ContactForm({ prefilledMessage = '' }: ContactFormProps) {
           rows={4}
           value={formData.message}
           onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           placeholder={t('contact.form.messagePlaceholder')}
           disabled={isSubmitting}
           minLength={10}

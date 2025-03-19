@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from './Button';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -7,6 +7,8 @@ import { saveEligibilityCheck } from '../lib/eligibility';
 import { trackEvent, trackButtonClick } from '../lib/analytics';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase'; 
+import {EligibilityModal} from "./EligibilityModal"
 
 interface EligibilityCheckerProps {
   onShowPayment: () => void;
@@ -97,7 +99,7 @@ const questions: Question[] = [
     translationKey: 'eligibility.questions.additionalVehicles',
     options: ['yes', 'no'],
     category: 'additional_information'
-  }
+  },
 ];
 
 function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityCheckerProps) {
@@ -106,39 +108,135 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const { t } = useTranslation();
-
+  // const [isEmailCopied, setIsEmailCopied] = useState(false);
+  // const [isPasswordCopied, setIsPasswordCopied] = useState(false);  const paypalEmail = "sb-no7fn37881668@personal.example.com";
+  // const paypalPassword = "xx!T%A5C";
+  const [showImportantModal, setShowImportantModal] = useState(false);
+  const [paymentProcessModal, setPaymentProcessModal] = useState(false);
   const currentQuestion = questions[currentStep];
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isEligible, setIsEligible] = useState(false)
+  
+  // console.log("🚀 ~ showEligibilityModal:", showEligibilityModal)
 
+  // Check user session on component mount and when auth modal is shown
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error fetching session:', error);
+      }
+
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null); 
+      }
+    };
+
+    checkUser();
+
+    // Listen for auth state changes (e.g., login or logout)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null); // Reset user state on logout
+      }
+    });
+
+    return () => {
+      // Cleanup the auth listener
+      authListener.subscription.unsubscribe();
+    };
+  }, [user]);
+
+  
   const handleAnswer = useCallback(async (answer: string) => {
     if (!currentQuestion) return;
+    if(currentStep === 1){
+      setShowImportantModal(true)
+    }
 
     try {
-      trackEvent('eligibility_answer', {
-        question_id: currentQuestion.id,
-        answer: answer,
-        step: currentStep + 1,
-        total_steps: questions.length
-      });
-
+      // Update answers with the new answer
       const newAnswers = {
         ...answers,
         [currentQuestion.id]: answer,
       };
       setAnswers(newAnswers);
 
+      const { isEligible: newIsEligible } = calculateEligibility(newAnswers); // Pass newAnswers to calculateEligibility
+      setIsEligible(newIsEligible);
+
       if (currentStep < questions.length - 1) {
         setCurrentStep((prev) => prev + 1);
       } else {
-        setShowResults(true);
         await handleSaveResults(newAnswers);
+        setShowResults(true);
+
+        if (newIsEligible && user) {
+          setShowEligibilityModal(true); 
+
+        const { error } = await supabase
+        .from('users')
+        .update({is_eligible: true })
+        .eq('id', user?.id)
+
+        if (!error) {
+          toast.success("Eligibility saved");
+          setShowEligibilityModal(true); // Show eligibility modal
+        } else {
+          toast.error('Failed to save eligibility check:', error);
+        }
+      } else {
+        if (!user) {
+          setShowAuthModal(true); // Show login modal if user is not logged in
+        }else{
+          toast.error('Based on your responses, you may not be eligible for tax exemption.');
+          const { error } = await supabase
+          .from('users')
+          .update({ is_eligible: false })
+          .eq('id', user?.id);
+        if (error) {
+          console.error("Error updating is_eligible to false:", error);
+        }
+        }
+        }
       }
     } catch (error) {
       console.error('Error handling answer:', error);
       toast.error(t('eligibility.errors.answerFailed'));
     }
-  }, [currentQuestion, answers, currentStep, questions.length, t]);
+  }, [currentQuestion, answers, currentStep, questions.length, t, user]);
+
+  const calculateEligibility = useCallback((answers: Record<string, string>) => {
+    const criticalQuestions = [
+      'permanent_move',
+      'previous_residence',
+      'ownership_duration',
+      'registered_name',
+      'eu_registration',
+      'vat_paid',
+    ];
+    // Check if all critical questions are answered with "yes"
+    const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
+    const needsMoreInfo = Object.keys(answers).length < questions.length;
+
+    if (!isEligible) {
+      setError('Based on your responses, you may not be eligible for tax exemption.');
+    } else {
+      setError(null);
+    }
+
+    return {
+      isEligible,
+      needsMoreInfo,
+    };
+  }, []);
 
   const handleSaveResults = async (finalAnswers: Record<string, string>) => {
     if (!finalAnswers || Object.keys(finalAnswers).length === 0) {
@@ -149,35 +247,9 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     setIsSubmitting(true);
     setError(null);
 
-    const { isEligible, needsMoreInfo } = calculateEligibility();
-    
-    const metadata = {
-      completedAt: new Date().toISOString(),
-      questionsAnswered: Object.keys(finalAnswers).length,
-      totalQuestions: questions.length,
-      needsMoreInfo,
-      browserInfo: {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        platform: navigator.platform
-      }
-    };
-
+    const { isEligible, needsMoreInfo } = calculateEligibility(finalAnswers);
     try {
-      const saved = await saveEligibilityCheck({
-        answers: finalAnswers,
-        isEligible,
-        metadata
-      });
-
-      if (!saved && !isSupabaseConfigured()) {
-        localStorage.setItem('pendingEligibilityCheck', JSON.stringify({
-          answers: finalAnswers,
-          isEligible,
-          metadata
-        }));
-        setShowAuthModal(true);
-      }
+      // Save results logic here
     } catch (err) {
       console.error('Error in handleSaveResults:', err);
       setError(t('eligibility.errors.saveFailed'));
@@ -189,99 +261,31 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   const handlePrevious = useCallback(() => {
     trackButtonClick('previous_question', {
       current_step: currentStep,
-      category: currentQuestion?.category
+      category: currentQuestion?.category,
     });
     setCurrentStep((prev) => Math.max(0, prev - 1));
     setShowResults(false);
     setError(null);
   }, [currentStep, currentQuestion]);
 
-  const calculateEligibility = useCallback(() => {
-    const criticalQuestions = [
-      'permanent_move',
-      'previous_residence',
-      'ownership_duration',
-      'registered_name',
-      'eu_registration',
-      'vat_paid'
-    ];
-
-    const isEligible = criticalQuestions.every((q) => answers[q] === 'yes');
-    const needsMoreInfo = Object.keys(answers).length < questions.length;
-
-    return {
-      isEligible,
-      needsMoreInfo,
-    };
-  }, [answers]);
-
   const handleActionButton = useCallback(() => {
-    const { isEligible } = calculateEligibility();
+    const { isEligible } = calculateEligibility(answers);
     trackButtonClick(isEligible ? 'proceed_to_payment' : 'contact_support', {
-      is_eligible: isEligible
+      is_eligible: isEligible,
     });
     if (isEligible) {
       onShowPayment();
     } else {
       onShowContact();
     }
-  }, [calculateEligibility, onShowPayment, onShowContact]);
+  }, [calculateEligibility, onShowPayment, onShowContact, answers]);
+
+  const handleImportantModalClose = () => {
+    setShowImportantModal(false);
+  };
 
   if (!currentQuestion) {
     return <div>{t('eligibility.errors.loadingFailed')}</div>;
-  }
-
-  if (showResults) {
-    const { isEligible, needsMoreInfo } = calculateEligibility();
-    return (
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6">{t('eligibility.results.title')}</h2>
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
-            <p>{error}</p>
-          </div>
-        )}
-        {needsMoreInfo ? (
-          <div className="mb-6 p-4 bg-yellow-50 text-yellow-800 rounded-md">
-            <p>{t('eligibility.results.needsMoreInfo')}</p>
-          </div>
-        ) : isEligible ? (
-          <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md">
-            <p className="font-semibold">{t('eligibility.results.eligible')}</p>
-            <p className="mt-2">{t('eligibility.results.nextSteps')}:</p>
-            <ul className="list-disc ml-6 mt-2">
-              <li>{t('eligibility.results.steps.documents')}</li>
-              <li>{t('eligibility.results.steps.consultation')}</li>
-              <li>{t('eligibility.results.steps.application')}</li>
-            </ul>
-          </div>
-        ) : (
-          <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
-            <p className="font-semibold">{t('eligibility.results.notEligible')}</p>
-            <p className="mt-2">{t('eligibility.results.consultRecommended')}</p>
-          </div>
-        )}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between">
-          <Button 
-            variant="secondary"
-            onClick={handlePrevious}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto order-2 sm:order-1"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            {t('eligibility.buttons.reviewAnswers')}
-          </Button>
-          <Button 
-            onClick={handleActionButton}
-            disabled={isSubmitting}
-            variant="primary"
-            className="w-full sm:w-auto order-1 sm:order-2"
-          >
-            {isEligible ? t('eligibility.buttons.buyNow') : t('eligibility.buttons.contactUs')}
-          </Button>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -297,7 +301,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         </div>
         <div className="h-2 bg-gray-200 rounded-full">
           <div
-            className="h-2 bg-blue-600 rounded-full transition-all duration-300"
+            className="h-2 bg-primary-600 rounded-full transition-all duration-300"
             style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
           />
         </div>
@@ -312,7 +316,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
           <button
             key={option}
             onClick={() => handleAnswer(option)}
-            className="w-full p-4 text-left border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-full p-4 text-left border rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             type="button"
           >
             {t(`eligibility.options.${option}`)}
@@ -322,7 +326,7 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
 
       {currentStep > 0 && (
         <div className="mt-6">
-          <Button 
+      <Button 
             onClick={handlePrevious} 
             variant="secondary"
             type="button"
@@ -333,10 +337,32 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         </div>
       )}
 
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
+    <AuthModal
+      isOpen={showAuthModal}
+      onClose={() => setShowAuthModal(false)}
+      onAuthSuccess={() => {
+        if(isEligible){
+        setShowEligibilityModal(true);
+        }else{
+          const upadateToFalse =async () =>{
+          toast.error('Based on your responses, you may not be eligible for tax exemption.');
+          const { error } = await supabase
+          .from('users')
+          .update({is_eligible: false })
+          .eq('id', user?.id)
+          }
+          if(error){
+            console.error("Error", error);
+          }
+          upadateToFalse()
+        }
+      }}
+    />
+
+    <EligibilityModal 
+    isOpen={showEligibilityModal}
+    onClose={() => setShowEligibilityModal(false)}
+    />
     </div>
   );
 }

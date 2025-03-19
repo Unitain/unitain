@@ -200,8 +200,8 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
       >
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 flex justify-between items-center rounded-t-xl">
-          <h2 id="changelog-title" className="text-xl font-semibold flex items-center gap-2 text-blue-600">
-            <Clock className="w-5 h-5 text-blue-600" />
+          <h2 id="changelog-title" className="text-xl font-semibold flex items-center gap-2 text-primary-600">
+            <Clock className="w-5 h-5 text-primary-600" />
             What's New
           </h2>
           <button
@@ -222,14 +222,14 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
         >
           {loading ? (
             <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
             </div>
           ) : error ? (
             <div className="text-center text-red-600 p-4">
               {error}
               <button
                 onClick={() => window.location.reload()}
-                className="block mx-auto mt-2 text-blue-600 hover:underline"
+                className="block mx-auto mt-2 text-primary-600 hover:underline"
               >
                 Try Again
               </button>
@@ -243,7 +243,7 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
               {Object.values(groupedEntries).map(({ version, date, entries }) => (
                 <div key={`${version}-${date}`} className="border-b border-gray-200 last:border-0 pb-8 last:pb-0">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
                       v{version}
                     </span>
                     <time 
@@ -279,7 +279,7 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
                 <div className="text-center pt-4">
                   <button
                     onClick={loadMoreEntries}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-primary-600 hover:text-primary-800 font-medium"
                     disabled={loadingRef.current}
                   >
                     {loadingRef.current ? 'Loading...' : 'Load More'}
@@ -316,14 +316,14 @@ export function ChangelogPopup({ isOpen, onClose }: ChangelogPopupProps) {
             href="https://github.com/Unitain/unitain/compare/main...staging"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors"
           >
             <Github className="w-4 h-4" />
             <span>View on GitHub</span>
           </a>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
             Close
           </button>

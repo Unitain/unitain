@@ -56,7 +56,7 @@ function CookieConsent() {
         <div className="mt-4 text-sm text-gray-500">
           <a
             href="/privacy"
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-primary-600 hover:text-primary-800 underline"
           >
             {t('cookies.learnMore')}
           </a>

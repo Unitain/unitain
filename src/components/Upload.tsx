@@ -1,257 +1,218 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Upload as UploadIcon, Loader2, FileText, Trash2 } from 'lucide-react';
-import { Button } from './Button';
-import { uploadVehicleFile, listVehicleFiles, deleteVehicleFile } from '../lib/storage';
-import { useAuthStore } from '../lib/store';
-import toast from 'react-hot-toast';
-import { supabase } from '../lib/supabase';
 
-interface FileItem {
-  name: string;
-  url: string;
-  uploadedAt: string;
+import React, { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Upload as UploadIcon, X } from 'lucide-react';
+import { useFiles } from '../context/FileContext';
+import { handleError } from '../utils/errorHandling';
+import { FileSchema } from '../types/type';
+import { supabase } from "../lib/supabase";
+import { UploadProgress } from './UploadProgress';
+import { FileList } from './FileList';
+import toast from 'react-hot-toast';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = {
+  'application/pdf': ['.pdf'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'application/msword': ['.doc'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+};
+
+interface UploadProgress {
+  fileName: string;
+  progress: number;
 }
 
 export function Upload() {
-  const [isUploading, setIsUploading] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userFiles, setUserFiles] = useState<FileItem[]>([]);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuthStore();
+  const { addFile } = useFiles();
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserFiles();
+  const [uploadGuide, setUploadGuide] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [files, setFiles] = useState<FileItem[]>([]);
+
+  const validateFile = (file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`Die Datei "${file.name}" ist zu groß. Maximale Größe: 10MB`);
     }
-  }, [user?.id]);
-
-  const fetchUserFiles = async () => {
-    if (!user?.id) return;
-    
-    setIsLoading(true);
-    try {
-      // Get files from storage
-      const fileNames = await listVehicleFiles(user.id);
-      
-      // Get submission records from database - get all records instead of using .single()
-      const { data: submissions, error } = await supabase
-        .from('submission')
-        .select('document, created_at')
-        .eq('id', user.id);
-      
-      if (error) {
-        console.error('Error fetching submissions:', error);
-      }
-      
-      // Create file list from both sources
-      const files: FileItem[] = [];
-      
-      // Add files from storage
-      fileNames.forEach(name => {
-        const url = `${supabase.supabaseUrl}/storage/v1/object/public/vehicle_uploads/${user.id}/${name}`;
-        files.push({
-          name,
-          url,
-          uploadedAt: 'Unknown date'
-        });
-      });
-      
-      // Add files from submissions if they exist
-      if (submissions && submissions.length > 0) {
-        submissions.forEach(submission => {
-          if (submission.document) {
-            const documentUrl = submission.document;
-            const fileName = documentUrl.split('/').pop() || 'document';
-            
-            if (!files.some(f => f.url === documentUrl)) {
-              files.push({
-                name: fileName,
-                url: documentUrl,
-                uploadedAt: submission.created_at ? new Date(submission.created_at).toLocaleString() : 'Unknown date'
-              });
-            }
-          }
-        });
-      }
-      
-      setUserFiles(files);
-    } catch (error) {
-      console.error('Failed to fetch user files:', error);
-      toast.error('Failed to load your uploaded files');
-    } finally {
-      setIsLoading(false);
+    if (!Object.keys(ALLOWED_TYPES).includes(file.type)) {
+      throw new Error(`Der Dateityp von "${file.name}" wird nicht unterstützt`);
     }
   };
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-  
-    setIsUploading(true);
-    try {
-      // Upload file and get URL
-      const url = await uploadVehicleFile(file, user.id);
-      if (url) {
-        // Check if a submission already exists
-        const { data: existingSubmission } = await supabase
-          .from('submission')
-          .select('id')
-          .eq('id', user.id)
-          .limit(1);
-          
-        if (existingSubmission && existingSubmission.length > 0) {
-          // Update existing submission
-          const { error } = await supabase
-            .from('submission')
-            .update({
-              document: url,
-              updated_at: new Date().toISOString(),
-              submission_complete: true
-            })
-            .eq('id', user.id);
-            
-          if (error) {
-            console.error('Database update failed:', error);
-            toast.error('Failed to update document record.');
-          } else {
-            toast.success('File uploaded successfully!');
-            fetchUserFiles();
-          }
-        } else {
-          // Insert new submission
-          const { error } = await supabase
-            .from('submission')
-            .insert([
-              {
-                id: user.id,
-                document: url,
-                created_at: new Date().toISOString(),  
-                payment_status: 'paid', 
-                submission_complete: true,
-                guide_downloaded: false
-              },
-            ]);
+  const simulateUploadProgress = (fileName: string) => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setUploadProgress({ fileName, progress: Math.min(progress, 100) });
       
-          if (error) {
-            console.error('Database insert failed:', error);
-            toast.error('Failed to save document record.');
-          } else {
-            toast.success('File uploaded successfully!');
-            fetchUserFiles();
-          }
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => setUploadProgress(null), 500);
+      }
+    }, 200);
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+
+    for (const file of acceptedFiles) {
+      try {
+        if (files.some((existingFile) => existingFile.name === file.name)) {
+          toast.error(`"${file.name}" already exists!`);
+          continue;
         }
-      }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error('Failed to upload file. Please try again.');
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
 
-  const handleDeleteFile = async (fileName: string) => {
-    if (!user?.id) return;
-    
-    setIsDeleting(fileName);
-    try {
-      const success = await deleteVehicleFile(user.id, fileName);
-      if (success) {
-        toast.success('File deleted successfully');
-        // Refresh the file list
-        fetchUserFiles();
-      } else {
-        throw new Error('Failed to delete file');
+        validateFile(file);
+        simulateUploadProgress(file.name);
+        console.log("Uploading file:", file.name);
+      
+        const timestamp = Date.now();
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const uniqueFileName = `${timestamp}_${sanitizedFileName}`;        
+
+
+          const { data, error } = await supabase.storage
+              .from("vehicle_uploads")
+              .upload(uniqueFileName, file, {
+                cacheControl: "3600",
+                upsert: false,
+              });
+        
+            console.log("🔹 Upload response received. Data:", data, "Error:", error);
+        
+            if (error) {
+              console.error("🚨 Supabase upload error:", error);
+              throw error;
+            }
+        
+            if (!data?.path) {
+              throw new Error("Upload failed - no path returned");
+            }
+        
+            const { data: publicUrlData } = supabase.storage
+              .from("vehicle_uploads")
+              .getPublicUrl(data.path);
+               console.log("🔹 Public URL Data:", publicUrlData);
+        
+            if (!publicUrlData?.publicUrl) {
+              throw new Error("Failed to generate public URL");
+            }
+        
+        const newFile = {
+          id: crypto.randomUUID(),
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          created_at: new Date().toISOString(),
+          url: publicUrlData?.publicUrl,
+          path: data.path
+        };
+        
+        console.log("🚨newFile", newFile);
+
+        // Validate file data against schema
+        FileSchema.parse(newFile);
+        
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        await addFile(newFile);
+        toast.success(`"${file.name}" wurde erfolgreich hochgeladen`);
+      } catch (error) {
+        handleError(error, 'FileUpload');
       }
-    } catch (error) {
-      console.error('Delete failed:', error);
-      toast.error('Failed to delete file. Please try again.');
-    } finally {
-      setIsDeleting(null);
     }
+  }, [addFile, files]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: ALLOWED_TYPES,
+    maxSize: MAX_FILE_SIZE,
+    onError: (error) => handleError(error, 'Dropzone'),
+  });
+
+  // or trigger the file input click directly.
+  // const handleContainerClick = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   const modalShown = localStorage.getItem('UploadGuideShown');
+  //   if (modalShown !== 'true') {
+  //     setUploadGuide(true);
+  //   } else {
+  //     document.getElementById('fileInput')?.click();
+  //   }
+  // };
+
+  // Combine Dropzone's root props with our custom onClick
+  const rootPropsWithClick = {
+    ...getRootProps(),
+    // onClick: handleContainerClick,
   };
   
   return (
-    <div className="flex flex-col items-center gap-4">
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={handleUpload}
-        className="hidden"
-        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-      />
-      
-      <Button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
-        className="w-full flex items-center justify-center gap-2"
-      >
-        {isUploading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <UploadIcon className="w-5 h-5" />
-        )}
-        {isUploading ? 'Uploading...' : 'Upload Documents'}
-      </Button>
-      
-      <p className="text-sm text-gray-500">
-        Supported formats: PDF, JPEG, PNG, DOC
-      </p>
-
-      {/* File List */}
-      <div className="w-full mt-4">
-        <h3 className="text-lg font-medium mb-2">Your Uploaded Files</h3>
-        
-        {isLoading ? (
-          <div className="flex justify-center py-4">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-          </div>
-        ) : userFiles.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No files uploaded yet</p>
-        ) : (
-          <div className="space-y-2 max-h-[200px] overflow-y-auto">
-            {userFiles.map((file, index) => (
-              <div 
-                key={index} 
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+    {/* {uploadGuide && (
+      <div className="fixed inset-0 flex items-center justify-center rounded-xl bg-black bg-opacity-20 z-50">
+        <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
+          <div className="absolute right-6 top-5 cursor-pointer" onClick={() => setUploadGuide(false)}><X /></div>
+          <h2 className="text-2xl font-bold mb-4">Upload Documents</h2>
+          <p className="mb-5">
+            Here you can test our upload process by uploading any files— these can be placeholder files (e.g., an empty PDF) or real documents if you wish. We process all data securely and discreetly. It’s not mandatory for the beta test, but it demonstrates how the upload step works in a real scenario.
+          </p>
+          <div className="flex justify-end gap-4">
+            <button onClick={() => setUploadGuide(false)} className="border p-3 rounded-md border-black">
+              Cancel
+            </button>
+            <button
+              className="border p-3 rounded-md bg-black text-white"
+                onClick={() => {
+                  localStorage.setItem('UploadGuideShown', 'true');
+                  setUploadGuide(false);
+                  document.getElementById('fileInput')?.click();
+                }}
               >
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <FileText className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-gray-500">{file.uploadedAt}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <a 
-                    href={file.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                  >
-                    View
-                  </a>
-                  
-                  <button
-                    onClick={() => handleDeleteFile(file.name)}
-                    disabled={isDeleting === file.name}
-                    className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-gray-200 transition-colors"
-                    aria-label="Delete file"
-                  >
-                    {isDeleting === file.name ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
+              Upload document
+            </button>
           </div>
+        </div>
+      </div>
+      )} */}
+
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Documents</h2>
+      <div
+        {...rootPropsWithClick}
+        className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out touch-manipulation
+          ${isDragActive 
+            ? 'border-primary-500 bg-primary-50 scale-102' 
+            : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+          }`}
+      >
+        <input id="fileInput" {...getInputProps()} />
+        <UploadIcon 
+          className={`mx-auto h-10 sm:h-12 w-10 sm:w-12 transition-colors duration-300
+            ${isDragActive ? 'text-primary-500' : 'text-gray-400'}`}
+        />
+        <p className="mt-4 text-sm sm:text-base text-gray-600">
+          {isDragActive ? (
+            "Drop files here..."
+          ) : (
+            <>
+              <span className="hidden sm:inline">Drag & drop files here, or </span>
+              <span className="sm:hidden">Tap to upload or </span>
+              <span className="text-primary-600 hover:text-primary-700 transition-colors duration-300">
+                browse files
+              </span>
+            </>
+          )}
+        </p>
+        <p className="mt-2 text-xs text-gray-500">
+          Supported formats: PDF, JPEG, PNG, DOC (Max 10MB)
+        </p>
+        
+        {uploadProgress && (
+          <UploadProgress 
+            fileName={uploadProgress.fileName}
+            progress={uploadProgress.progress}
+          />
         )}
       </div>
     </div>

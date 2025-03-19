@@ -107,11 +107,6 @@ function Footer() {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
                 <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
@@ -149,11 +144,6 @@ function Footer() {
                   Legal Notice
                 </Link>
               </li>
-              <li>
-                <Link to="/imprint" className="text-gray-400 hover:text-white transition-colors">
-                  Imprint
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
@@ -164,14 +154,14 @@ function Footer() {
             <div className="flex items-center space-x-4">
               <button 
                 onClick={handleVersionClick}
-                className="text-gray-400 text-sm hover:text-blue-400 transition-colors flex items-center gap-1"
+                className="text-gray-400 text-sm hover:text-primary-400 transition-colors flex items-center gap-1"
                 aria-label="View changelog"
               >
                 <span>Version {currentVersion}</span>
                 {hasNewChanges && (
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                   </span>
                 )}
               </button>

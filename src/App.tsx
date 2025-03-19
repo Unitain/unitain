@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from "react";
+import React, { useState, Suspense, lazy, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -15,6 +15,9 @@ import { Button } from "./components/Button";
 import { CheckCircle, Clock, EuroIcon } from "lucide-react";
 import Success from "./Success";
 import Failed from "./Failed";
+// import { showTaxCheckModal } from "./components/TaxCheckModal";
+import {AuthModal} from "./components/AuthModal"; 
+import axios from "axios"
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -31,6 +34,7 @@ const CookieConsent = lazy(() => import("./components/CookieConsent"));
 const FAQ = lazy(() => import("./components/FAQ"));
 const DashboardChatGPT = lazy(() => import("./components/DashboardChatGPT"));
 const AuthCallback = lazy(() => import("./components/AuthCallback"));
+const DemoPage = lazy(() => import("./components/DemoPage"));
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -58,11 +62,11 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   const [hasError, setHasError] = React.useState(false);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    const handleError = () => setHasError(true);
-    window.addEventListener("error", handleError);
-    return () => window.removeEventListener("error", handleError);
-  }, []);
+  // React.useEffect(() => {
+  //   const handleError = () => setHasError(true);
+  //   window.addEventListener("error", handleError);
+  //   return () => window.removeEventListener("error", handleError);
+  // }, []);
 
   if (hasError) {
     return (
@@ -74,7 +78,7 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
               setHasError(false);
               // navigate('/');
             }}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-primary-600 hover:text-primary-800"
           >
             Return Home
           </button>
@@ -102,11 +106,17 @@ function MainContent({
   handleShowPayment,
 }: MainContentProps) {
   const { user } = useAuthStore();
-  console.log("🚀 ~ user:", user)
   const [isChecking, setIsChecking] = useState(false);
-  console.log("🚀 ~ isChecking:", isChecking)
   const { t } = useTranslation();
   const navigate = useNavigate();
+  
+  useEffect(()=>{
+    if(user && user?.is_eligible){
+      setIsChecking(user?.is_eligible)
+    }else{
+      setIsChecking(false)
+    }
+  },[user])
 
   const features: Feature[] = React.useMemo(
     () => [
@@ -154,24 +164,45 @@ function MainContent({
     ],
     []
   );
+
+  const sendData = async() =>{
+    const userData = localStorage.getItem('userData');
+    console.log("🚀 userData function calling:")
+    try {
+      // const response = await axios.post("http://localhost:8400/api/saveUserData", {userData: userData})
+      const response = await axios.post("https://unitain-server.vercel.app/api/saveUserData", {userData: userData})
+      if(response && response.status === 200){
+        console.log('Data sent successfully!');
+        window.location.href = 'https://app.unitain.net';
+        // window.location.href = 'http://localhost:5174';
+      }else {
+        console.error('Failed to send data:', response);
+      }
+    }catch(error){
+      console.error('Error sending data:', error);
+    }
+  }
+
   return (
-    <div className="pb-10">
+    <div>
       {/* Hero Section */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      {/* <header className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20"> */}
+      <header className="bg-primary-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6">
               {t("hero.title")}
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+            <p className="text-xl mb-8 max-w-3xl mx-auto">
               {t("hero.subtitle")}
             </p>
             <button
-              onClick={() => {
-                const element = document.getElementById("eligibility-checker");
-                element?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+             onClick={() => {
+              const element = document.getElementById("eligibility-checker");
+              element?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-50 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              id="start-tax-check-button"
             >
               {t("hero.cta")}
             </button>
@@ -190,7 +221,7 @@ function MainContent({
                   key={index}
                   className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <Icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <Icon className="w-12 h-12 text-primary-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">
                     {feature.title}
                   </h3>
@@ -206,21 +237,20 @@ function MainContent({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Show a loader while checking the user's status */}
           {isChecking ? (
+             <div className="flex justify-center items-center flex-col">
+             <h2 className="text-3xl font-bold text-center mb-12">You can now access dashboard</h2>
+             <button
+               onClick={sendData}  
+               className="text-white bg-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-500 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+               Go to dashboard
+             </button>
+           </div>
+          ) : (
+          <div>
             <h2 className="text-3xl font-bold text-center mb-12">
               Checking eligibility...
             </h2>
-          ) : (
-            <h2 className="text-3xl font-bold text-center mb-12">
-              {user ? user.payment_status === "approved"
-                  ? `${t("eligibility.title")}`
-                  : "You can now access the dashboard"
-                : "Eligibility Checker"}
-            </h2>
-          )}
-
-          {/* Show Eligibility Checker when there's no user or when the user is not approved */}
-          {!isChecking && (!user || user?.payment_status !== "approved") && (
-            <ErrorBoundary>
+              <ErrorBoundary>
               <Suspense fallback={<LoadingSpinner />}>
                 <EligibilityChecker
                   onShowPayment={handleShowPayment}
@@ -228,22 +258,7 @@ function MainContent({
                 />
               </Suspense>
             </ErrorBoundary>
-          )}
-
-          {/* Button to Navigate to Dashboard */}
-          {!isChecking && user?.payment_status === "approved" && (
-            <div className="text-center mt-8">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() =>
-                  (window.location.href = `/dashboard?uid=${user.id}/submission`)
-                }
-                className="bg-blue-900 hover:bg-blue-800"
-              >
-                Go to Dashboard
-              </Button>
-            </div>
+          </div>
           )}
         </div>
       </section>
@@ -257,7 +272,7 @@ function MainContent({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {processSteps.map((item) => (
               <div key={item.step} className="text-center">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                   {item.step}
                 </div>
                 <h3 className="font-semibold mb-2">{t(item.titleKey)}</h3>
@@ -285,24 +300,35 @@ function MainContent({
       </section>
 
       {/* CTA Section */}
-      <section id="contact" className="py-20 bg-blue-600 text-white">
+      <section id="contact" className="py-20 bg-primary-600 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-4">{t("cta.title")}</h2>
-          <p className="text-xl mb-8 text-blue-100">{t("cta.subtitle")}</p>
+          <p className="text-xl mb-8 text-primary-100">{t("cta.subtitle")}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
+           <button
+            // onClick={() => setShowEligibilityModal(true)}
+            onClick={() => {
+              const element = document.getElementById("eligibility-checker");
+              element?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="px-8 py-3 bg-white text-primary-600 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+              data-contact-form
+            >
+              {t("hero.cta")}
+              </button>
             <button
               onClick={handleShowContact}
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
               data-contact-form
             >
               {t("cta.contact")}
             </button>
-            <button
+            {/* <button
               onClick={() => navigate("/privacy")}
-              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
             >
               {t("cta.privacy")}
-            </button>
+            </button> */}
           </div>
         </div>
       </section>
@@ -321,6 +347,7 @@ function AppContent() {
   const [showContact, setShowContact] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [showAuthModal, setShowAuthModal] = useState(false); 
 
   const handleShowContact = React.useCallback(() => {
     setShowContact(true);
@@ -330,7 +357,8 @@ function AppContent() {
 
   const handleShowPayment = React.useCallback(() => {
     if (!user) {
-      navigate("/auth/signin");
+      // navigate("/auth/signin");
+      setShowAuthModal(true);
       return;
     }
     setShowPayment(true);
@@ -347,18 +375,22 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
-            <Route
+            {/* <Route
               path="/dashboard/*"
               element={
-                <ProtectedRoute>
+                // <ProtectedRoute>
                   <DashboardChatGPT />
-                </ProtectedRoute>
+                // </ProtectedRoute>
               }
-            />
+            /> */}
             <Route
               path="/auth/callback"
               element={
@@ -377,6 +409,14 @@ function AppContent() {
             />
             <Route path="/success" element={<Success onBack={handleBack} />} />
             <Route path="/failed" element={<Failed onBack={handleBack} />} />
+            <Route
+              path="/demo"
+              element={
+                <Suspense fallback={<LoadingSpinner size="lg" />}>
+                  <DemoPage />
+                </Suspense>
+              }
+            />
             <Route
               path="/"
               element={
