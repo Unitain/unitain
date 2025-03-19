@@ -137,8 +137,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const host = window.location.hostname;
     let cookie = `userData=${value}; path=/; samesite=None; secure`;  
 
-    if (host.endsWith("unitain.net")) {
-      cookie += `; domain=unitain.net`;  
+    if (host.endsWith(".unitain.net")) {
+      cookie += `domain=.unitain.net`;  
     }
 
     document.cookie = cookie;
