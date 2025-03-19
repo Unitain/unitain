@@ -125,7 +125,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   //   document.cookie = cookie;
   //   console.log("✅ Cookie set: ", cookie);
   // }
-  
   function setUserCookie(userData: any) {
     if (!userData) {
         console.error("🚨 No userData provided, cannot set cookie.");
@@ -135,10 +134,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     const value = JSON.stringify(userData); 
     const host = window.location.hostname;
-    let cookie = `userData=${value}; path=/; samesite=None; secure`;  
+    let cookie = `userData=${value}; path=/; SameSite=None`;
 
     if (host.endsWith(".unitain.net")) {
-      cookie += `domain=.unitain.net`;  
+      cookie += `; domain=.unitain.net; Secure`; 
     }
 
     document.cookie = cookie;
