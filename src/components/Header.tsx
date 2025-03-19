@@ -19,13 +19,10 @@ export function Header() {
 
   function clearUserSession() {
     console.log("🚀🚀🚀🚀🚀 clear cookie  🚀🚀🚀🚀");
-    document.cookie = `userData=; path=/; max-age=0; samesite=Lax;`;
-    document.cookie = `userData=; domain=.unitain.net; path=/; max-age=0; samesite=Lax;`;
-  
-    document.cookie = `userData=; domain=.unitain.com; path=/; max-age=0; samesite=Lax;`;
-  
-    localStorage.removeItem('userData');
-  }
+      document.cookie = `userData=; path=/; max-age=0; samesite=Lax;`;
+      document.cookie = `userData=; domain=.unitain.net; path=/; max-age=0; samesite=Lax;`;
+    }
+    
   
 
   useEffect(() => {

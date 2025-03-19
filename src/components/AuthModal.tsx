@@ -109,16 +109,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { setUser } = useAuthStore.getState();
 
   function setUserCookie(userData: any) {
-    const serialized = JSON.stringify(userData);
-    const isProd = window.location.hostname.endsWith('unitain.net');
-    console.log("🚀 ~ setUserCookie ~ window.location.hostname.endsWith:", window.location.hostname)
+    const value = JSON.stringify(userData);
+    const host = window.location.hostname;
   
-    let cookie = `userData=${serialized}; path=/; samesite=Lax;`;
-    if (isProd) {
-      cookie += ` domain=.unitain.com; secure`;
+    let cookie = `userData=${value}; path=/; samesite=Lax;`;
+  
+    if (host.endsWith('.unitain.net')) {
+      cookie += `; domain=.unitain.net; secure`;
     }
     document.cookie = cookie;
   }
+  
 
   
   const handleAuth = async (e) => {
