@@ -109,24 +109,22 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { setUser } = useAuthStore.getState();
 
   function setUserCookie(userData: any) {
-    console.log("🚀 ~ setUserCookie ~ userData:", userData);
-    const value = JSON.stringify(userData);
+    if (!userData) {
+        console.error("🚨 No userData provided, cannot set cookie.");
+        return;
+    }
+    console.log("🚀 Setting Cookie: ", userData);
+
+    const value = JSON.stringify(userData);  // No encodeURIComponent
     const host = window.location.hostname;
-    console.log("🚀 ~ setUserCookie ~ host:", host);
-  
-    let cookie = `userData=${value}; path=/; samesite=Lax; secure`;
-  
+    let cookie = `userData=${value}; path=/; samesite=Lax`;
+
     if (host.endsWith('.unitain.net')) {
-      cookie += `; domain=.unitain.net`;
+      cookie += `; domain=unitain.net; secure`;  
     }
-    else if (host === 'localhost') {
-      cookie = `userData=${value}; path=/; samesite=Lax`;
-    }
-  
     document.cookie = cookie;
     console.log("✅ Cookie set: ", cookie);
   }
-  
   
 
   
