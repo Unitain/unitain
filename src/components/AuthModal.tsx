@@ -108,6 +108,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
   const { setUser } = useAuthStore.getState();
 
+  function setUserCookie(userData: any) {
+    const serialized = JSON.stringify(userData);
+    const isProd = window.location.hostname.endsWith('unitain.net');
+    console.log("🚀 ~ setUserCookie ~ window.location.hostname.endsWith:", window.location.hostname)
+  
+    let cookie = `userData=${serialized}; path=/; samesite=Lax;`;
+    if (isProd) {
+      cookie += ` domain=.unitain.com; secure`;
+    }
+    document.cookie = cookie;
+  }
+
+  
   const handleAuth = async (e) => {
     e.preventDefault(); // Prevent form submission
     setLoading(true);
@@ -135,6 +148,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             localStorage.setItem('userData', JSON.stringify(userData));
             setUser(userData);
 
+            setUserCookie(userData);
+            console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀cookie set");
+            
           if (userError) {
             console.error('Error fetching user data from users table:', userError);
             throw userError;
@@ -167,6 +183,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
             localStorage.setItem('userData', JSON.stringify(existingUserData));
             setUser(existingUserData);
+
+            setUserCookie(existingUserData);
+            console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀 cookie set");
+            
 
           if (existingUserError) {
             console.error('Error checking if user exists in users table:', existingUserError);

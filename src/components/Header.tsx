@@ -16,6 +16,18 @@ export function Header() {
   console.log("🚀 ~ Header ~ parsedUser:", parsedUser);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
   const { t } = useTranslation();
+
+  function clearUserSession() {
+    console.log("🚀🚀🚀🚀🚀 clear cookie  🚀🚀🚀🚀");
+    document.cookie = `userData=; path=/; max-age=0; samesite=Lax;`;
+    document.cookie = `userData=; domain=.unitain.net; path=/; max-age=0; samesite=Lax;`;
+  
+    document.cookie = `userData=; domain=.unitain.com; path=/; max-age=0; samesite=Lax;`;
+  
+    localStorage.removeItem('userData');
+  }
+  
+
   useEffect(() => {
     const savedUser = localStorage.getItem("userData");
 
@@ -80,6 +92,7 @@ export function Header() {
       localStorage.removeItem("userData");
       localStorage.removeItem("auth-storage");
       localStorage.removeItem("pendingEligibilityCheck");
+      clearUserSession()
       // Clear user state
       setUser(null);
       // Sign out from Supabase
