@@ -18,7 +18,11 @@ export function Header() {
   const { t } = useTranslation();
   
   function clearUserSession() {
-    document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    console.log("🔴 Clearing cookies for all subdomains...");
+
+    document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
+    
+    document.cookie = "userData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
 
     console.log("✅ Session cleared: Cookies & LocalStorage removed");
 }
