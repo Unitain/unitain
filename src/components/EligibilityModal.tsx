@@ -63,7 +63,8 @@ export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
           </ul>
 
           <button
-            onClick={() => window.location.href = "http://localhost:5174"}  
+            // onClick={() => window.location.href = "http://localhost:5174"}  
+             onClick={() => window.location.href = "https://app.unitain.net"}  
             className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
           >
             Go to Dashboard

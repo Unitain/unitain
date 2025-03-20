@@ -132,7 +132,7 @@ export function Header() {
     <header className="bg-white/80 backdrop-blur-glass border-b border-gray-200/50 sticky top-0 z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-16 sm:h-20">
-          <div className="flex-shrink-0" onClick={() => (location.href = "/")}>
+          <div className="flex-shrink-0" onClick={() => (window.location.href = "/")}>
           <button className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity duration-200">
               unitain
             </button>
