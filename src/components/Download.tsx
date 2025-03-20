@@ -13,7 +13,7 @@ export function Download() {
 
   const handleDownload = async () => {
     if (!user) {
-      toast.error('Please sign in to download the guide');
+      console.log('Please sign in to download the guide');
       return;
     }
     const guideModalShown = localStorage.getItem('GuideModal')
@@ -23,11 +23,6 @@ export function Download() {
     setGuideModal(true);
     localStorage.setItem('GuideModal', 'true')
     }
-    // if(user) {
-    //   setGuideModal(true)
-    //   return
-    // }
-    // setIsDownloading(true);
     try {
       const success = await downloadGuide();
       if (success) {
@@ -74,7 +69,7 @@ export function Download() {
         Get our comprehensive guide on vehicle tax exemption procedures and requirements
       </p>
       <button
-         onClick={handleDownload}
+        onClick={handleDownload}
         className="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-white shadow-neu-flat hover:shadow-neu-pressed active:shadow-neu-pressed transition-all duration-200 group touch-manipulation"
       >
         <DownloadIcon className="h-5 w-5 text-primary-600 group-hover:text-primary-700 transition-colors duration-200 mr-2" />

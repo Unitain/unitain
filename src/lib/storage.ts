@@ -2,9 +2,11 @@ import { supabase } from "./supabase";
 import toast from "react-hot-toast";
 
 const GUIDE_URL =
-  "https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/public/guides_open/unitan-guide.pdf";
+  "https://gihkstmfdachgdpzzxod.supabase.co/storage/v1/object/sign/guides/unitain-guide.pdf.pdf?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJndWlkZXMvdW5pdGFpbi1ndWlkZS5wZGYucGRmIiwiaWF0IjoxNzQxNzA5OTM5LCJleHAiOjE3NzMyNDU5Mzl9._w0oUV2hFKrsPqJwvVNKXkWo-FZihSu5NhqcAjnZY-w";
 
 export async function downloadGuide(): Promise<boolean> {
+  console.log("working");
+  
   try {
     console.log("Starting guide download:", GUIDE_URL);
 
