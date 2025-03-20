@@ -12,17 +12,6 @@ export function Download() {
   const { user } = useAuthStore();
 
   const handleDownload = async () => {
-    if (!user) {
-      console.log('Please sign in to download the guide');
-      return;
-    }
-    const guideModalShown = localStorage.getItem('GuideModal')
-    if(guideModalShown === 'true'){
-    setGuideModal(false);
-    }else{
-    setGuideModal(true);
-    localStorage.setItem('GuideModal', 'true')
-    }
     try {
       const success = await downloadGuide();
       if (success) {
