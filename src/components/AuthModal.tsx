@@ -245,9 +245,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-700 font-semibold">
+              <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
                 I accept the{' '}
-                <a href="/terms" className="text-primary-700 " target="_blank" rel="noreferrer">
+                <a href="/terms" className="text-primary-700 font-semibold " target="_blank" rel="noreferrer">
                   Terms of Use
                 </a>
                 <p className='text-gray-600 font-normal'>By continuing, you agree to our terms and conditions.</p>
