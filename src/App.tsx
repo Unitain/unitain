@@ -125,7 +125,7 @@ function MainContent({
       const userData = getUserCookie();
       if (!userData) {
         console.log("🚨 No user cookie found, logging out...");
-        handleSignOut()
+        // handleSignOut()
       } else {
         setUser(userData);
       }
