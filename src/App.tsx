@@ -11,13 +11,12 @@ import { Header } from "./components/Header";
 import { AuthProvider } from "./components/AuthProvider";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "./lib/store";
-import { Button } from "./components/Button";
 import { CheckCircle, Clock, EuroIcon } from "lucide-react";
 import Success from "./Success";
 import Failed from "./Failed";
 // import { showTaxCheckModal } from "./components/TaxCheckModal";
 import {AuthModal} from "./components/AuthModal"; 
-import axios from "axios"
+import { supabase } from '../src/lib/supabase';
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -26,37 +25,14 @@ const EligibilityChecker = lazy(
 );
 const PaymentPage = lazy(() => import("./components/PaymentPage"));
 const Footer = lazy(() => import("./components/Footer"));
-const Checkout = lazy(() => import("./components/Checkout.tsx"));
 const ContactPage = lazy(() => import("./components/ContactPage"));
 const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/TermsOfService"));
 const CookieConsent = lazy(() => import("./components/CookieConsent"));
 const FAQ = lazy(() => import("./components/FAQ"));
-const DashboardChatGPT = lazy(() => import("./components/DashboardChatGPT"));
 const AuthCallback = lazy(() => import("./components/AuthCallback"));
 const DemoPage = lazy(() => import("./components/DemoPage"));
 
-// Protected Route Component
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuthStore();
-  const navigate = useNavigate();
-
-  // React.useEffect(() => {
-  //   if (!isLoading && !user) {
-  //     navigate('/auth/signin');
-  //   }
-  // }, [user, isLoading, navigate]);
-
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <LoadingSpinner size="lg" />
-  //     </div>
-  //   );
-  // }
-
-  return user ? <>{children}</> : null;
-}
 
 function ErrorBoundary({ children }: { children: React.ReactNode }) {
   const [hasError, setHasError] = React.useState(false);
@@ -105,11 +81,62 @@ function MainContent({
   handleShowContact,
   handleShowPayment,
 }: MainContentProps) {
-  const { user } = useAuthStore();
+  // const { user } = useAuthStore();
   const [isChecking, setIsChecking] = useState(false);
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  interface User {is_eligible: boolean;}
+
+  const handleSignOut = async() =>{
+    const { error } = await supabase.auth.signOut();
+    if (error && error.message !== "session_not_found") {
+      console.error("Sign out error:", error);
+      console.log("There was a problem signing out. Please try again.");
+      return;
+    }
+  }
   
+  function getUserCookie() {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      let [name, value] = cookie.split("=");
+      if (name === "userData") {
+        try {
+          return JSON.parse(decodeURIComponent(value));
+        } catch (error) {
+          console.error("❌ Error parsing userData cookie:", error);
+          return null;
+        }
+      }
+    }
+    return null; 
+  }
+
+
+  // useEffect(()=>{
+  //   setUser(getUserCookie())
+  //   const observer = new MutationObserver(() => {setUser(getUserCookie());});
+  //   observer.observe(document, { subtree: true, childList: true });
+  //   return () => observer.disconnect();
+  // },[])
+  
+  useEffect(() => {
+    const checkUserCookie = () => {
+      const userData = getUserCookie();
+      if (!userData) {
+        console.log("🚨 No user cookie found, logging out...");
+        handleSignOut()
+      } else {
+        setUser(userData);
+      }
+    };
+    checkUserCookie();
+    const observer = new MutationObserver(() => checkUserCookie());
+    observer.observe(document, { subtree: true, childList: true });
+  
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(()=>{
     if(user && user?.is_eligible){
       setIsChecking(user?.is_eligible)
@@ -165,28 +192,9 @@ function MainContent({
     []
   );
 
-  const sendData = async() =>{
-    const userData = localStorage.getItem('userData');
-    console.log("🚀 userData function calling:")
-    try {
-      // const response = await axios.post("http://localhost:8400/api/saveUserData", {userData: userData})
-      const response = await axios.post("https://unitain-server.vercel.app/api/saveUserData", {userData: userData})
-      if(response && response.status === 200){
-        console.log('Data sent successfully!');
-        window.location.href = 'https://app.unitain.net';
-        // window.location.href = 'http://localhost:5174';
-      }else {
-        console.error('Failed to send data:', response);
-      }
-    }catch(error){
-      console.error('Error sending data:', error);
-    }
-  }
-
   return (
     <div>
       {/* Hero Section */}
-      {/* <header className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20"> */}
       <header className="bg-primary-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -235,12 +243,12 @@ function MainContent({
       {/* Eligibility Checker Section */}
       <section id="eligibility-checker" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Show a loader while checking the user's status */}
           {isChecking ? (
              <div className="flex justify-center items-center flex-col">
              <h2 className="text-3xl font-bold text-center mb-12">You can now access dashboard</h2>
              <button
-               onClick={sendData}  
+              //  onClick={() => window.location.href = "https://app.unitain.net"}  
+               onClick={() => window.location.href = "http://localhost:5174"}  
                className="text-white bg-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-500 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                Go to dashboard
              </button>
@@ -255,6 +263,7 @@ function MainContent({
                 <EligibilityChecker
                   onShowPayment={handleShowPayment}
                   onShowContact={handleShowContact}
+                  userCookie={getUserCookie}
                 />
               </Suspense>
             </ErrorBoundary>

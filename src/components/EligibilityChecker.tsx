@@ -1,10 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from './Button';
-import { isSupabaseConfigured } from '../lib/supabase';
 import { AuthModal } from './AuthModal';
-import { saveEligibilityCheck } from '../lib/eligibility';
-import { trackEvent, trackButtonClick } from '../lib/analytics';
+import {trackButtonClick } from '../lib/analytics';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase'; 
@@ -13,6 +11,7 @@ import {EligibilityModal} from "./EligibilityModal"
 interface EligibilityCheckerProps {
   onShowPayment: () => void;
   onShowContact: () => void;
+  getUserCookie: () => void
 }
 
 type Question = {
@@ -102,7 +101,7 @@ const questions: Question[] = [
   },
 ];
 
-function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityCheckerProps) {
+function EligibilityChecker({ onShowPayment, onShowContact, userCookie }: EligibilityCheckerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
@@ -113,16 +112,14 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
   // const [isPasswordCopied, setIsPasswordCopied] = useState(false);  const paypalEmail = "sb-no7fn37881668@personal.example.com";
   // const paypalPassword = "xx!T%A5C";
   const [showImportantModal, setShowImportantModal] = useState(false);
-  const [paymentProcessModal, setPaymentProcessModal] = useState(false);
   const currentQuestion = questions[currentStep];
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
   const [user, setUser] = useState(null);
   const [isEligible, setIsEligible] = useState(false)
-  
-  // console.log("🚀 ~ showEligibilityModal:", showEligibilityModal)
+  const [userCookieData, setUserCookieData] = useState(userCookie())
 
-  // Check user session on component mount and when auth modal is shown
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -194,6 +191,8 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
         }
       } else {
         if (!user) {
+          console.log("user", user);
+          
           setShowAuthModal(true); // Show login modal if user is not logged in
         }else{
           toast.error('Based on your responses, you may not be eligible for tax exemption.');
@@ -268,21 +267,6 @@ function EligibilityChecker({ onShowPayment, onShowContact }: EligibilityChecker
     setError(null);
   }, [currentStep, currentQuestion]);
 
-  const handleActionButton = useCallback(() => {
-    const { isEligible } = calculateEligibility(answers);
-    trackButtonClick(isEligible ? 'proceed_to_payment' : 'contact_support', {
-      is_eligible: isEligible,
-    });
-    if (isEligible) {
-      onShowPayment();
-    } else {
-      onShowContact();
-    }
-  }, [calculateEligibility, onShowPayment, onShowContact, answers]);
-
-  const handleImportantModalClose = () => {
-    setShowImportantModal(false);
-  };
 
   if (!currentQuestion) {
     return <div>{t('eligibility.errors.loadingFailed')}</div>;

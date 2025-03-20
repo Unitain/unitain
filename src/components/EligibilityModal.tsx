@@ -13,25 +13,6 @@ export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
   if (!isOpen) return null;
   const navigate = useNavigate();
 
-  const sendData = async() =>{
-    const userData = localStorage.getItem('userData');
-    console.log("🚀 ~ sendData ~ userData:", userData)
-
-    try {
-      // const response = await axios.post("http://localhost:8400/api/saveUserData", {userData: userData})
-      const response = await axios.post("https://unitain-server.vercel.app/api/saveUserData", {userData: userData})
-      if(response && response.status === 200){
-        console.log('Data sent successfully!');
-        window.location.href = 'https://app.unitain.net';
-        // window.location.href = 'http://localhost:5174';
-      }else {
-        console.error('Failed to send data:', response);
-      }
-    }catch(error){
-      console.error('Error sending data:', error);
-    }
-  }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 text-black font-medium">
       <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
@@ -82,7 +63,7 @@ export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
           </ul>
 
           <button
-             onClick={sendData}  
+            onClick={() => window.location.href = "http://localhost:5174"}  
             className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
           >
             Go to Dashboard

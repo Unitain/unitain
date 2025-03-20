@@ -19,22 +19,42 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
 
+//   function setUserCookie(userData: any) {
+//     if (!userData) {
+//         console.error("🚨 No userData provided, cannot set cookie.");
+//         return;
+//     }
+//     console.log("🚀 Setting Cookie: ", userData);
+
+//     // const value = encodeURIComponent(JSON.stringify(userData)); 
+//     const value = JSON.stringify(userData);
+
+//     let cookie = `userData=${value}; Path=/; Domain=.unitain.net; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
+
+//     document.cookie = cookie;
+//     console.log("✅ Cookie successfully set:", document.cookie);
+// }
+
+
   function setUserCookie(userData: any) {
     if (!userData) {
         console.error("🚨 No userData provided, cannot set cookie.");
         return;
     }
     console.log("🚀 Setting Cookie: ", userData);
-
-    // const value = encodeURIComponent(JSON.stringify(userData)); 
     const value = JSON.stringify(userData);
 
-    let cookie = `userData=${value}; Path=/; Domain=.unitain.net; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
+    let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
-    document.cookie = cookie;
-    console.log("✅ Cookie successfully set:", document.cookie);
-}
 
+    document.cookie = cookieBase;
+    console.log("✅ Cookie set for localhost:", document.cookie);
+
+    if (window.location.hostname !== "localhost") {
+        document.cookie = cookieBase + " Domain=.unitain.net;";
+        console.log("✅ Cookie set for unitain.net:", document.cookie);
+    }
+  }
 
   
   const handleAuth = async (e) => {
@@ -91,7 +111,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
             }
           }
         }
-      } else {
+      } 
+      else {
         // Handle Signup
         const { data, error } = await supabase.auth.signUp({
           email,

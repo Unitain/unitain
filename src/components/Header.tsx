@@ -1,31 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { useAuthStore } from "../lib/store";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./Button";
 import { UserCircle2, LogOut, X, User } from "lucide-react";
 import { AuthModal } from "./AuthModal";
 import { LanguageSelector } from "./LanguageSelector";
 import { useTranslation } from "react-i18next";
-// import { Logo } from "./Logo";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 
+
 export function Header() {
-  const { user, isLoading, setUser } = useAuthStore();
+  const [user, setUser] = useState(null); 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const location = useLocation();
 
+
+  function getUserCookie() {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      let [name, value] = cookie.split("=");
+
+        if (name === "userData") {
+            try {
+                return JSON.parse(decodeURIComponent(value)); 
+  
+            } catch (error) {
+                console.error("Error parsing userData cookie:", error);
+                return null;
+            }
+        }
+    }
+    return null; 
+  }
+  
+  useEffect(()=>{
+    setUser(getUserCookie())
+
+    const observer = new MutationObserver(() => {
+      setUser(getUserCookie());
+    });
+
+    observer.observe(document, { subtree: true, childList: true });
+
+    return () => observer.disconnect();
+  },[])
+  
   function clearUserSession() {
-    console.log("🔴 Clearing cookies for all subdomains...");
-
+    setUser(null)
     document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
-    
     document.cookie = "userData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
-
     console.log("✅ Session cleared: Cookies & LocalStorage removed");
 }
 
@@ -67,39 +92,7 @@ export function Header() {
   logoutUser()
   }, [setUser, location.search]);
 
-// console.log(user);
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       // Only fetch user data if we have a valid user ID
-  //       if (!user?.id) {
-  //         return;
-  //       }
-
-  //       const { data, error } = await supabase
-  //         .from("users")
-  //         .select("*")
-  //         .eq("id", user.id)
-  //         .single();
-  //       if (error) {
-  //         console.error("Error fetching user from users table:", error);
-  //         return;
-  //       }
-  //       if (data) {
-  //         setUser({ ...user, ...data });
-  //         localStorage.setItem("userData", JSON.stringify(data));
-  //       }
-  //     } catch (error) {
-  //       console.error("Error during session check:", error);
-  //     }
-  //   };
-
-  //   if (user?.id) {
-  //     fetchUserData();
-  //   }
-  // }, [user?.id, setUser]);
-  
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent double-clicks
     try {
