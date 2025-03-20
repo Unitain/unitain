@@ -16,6 +16,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
 
@@ -45,7 +47,6 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     const value = JSON.stringify(userData);
 
     let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
-
 
     document.cookie = cookieBase;
     console.log("✅ Cookie set for localhost:", document.cookie);
@@ -98,10 +99,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           navigate("/", { replace: true });
           onAuthSuccess?.();
 
-          console.log("🚀 ~ handleAuth ~ insertError:", insertError)
-
           if(onAuthSuccess && userData?.is_eligible === false){
-            const { error:eligibleError } = await supabase
+            const { error: eligibleError } = await supabase
             .from('users')
             .update({is_eligible: true })
             .eq('id', userData?.id)
@@ -113,7 +112,12 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         }
       } 
       else {
-        // Handle Signup
+        if (!acceptedTerms) {
+          toast.error('Please accept the Terms of Use before signing up.');
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -231,6 +235,25 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
               required
             />
           </div>
+
+          {!isLogin && (
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label htmlFor="terms" className="ml-2 text-sm text-gray-700 font-semibold">
+                I accept the{' '}
+                <a href="/terms" className="text-primary-700 " target="_blank" rel="noreferrer">
+                  Terms of Use
+                </a>
+                <p className='text-gray-600 font-normal'>By continuing, you agree to our terms and conditions.</p>
+              </label>
+            </div>
+          )}
 
           <button
             type="submit"
