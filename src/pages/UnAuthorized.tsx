@@ -20,7 +20,7 @@ export default function Unauthorized() {
               <p className="text-gray-500 mb-6">Please login first to access app.unitain</p>
             </div>
 
-            <Link to="https://pretest.unitain.net" className="inline-block w-full">
+            <Link to="https://unitain.net" className="inline-block w-full">
               <button className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200">
                 Login to Continue
               </button>

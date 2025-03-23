@@ -34,24 +34,6 @@ export function Download() {
 
   return (
     <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6">
-      {/* {guideModal && (
-      <div className="fixed text-center cursor-pointer inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-xl z-50">
-        <div className="bg-white p-10 rounded shadow-md max-w-lg relative">
-          <div className='absolute right-6 top-5' onClick={()=> setGuideModal(false)}><X/></div>
-          <h2 className="text-2xl font-bold mb-4">Download Guide</h2>
-          <p className="mb-5">Here’s our comprehensive document about importing a vehicle into Portugal. Downloading it is not required for the beta test, but feel free to read it to learn which documents you’d need in a real application. If you like, we’d appreciate any feedback on whether it was helpful!</p>
-          <div className="flex justify-end gap-4">
-            <button className="border p-3 rounded-md border-black" onClick={() => setGuideModal(false)}>
-              Cancel
-            </button>
-            <button onClick={handleDownload}  className="border p-3 rounded-md bg-black text-white">
-              Download Guide
-            </button>
-          </div>
-        </div>
-      </div>
-      )} */}
-
       <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6">
       <h2 className="text-xl font-semibold text-primary-900 mb-4">Download Guide</h2>
       <p className="text-sm text-primary-700 mb-6">
