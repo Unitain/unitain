@@ -117,8 +117,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
               //   toast.error('Failed to save eligibility check:', eligibleError);
               // }
           }else{
-            // window.location.href = "https://app.unitain.net"
-              window.location.href = "http://localhost:5174"
+            window.location.href = "https://app.unitain.net"
+              // window.location.href = "http://localhost:5174"
           }
           if(onAuthSuccess && userData?.is_eligible === false){
             const { error: eligibleError } = await supabase
