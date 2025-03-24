@@ -18,6 +18,7 @@ function getUserCookie() {
       if (name === "userData") {
           try {
             setUser(JSON.parse(value))
+            localStorage.setItem('userData', value)
             return JSON.parse(decodeURIComponent(value)); 
           } catch (error) {
               console.error("Error parsing userData cookie:", error);
