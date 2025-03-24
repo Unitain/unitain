@@ -7,7 +7,10 @@ export const Upload = () => {
   const [selectedImage ,setSelectedImage] = useState(null)
   const [user, setUser] = useState(null)
   const [verifiedFiles, setVerifiedFiles] = useState<boolean[]>(Array(images.length).fill(false));
-  const [paymentModal, setPaymentModal] = useState(false)
+  const [paymentModal, setPaymentModal] = useState(false);
+  const imgData = JSON.parse(localStorage.getItem('imagesArray'))
+  const [imagesData, setImagesData] = useState(imgData)
+  console.log("😎🚀 ~ imagesData:", imagesData)
   console.log("🚀 ~ Upload ~ verifiedFiles:", verifiedFiles)
 
   useEffect(()=>{
@@ -84,6 +87,7 @@ const handleDelete = async (index: number) => {
   setImages(prev => prev.filter((_, i) => i !== index));
 };
 
+console.log("imagesData?.length", imagesData?.length);
 
   const handleVerify = async(index: number) => {
     if (verifiedFiles[index]){ alert("this image is already verified"); return};
@@ -119,6 +123,8 @@ const handleDelete = async (index: number) => {
       let imagesArray = submission?.images || [];
       imagesArray.push({publicUrl: url.publicUrl,status: "verified",});
       
+      localStorage.setItem('imagesArray',  JSON.stringify(imagesArray))
+
       if (submission) {
         const { error: updateError } = await supabase
           .from('submission')
@@ -142,8 +148,6 @@ const handleDelete = async (index: number) => {
             console.log("Submission created successfully!");
           }
      }
-
-      
     } else {
       console.error("Upload failed:", error);
     }
@@ -185,7 +189,7 @@ const handleDelete = async (index: number) => {
           </div>
         </div>
         <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
-            {images.length === 0 ? (
+            {images.length === 0 || !imagesData?.length ? (
               <div>
                 <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-file-text mx-auto h-12 w-12 text-gray-400'><path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'></path><path d='M14 2v4a2 2 0 0 0 2 2h4'></path><path d='M10 9H8'></path><path d='M16 13H8'></path><path d='M16 17H8'></path></svg>
                 <h3 className='mt-2 text-sm font-medium text-gray-900'>No files</h3>

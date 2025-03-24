@@ -19,7 +19,7 @@ export const NextSteps = () => {
   const [completedSteps, setCompletedSteps] = useState(Array(10).fill(false));
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const toggleStep = (index) => {
+  const toggleStep = (index: number) => {
     const newSteps = [...completedSteps];
     newSteps[index] = !newSteps[index]; 
     setCompletedSteps(newSteps);
