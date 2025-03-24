@@ -1,13 +1,11 @@
 import { useState, useEffect, } from "react";
 import { useAuthStore } from "../lib/store";
-import { LoadingSpinner } from "../components/LoadingSpinner";
 import { Upload } from "../components/Upload";
 import { Download } from "../components/Download";
 import { supabase } from "../lib/supabase";
 import { FileProvider } from '../context/FileContext';
-import {FileList} from "../components/FileList"
 import { ChatSupport } from '../components/ChatSupport';
-import { ProgressTile } from '../components/ProgressTile';
+import { NextSteps } from "../components/NextSteps";
 
 export function DashboardChatGPT() {
   const [submissionDetails, setSubmissionDetails] = useState(null)
@@ -49,17 +47,18 @@ export function DashboardChatGPT() {
             </h1>
             
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          <div>
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               <div className="bg-white">
                  <Upload />
               </div>
             </div>
             
-            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <div className="grid md:grid-cols-2 gap-10 mt-10"> 
+              <div >
                 <Download />
               </div>
+                <NextSteps />
             </div>
           </div>
         </div>

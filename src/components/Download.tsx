@@ -34,11 +34,9 @@ export function Download() {
 
   return (
     <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6">
-      <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl ">
       <h2 className="text-xl font-semibold text-primary-900 mb-4">Download Guide</h2>
-      <p className="text-sm text-primary-700 mb-6">
-        Get our comprehensive guide on vehicle tax exemption procedures and requirements
-      </p>
+      <p className="text-sm text-primary-700 mb-6">Get our comprehensive guide on vehicle tax exemption procedures and requirements</p>
       <button
         onClick={handleDownload}
         className="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-white shadow-neu-flat hover:shadow-neu-pressed active:shadow-neu-pressed transition-all duration-200 group touch-manipulation"
