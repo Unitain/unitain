@@ -22,22 +22,24 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
 
-//   function setUserCookie(userData: any) {
-//     if (!userData) {
-//         console.error("🚨 No userData provided, cannot set cookie.");
-//         return;
-//     }
-//     console.log("🚀 Setting Cookie: ", userData);
+  // function setUserCookie(userData: any) {
+  //   if (!userData) {
+  //       console.error("🚨 No userData provided, cannot set cookie.");
+  //       return;
+  //   }
+  //   console.log("🚀 Setting Cookie: ", userData);
+  //   const value = JSON.stringify(userData);
 
-//     // const value = encodeURIComponent(JSON.stringify(userData)); 
-//     const value = JSON.stringify(userData);
+  //   let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
-//     let cookie = `userData=${value}; Path=/; Domain=.unitain.net; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
+  //   document.cookie = cookieBase;
+  //   // console.log("✅ Cookie set for localhost:", document.cookie);
 
-//     document.cookie = cookie;
-//     console.log("✅ Cookie successfully set:", document.cookie);
-// }
-
+  //   if (window.location.hostname !== "localhost") {
+  //       document.cookie = cookieBase + " Domain=.unitain.net;";
+  //       console.log("✅ Cookie set for unitain.net:", document.cookie);
+  //   }
+  // }
 
   function setUserCookie(userData: any) {
     if (!userData) {
@@ -49,10 +51,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
     let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
-    document.cookie = cookieBase;
-    // console.log("✅ Cookie set for localhost:", document.cookie);
-
-    if (window.location.hostname !== "localhost") {
+    if (window.location.hostname === "localhost") {
+        document.cookie = cookieBase;
+    } else {
         document.cookie = cookieBase + " Domain=.unitain.net;";
         console.log("✅ Cookie set for unitain.net:", document.cookie);
     }
@@ -116,8 +117,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
               //   toast.error('Failed to save eligibility check:', eligibleError);
               // }
           }else{
-            window.location.href = "https://app.unitain.net"
-              // window.location.href = "http://localhost:5174"
+            // window.location.href = "https://app.unitain.net"
+              window.location.href = "http://localhost:5174"
           }
           if(onAuthSuccess && userData?.is_eligible === false){
             const { error: eligibleError } = await supabase
