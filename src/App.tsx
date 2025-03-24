@@ -31,6 +31,7 @@ function getUserCookie() {
 }
 
   useEffect(()=>{
+    console.log("hello");
     getUserCookie()
   },[])
 
