@@ -48,20 +48,7 @@ export function Download() {
           Download Guide
         </span>
       </button>
-
-      {/* {isDownloading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <DownloadIcon className="w-5 h-5" />
-        )}
-        {isDownloading ? 'Downloading...' : 'Download Guide'} */}
-
-
     </div>
-
-      <p className="text-sm text-gray-500">
-        Download our comprehensive vehicle tax exemption guide
-      </p>
     </div>
   );
 }

@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, } from "react";
 import { useAuthStore } from "../lib/store";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { Upload } from "../components/Upload";
 import { Download } from "../components/Download";
-import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { FileProvider } from '../context/FileContext';
 import {FileList} from "../components/FileList"
@@ -13,40 +11,7 @@ import { ProgressTile } from '../components/ProgressTile';
 
 export function DashboardChatGPT() {
   const [submissionDetails, setSubmissionDetails] = useState(null)
-  const [isFeedbackModal, setIsFeedbackModal] = useState(false)
-  const { user, isInitialized } = useAuthStore();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const checkSession = async () => {
-    //   try {
-    //     if (!user) {
-    //       console.warn("No user found in dashboard, redirecting to login...");
-    //       navigate("/auth/signin");
-    //       return;
-    //     }
-
-    //     Verify the session is still valid
-    //     const {
-    //       data: { session },
-    //       error,
-    //     } = await supabase.auth.getSession();
-    //     if (error || !session) {
-    //       console.error("Session validation failed:", error);
-    //       toast.error("Your session has expired. Please sign in again.");
-    //       navigate("/auth/signin");
-    //       return;
-    //     }
-    //   } catch (error) {
-    //     console.error("Dashboard session check failed:", error);
-    //     toast.error("Failed to load dashboard. Please try again.");
-    //     navigate("/auth/signin");
-     };
-    if (isInitialized) {
-      checkSession();
-    }
-  }, [user, isInitialized, navigate]);
+  const { user} = useAuthStore();
 
   useEffect(() => {
     console.log(user?.id);
@@ -73,14 +38,6 @@ export function DashboardChatGPT() {
   }, []);
   
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
   return (
     <FileProvider>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -94,19 +51,11 @@ export function DashboardChatGPT() {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up">
+              <div className="bg-white">
                  <Upload />
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3  gap-6 sm:gap-8 lg:col-span-2">
-            <div className="bg-white lg:col-span-2 rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                <FileList />
-              </div>
-              <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                  <ProgressTile />
-                </div>
-            </div>
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
                 <Download />
