@@ -158,7 +158,7 @@ const handleDelete = async (index: number) => {
   ];  
   
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8'>
+    <div className='grid grid-cols-1 items-baseline lg:grid-cols-12 gap-6 sm:gap-8'>
       
      <div className='lg:col-span-8 space-y-6 sm:space-y-8'>
        <div className=' bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up'>
@@ -184,7 +184,7 @@ const handleDelete = async (index: number) => {
             <span className="text-sm text-gray-500">0 files</span>
           </div>
         </div>
-        <div className='overflow-auto h-[440px] text-center py-6 overscroll-contain p-6'>
+        <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
             {images.length === 0 ? (
               <div>
                 <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-file-text mx-auto h-12 w-12 text-gray-400'><path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'></path><path d='M14 2v4a2 2 0 0 0 2 2h4'></path><path d='M10 9H8'></path><path d='M16 13H8'></path><path d='M16 17H8'></path></svg>
