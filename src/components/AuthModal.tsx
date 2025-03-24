@@ -105,7 +105,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           console.log("userData?.is_eligible", userData?.is_eligible);
           console.log("userData?.is_eligible 👌👌", userData?.is_eligible);
           if(userData?.is_eligible === false){
-            console.log("is_eligible false hai hajra 🧠");
+            console.log("is_eligible false hai 🧠");
             navigate("/", { replace: true });
               // const { error: eligibleError } = await supabase
               // .from('users')
