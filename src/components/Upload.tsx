@@ -242,7 +242,11 @@ const handleDelete = async (index: number) => {
         </div>
 
         <div className="p-6 bg-gray-50 rounded-b-lg">
-          <div className="text-center text-sm text-gray-500 mb-4">Start by uploading and verifying your first document</div>
+            {verifiedFiles.filter(Boolean).length >= 4 ? (
+              <div className="text-center text-sm text-green-500 font-semibold mb-4">All required documents have been verified</div>
+            ):(
+              <div className="text-center text-sm text-gray-500 mb-4">Start by uploading and verifying your first document</div>
+            )}
           <button
             onClick={verifiedFiles.filter(Boolean).length >= 4 ? () => setPaymentModal(true) : undefined}
             className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 
