@@ -36,14 +36,14 @@ export const NextSteps = () => {
       {/* Few Steps Preview */}
       <div className="space-y-3 mb-6">
         {checklistItems.slice(0, 3).map((item, index) => (
-          <div
+            <div
             key={index}
-            className={`flex items-start space-x-3 rounded-lg p-3 transition-all duration-200 ${
-              completedSteps[index]
-                ? "bg-green-50 border-green-300"
-                : "bg-white bg-opacity-50"
+            onClick={() => toggleStep(index)}
+            className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+            completedSteps[index] ? "bg-green-50 border-green-300" : "bg-gray-50"
             }`}
-          >
+        >
+
             <input
               type="checkbox"
               checked={completedSteps[index]}
@@ -71,12 +71,12 @@ export const NextSteps = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white relative inset-0 rounded-lg w-96">
-            <div className="mb-2 bg-white w-full sticky top-0 flex justify-between p-4 border-b shadow-sm z-10">
+            <div className="mb-2 bg-white w-full sticky top-0 rounded-lg flex justify-between p-5 border-b shadow-sm z-10">
                 <div>
                     <h1 className="text-xl mb-2 font-semibold text-gray-900">Document Checklist</h1>
-                    <p className="text-gray-600">{completedSteps.filter(Boolean).length}/10 completed</p>
+                    <p className="text-sm text-gray-600">{completedSteps.filter(Boolean).length}/10 completed</p>
                 </div>
                 <div className="cursor-pointer" onClick={() => setIsModalOpen(false)}>
                     <X className="text-gray-700 hover:text-gray-900"/>
@@ -87,13 +87,12 @@ export const NextSteps = () => {
             <div className="space-y-3 max-h-[500px] bg-white overflow-scroll p-3">
               {checklistItems.map((item, index) => (
                 <div
-                  key={index}
-                  className={`flex items-center space-x-3 p-5 rounded-lg transition-all duration-200 ${
-                    completedSteps[index]
-                      ? "bg-green-50 border-green-300"
-                      : "bg-gray-50"
-                  }`}
-                >
+                key={index}
+                  onClick={() => toggleStep(index)}
+                className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                completedSteps[index] ? "bg-green-50 border-green-300" : "bg-gray-50"
+                    }`}
+                    >
                   <input
                     type="checkbox"
                     checked={completedSteps[index]}
