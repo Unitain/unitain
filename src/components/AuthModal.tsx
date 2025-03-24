@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
 import { useAuthStore } from '../lib/store';
 import { useNavigate } from 'react-router-dom';
+import { log } from 'util';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
     document.cookie = cookieBase;
-    console.log("✅ Cookie set for localhost:", document.cookie);
+    // console.log("✅ Cookie set for localhost:", document.cookie);
 
     if (window.location.hostname !== "localhost") {
         document.cookie = cookieBase + " Domain=.unitain.net;";
@@ -69,13 +70,13 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           email,
           password,
         });
+        console.log("🚀 login ~ data:", data)
 
         if (error) {
           throw error;
         }
   
-        if (data.user) {
-
+        if (data?.user) {
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -84,10 +85,12 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           if (userError) {
             console.error('Error fetching user data from users table:', userError);
           }
+          console.log("this is userData", userData);
 
           // Store user data and update state
           const mergedUser = { ...data.user, ...(userData || {}) };
           localStorage.setItem('userData', JSON.stringify(mergedUser));
+          console.log("🚀 ~ mergedUser:", mergedUser)
 
           setUserCookie(mergedUser);
           console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀 cookie set", mergedUser);
@@ -96,9 +99,26 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
           toast.success('Login successful!');
           onClose();
-          navigate("/", { replace: true });
           onAuthSuccess?.();
-
+          
+          console.log("userData?.is_eligible", userData?.is_eligible);
+          console.log("userData?.is_eligible 👌👌", userData?.is_eligible);
+          if(userData?.is_eligible === false){
+            console.log("is_eligible false hai hajra 🧠");
+            navigate("/", { replace: true });
+              // const { error: eligibleError } = await supabase
+              // .from('users')
+              // .update({is_eligible: true })
+              // .eq('id', userData?.id)
+              // console.log("🚀 eligible Error:", eligibleError)
+              // console.log("hajra home 👀👀");
+              // if(eligibleError){
+              //   toast.error('Failed to save eligibility check:', eligibleError);
+              // }
+          }else{
+            window.location.href = "https://app.unitain.net"
+              // window.location.href = "http://localhost:5174"
+          }
           if(onAuthSuccess && userData?.is_eligible === false){
             const { error: eligibleError } = await supabase
             .from('users')

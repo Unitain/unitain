@@ -149,7 +149,7 @@ function EligibilityChecker({ onShowPayment, onShowContact, userCookie }: Eligib
       // Cleanup the auth listener
       authListener.subscription.unsubscribe();
     };
-  }, [user]);
+  }, []);
 
   
   const handleAnswer = useCallback(async (answer: string) => {

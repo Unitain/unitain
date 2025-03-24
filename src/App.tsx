@@ -81,20 +81,20 @@ function MainContent({
   handleShowContact,
   handleShowPayment,
 }: MainContentProps) {
-  // const { user } = useAuthStore();
   const [isChecking, setIsChecking] = useState(false);
   const { t } = useTranslation();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuthStore();
+  const [userCookieData, setUserCookieData] = useState(null)
   interface User {is_eligible: boolean;}
 
-  const handleSignOut = async() =>{
-    const { error } = await supabase.auth.signOut();
-    if (error && error.message !== "session_not_found") {
-      console.error("Sign out error:", error);
-      console.log("There was a problem signing out. Please try again.");
-      return;
-    }
-  }
+  // const handleSignOut = async() =>{
+  //   const { error } = await supabase.auth.signOut();
+  //   if (error && error.message !== "session_not_found") {
+  //     console.error("Sign out error:", error);
+  //     console.log("There was a problem signing out. Please try again.");
+  //     return;
+  //   }
+  // }
   
   function getUserCookie() {
     const cookies = document.cookie.split("; ");
@@ -120,24 +120,28 @@ function MainContent({
   //   return () => observer.disconnect();
   // },[])
   
-  useEffect(() => {
-    const checkUserCookie = () => {
-      const userData = getUserCookie();
-      if (!userData) {
-        console.log("🚨 No user cookie found, logging out...");
-        // handleSignOut()
-      } else {
-        setUser(userData);
-      }
-    };
-    checkUserCookie();
-    const observer = new MutationObserver(() => checkUserCookie());
-    observer.observe(document, { subtree: true, childList: true });
+  // useEffect(() => {
+  //   console.log("🚀 ~ isChecking:", isChecking)
+    
+  //   const checkUserCookie = () => {
+  //     const userData = getUserCookie();
+  //     if (!userData) {
+  //       console.log("🚨 No user cookie found, logging out...");
+  //       // handleSignOut()
+  //     } else {
+  //       setUser(userData);
+  //     }
+  //   };
+  //   checkUserCookie();
+  //   const observer = new MutationObserver(() => checkUserCookie());
+  //   observer.observe(document, { subtree: true, childList: true });
   
-    return () => observer.disconnect();
-  }, []);
+  //   return () => observer.disconnect();
+  // }, []);
 
   useEffect(()=>{
+    console.log("user", user, "user?.is_eligible", user?.is_eligible);
+    
     if(user && user?.is_eligible){
       setIsChecking(user?.is_eligible)
     }else{
