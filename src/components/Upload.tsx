@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { UploadIcon, CarIcon, EyeIcon, DownloadIcon, UserIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon } from "lucide-react"
 import { supabase } from '../lib/supabase'
+import axios from "axios"
 
 export const Upload = () => {
   const [images, setImages] = useState<File[]>([])
@@ -8,6 +9,7 @@ export const Upload = () => {
   const [user, setUser] = useState(null)
   const [verifiedFiles, setVerifiedFiles] = useState<boolean[]>(Array(images.length).fill(false));
   const [paymentModal, setPaymentModal] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData") || 'null')
@@ -123,9 +125,29 @@ export const Upload = () => {
     { id: 4, name: "NIF Document", icon: <FileSpreadsheetIcon /> }
   ];
 
-  const handlePayment = () =>{
+  const handleSubmit = (e: { preventDefault: () => void; }) =>{
+    const url = window.location.href
+    if (!user?.id) {
+      throw new Error('User ID not found');
+    }
+
+    setLoading(true)
+    e.preventDefault()
+    console.log("successUrl", url);
     
+    axios.post('http://localhost:8000/api/payment', { user_id: user?.id })
+    // axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id, successUrl: url })
+    .then(res => {
+      window.location.href = res.data;
+      localStorage.setItem('payment_success', 'true');
+      setLoading(false)
+    })
+    .catch(error => {
+      setLoading(false)
+      console.error('Payment success handler error:', error);
+    })
   }
+
 
   const verifiedCount = images.filter(img => img.verified).length
   return (
@@ -264,7 +286,7 @@ export const Upload = () => {
             <p>Would you like to place a paid order?</p>
             <div className='flex justify-end mt-10 gap-5'>
               <button onClick={() => setPaymentModal(false)} className='bg-gray-100 p-3 px-4 rounded-lg'>Cancel</button>
-              <button onClick={handlePayment} className='bg-primary-600 text-white px-4 p-3 rounded-lg'>Ok</button>
+              <button onClick={handleSubmit} className='bg-primary-600 text-white px-4 p-3 rounded-lg'>{loading ? "Start paying..." : "start pay"}</button>
             </div>
           </div>
         </div>
