@@ -186,7 +186,7 @@ console.log("imagesData?.length", imagesData?.length);
          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Your Uploaded Files</h2>
-            <span className="text-sm text-gray-500">0 files</span>
+            <span className="text-sm text-gray-500">{images.length} files</span>
           </div>
         </div>
          {/* <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
