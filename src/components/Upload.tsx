@@ -51,15 +51,15 @@ export const Upload = () => {
         .from('vehicle.uploads')
         .remove([`${user.id}/${fileName}`])
       }
-          } else {
-            URL.revokeObjectURL(imageToDelete.url)
-          }
+      } else {
+        URL.revokeObjectURL(imageToDelete.url)
+      }
 
-          const updatedImages = images.filter((_, i) => i !== index)
-          const updatedVerifiedFiles = updatedImages.map(img => img.verified);
-          setImages(updatedImages)
-          setVerifiedFiles(updatedVerifiedFiles)
-          localStorage.setItem('savedImages', JSON.stringify(updatedImages.filter(img => img.verified)))
+      const updatedImages = images.filter((_, i) => i !== index)
+      const updatedVerifiedFiles = updatedImages.map(img => img.verified);
+      setImages(updatedImages)
+      setVerifiedFiles(updatedVerifiedFiles)
+      localStorage.setItem('savedImages', JSON.stringify(updatedImages.filter(img => img.verified)))
   }
 
   const sanitizeFileName = (name: string) => {
@@ -122,6 +122,10 @@ export const Upload = () => {
     { id: 3, name: "Tax Proof Documents", icon: <ReceiptIcon /> },
     { id: 4, name: "NIF Document", icon: <FileSpreadsheetIcon /> }
   ];
+
+  const handlePayment = () =>{
+    
+  }
 
   const verifiedCount = images.filter(img => img.verified).length
   return (
@@ -260,7 +264,7 @@ export const Upload = () => {
             <p>Would you like to place a paid order?</p>
             <div className='flex justify-end mt-10 gap-5'>
               <button onClick={() => setPaymentModal(false)} className='bg-gray-100 p-3 px-4 rounded-lg'>Cancel</button>
-              <button className='bg-primary-600 text-white px-4 p-3 rounded-lg'>Ok</button>
+              <button onClick={handlePayment} className='bg-primary-600 text-white px-4 p-3 rounded-lg'>Ok</button>
             </div>
           </div>
         </div>
