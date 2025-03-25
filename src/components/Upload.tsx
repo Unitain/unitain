@@ -132,7 +132,7 @@ export const Upload = () => {
 
     setLoading(true)
     e.preventDefault()
-    axios.post('http://localhost:8000/api/payment', { user_id: user?.id })
+    axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id })
     .then(res => {
       window.location.href = res.data;
       localStorage.setItem('payment_success', 'true');
