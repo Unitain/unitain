@@ -1,10 +1,9 @@
 // App.js
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter ,Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter ,Routes, Route} from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import { Header } from './components/Header';
 import ErrorPage from './pages/ErrorPage';
-import axios from 'axios';
 import UnAuthorized from "./pages/UnAuthorized"
 
 const App = () => {

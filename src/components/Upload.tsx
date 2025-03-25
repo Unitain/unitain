@@ -126,17 +126,13 @@ export const Upload = () => {
   ];
 
   const handleSubmit = (e: { preventDefault: () => void; }) =>{
-    const url = window.location.href
     if (!user?.id) {
       throw new Error('User ID not found');
     }
 
     setLoading(true)
     e.preventDefault()
-    console.log("successUrl", url);
-    
     axios.post('http://localhost:8000/api/payment', { user_id: user?.id })
-    // axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id, successUrl: url })
     .then(res => {
       window.location.href = res.data;
       localStorage.setItem('payment_success', 'true');
@@ -175,7 +171,7 @@ export const Upload = () => {
           </div>
         </div>
 
-          <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
+          <div className='overflow-auto max-h-[496px] text-center py-6 overscroll-contain p-6'>
             {images.length === 0 ? (
               <div>
                 <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-file-text mx-auto h-12 w-12 text-gray-400'><path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'></path><path d='M14 2v4a2 2 0 0 0 2 2h4'></path><path d='M10 9H8'></path><path d='M16 13H8'></path><path d='M16 17H8'></path></svg>
@@ -185,8 +181,6 @@ export const Upload = () => {
             ) : (
               <ul className='space-y-4'>
                 {images.length > 0 && images.map((file, index) => (
-                  console.log("images", images),
-                  
                   <li key={file.id} className='flex items-center justify-between px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overflow-scroll'>
                     <div className='flex gap-4 items-center'>
                       <img  src={file.url} alt="uploaded" className="w-16 h-16 object-cover rounded-lg" />
@@ -228,10 +222,6 @@ export const Upload = () => {
         <div className="space-y-3">
           {documents.map((doc, index) => {
             const isVerified = verifiedFiles[index];
-            console.log("verify", verifiedFiles);
-            console.log("index", index);
-            
-            console.log("🚀 ~ {documents.map ~ isVerified:", isVerified)
             return (
               <div key={index} className={`flex items-center p-3 rounded-lg transition-all duration-300 ${isVerified ? "bg-green-50 border-blue-100" : "bg-gray-50 border-gray-100"} border`}>
                 <div className={`mr-3 ${isVerified ? "text-green-600" : "text-gray-400"}`}>

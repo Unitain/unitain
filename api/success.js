@@ -15,10 +15,9 @@ app.get('/api/success', async (req, res) => {
         const payerId = req.query.PayerID;
         const paymentId = req.query.paymentId;
         const userId = req.query.user_id;
-        const successUrl = req.query.successUrl
         console.log("🚀 ~ app.get ~ req.query.user_id:", req.query.user_id)
 
-        if (!payerId || !paymentId || !userId || !successUrl) {
+        if (!payerId || !paymentId || !userId) {
             return res.status(400).send("PayerID and paymentId are required");
         }
 
@@ -33,25 +32,21 @@ app.get('/api/success', async (req, res) => {
         };
 
         paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
-            const response = JSON.stringify({ ...payment, userId })
             if (error) {
                 console.error("Error executing payment:", error.response ? error.response.details : error);
                 return res.status(500).send(error);
             } else {
                 console.log("Payment executed successfully:", payment);
                    if(payment.state === "approved"){
-                        // return res.redirect(`http://localhost:5173/success?session=${response}`);
-                        return res.redirect(`${successUrl}dashboard?sessionId=${payment?.id}&status=${payment?.state}&uid=${userId}&submission`);
-                        // return res.redirect(`http://localhost:5173/dashboard?sessionId=${payment?.id}&status=${payment?.state}&uid=${userId}&submission`);
+                        return res.redirect(`http://localhost:5174/?session=${payerId}&status=${payment.state}&userId=${userId}`);
                     }else{
-                        // return res.redirect("http://localhost:5173/failed");
-                        return res.redirect("https://test.unitain.net/failed");
+                        return res.redirect("http://localhost:5174/failed");
                     }
             }
         });
     } catch (error) {
         console.error("Error in success route:", error);
-        return res.redirect("https://test.unitain.net/failed");
+        return res.redirect("http://localhost:5174/failed");
     }
 });
 

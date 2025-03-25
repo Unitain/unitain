@@ -12,7 +12,7 @@ paypal.configure({
   });
 
 app.post('/api/payment', async(req, res)=>{
-    const { user_id, successUrl } = req.body;
+    const { user_id } = req.body;
     console.log("🚀 ~ app.post ~ req.body:", req.body)
     if (!user_id) {
         return res.status(400).json({ error: "User ID is required" });
@@ -25,11 +25,8 @@ app.post('/api/payment', async(req, res)=>{
                 "payment_method": "paypal"
             },
             "redirect_urls": {
-                "return_url": `http://localhost:8300/api/success?user_id=${user_id}&successUrl=${successUrl}`,
+                "return_url": `http://localhost:8300/api/success?user_id=${user_id}`,
                 "cancel_url": "http://localhost:5174/failed"
-
-                // "return_url": `https://unitain-server.vercel.app/api/success?user_id=${user_id}&successUrl=${successUrl}`,
-                // "cancel_url": "https://test.unitain.net/failed"
             },
            "transactions": [{
                 "item_list": {
