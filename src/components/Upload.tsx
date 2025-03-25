@@ -122,6 +122,7 @@ console.log("imagesData?.length", imagesData?.length);
 
       let imagesArray = submission?.images || [];
       imagesArray.push({publicUrl: url.publicUrl,status: "verified",});
+      console.log("🚀 ~ handleVerify ~ imagesArray:", imagesArray)
       
       localStorage.setItem('imagesArray',  JSON.stringify(imagesArray))
 
@@ -188,8 +189,67 @@ console.log("imagesData?.length", imagesData?.length);
             <span className="text-sm text-gray-500">0 files</span>
           </div>
         </div>
-        <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
-            {images.length === 0 || !imagesData?.length ? (
+         {/* <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
+            {images.length === 0 ?(
+              imagesData ? (
+                <div>
+                {imagesData && (
+                  <ul className='space-y-4'>
+                    {imagesData.map((file, index) => (
+                    <li key={index} className='flex items-center justify-between px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overflow-scroll'>
+                      <div className='flex gap-4 items-center'>
+                        <img src={file?.publicUrl} alt="uploaded" className="w-16 h-16 object-cover rounded-lg" />
+                        <span className='text-sm text-left text-gray-800'>{file.name}</span>
+                      </div>                     
+                      <div className='flex items-center gap-5 text-sm text-gray-500'>
+                        <p>{new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}</p>
+                        <div className='curson-pointer' onClick={() => viewImage(file)} ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye h-5 w-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+                        <div ><a href={file?.publicUrl} download><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download h-5 w-5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg></a></div>
+                        <button  onClick={() => handleVerify(index)} className={`${verifiedFiles[index] ? 'bg-green-500 text-white' : 'bg-gray-100'} px-3 py-1 rounded transition-all`}>{verifiedFiles[index] ? 'Verified' : 'Verify'}</button>
+                        <div onClick={()=> handleDelete(index)} className='text-red-500 cursor-pointer'><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 h-5 w-5 "><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></div>
+                      </div> 
+                    </li>
+                  ))}
+                 </ul>
+                )}   
+              </div>
+              ):(
+              <div>
+                <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-file-text mx-auto h-12 w-12 text-gray-400'><path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'></path><path d='M14 2v4a2 2 0 0 0 2 2h4'></path><path d='M10 9H8'></path><path d='M16 13H8'></path><path d='M16 17H8'></path></svg>
+                <h3 className='mt-2 text-sm font-medium text-gray-900'>No files</h3>
+                <p className='mt-1 text-sm text-gray-500'>Upload files to get started</p>
+              </div>
+            )
+            ) : images ? (
+              <ul className='space-y-4'>
+                {images.map((file, index) => (
+                  <li key={index} className='flex items-center justify-between px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overflow-scroll'>
+                    <div className='flex gap-4 items-center'>
+                      <img src={URL.createObjectURL(file)} alt="uploaded" className="w-16 h-16 object-cover rounded-lg" />
+                      <span className='text-sm text-left text-gray-800'>{file.name}</span>
+                    </div>                     
+                    <div className='flex items-center gap-5 text-sm text-gray-500'>
+                      <p>{new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}</p>
+                      <div className='curson-pointer' onClick={() => viewImage(file)} ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye h-5 w-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+                      <div ><a href={URL.createObjectURL(file)} download><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download h-5 w-5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg></a></div>
+                      <button  onClick={() => handleVerify(index)} className={`${verifiedFiles[index] ? 'bg-green-500 text-white' : 'bg-gray-100'} px-3 py-1 rounded transition-all`}>{verifiedFiles[index] ? 'Verified' : 'Verify'}</button>
+                      <div onClick={()=> handleDelete(index)} className='text-red-500 cursor-pointer'><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2 h-5 w-5 "><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></div>
+                    </div> 
+                  </li>
+                ))}
+              </ul>
+            ):(
+              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Your Uploaded Files</h2>
+                <span className="text-sm text-gray-500">0 files</span>
+              </div>
+            </div>
+            )}
+          </div> */}
+          
+          <div className='overflow-auto max-h-[440px] text-center py-6 overscroll-contain p-6'>
+            {images.length === 0 ? (
               <div>
                 <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-file-text mx-auto h-12 w-12 text-gray-400'><path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'></path><path d='M14 2v4a2 2 0 0 0 2 2h4'></path><path d='M10 9H8'></path><path d='M16 13H8'></path><path d='M16 17H8'></path></svg>
                 <h3 className='mt-2 text-sm font-medium text-gray-900'>No files</h3>
