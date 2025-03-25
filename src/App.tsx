@@ -231,7 +231,7 @@ function MainContent({
               return (
                 <div
                   key={index}
-                  className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                  className="text-center p-6 bg-white"
                 >
                   <Icon className="w-12 h-12 text-primary-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">

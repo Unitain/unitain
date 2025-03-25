@@ -139,16 +139,6 @@ export function DashboardChatGPT() {
         
         if (data?.length > 0) {
           setSubmissionDetails(data[0]);
-
-          // const { guide_downloaded, payment_status, submission_complete } = data[0];
-          // const feedbackSubmitted = localStorage.getItem("feedbackSubmitted");
-          // console.log("🚀 this🚀  i s all ", !feedbackSubmitted, guide_downloaded, payment_status, submission_complete, feedbackSubmitted)
-          // console.log("🚀🚀🚀🚀!feedbackSubmitted && payment_status  && submission_complete && guide_downloaded", !feedbackSubmitted && payment_status === "paid" && submission_complete && guide_downloaded);
-          
-          
-          // if (!feedbackSubmitted && payment_status === "paid" && submission_complete && guide_downloaded) {
-          //     setIsFeedbackModal(true);
-          // }
         }
       } catch (error) {
         console.log(error);

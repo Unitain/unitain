@@ -45,11 +45,11 @@ export const languages: LanguageConfig[] = [
       'hero.cta': 'Start Your Tax Check Now',
 
       // Benefits Section
-      'benefits.tax.title': '✅ Save Thousands on Import Taxes',
+      'benefits.tax.title': 'Save Thousands on Import Taxes',
       'benefits.tax.description': 'Find out in minutes if you don\'t have to pay Portugal\'s expensive car import tax.',
-      'benefits.paperwork.title': '📄 No Paperwork, No Headaches',
+      'benefits.paperwork.title': 'No Paperwork, No Headaches',
       'benefits.paperwork.description': 'We take care of all the forms and legal steps, so you don\'t have to deal with Portuguese bureaucracy.',
-      'benefits.process.title': '⚡ Fast & Simple Process',
+      'benefits.process.title': 'Fast & Simple Process',
       'benefits.process.description': 'Answer a few questions now—if you qualify, we handle everything to get your car legally imported.',
 
       // Process Section
