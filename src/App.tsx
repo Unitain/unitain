@@ -251,8 +251,8 @@ function MainContent({
              <div className="flex justify-center items-center flex-col">
              <h2 className="text-3xl font-bold text-center mb-12">You can now access dashboard</h2>
              <button
-              //  onClick={() => window.location.href = "https://app.unitain.net"}  
-               onClick={() => window.location.href = "http://localhost:5174"}  
+               onClick={() => window.location.href = "https://app.unitain.net"}  
+              //  onClick={() => window.location.href = "http://localhost:5174"}  
                className="text-white bg-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-500 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                Go to dashboard
              </button>
