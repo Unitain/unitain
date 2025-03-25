@@ -10,6 +10,9 @@ export const Upload = () => {
   const [verifiedFiles, setVerifiedFiles] = useState<boolean[]>(Array(images.length).fill(false));
   const [paymentModal, setPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false)
+  const [warning, setWarning] = useState(false)
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+
 
   useEffect(() => {
     const fetchSubmission = async(userData) =>{
@@ -299,9 +302,11 @@ export const Upload = () => {
                       >
                         {file.verified ? 'Verified' : 'Verify'}
                       </button>
-                      <button onClick={() => handleDelete(index)} className='text-red-500 cursor-pointer'>
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
+                      {file.verified ? (
+                      <button onClick={() => setDeleteIndex(index) || setWarning(true)}  className='text-gray-500 cursor-pointer'><TrashIcon className="h-5 w-5" /></button>
+                      ):(
+                      <button onClick={() => handleDelete(index)} className='text-red-500 cursor-pointer'><TrashIcon className="h-5 w-5" /></button>
+                    )}
                     </div>
                   </li>
                 ))}
@@ -379,6 +384,30 @@ export const Upload = () => {
             <div className='flex justify-end mt-10 gap-5'>
               <button onClick={() => setPaymentModal(false)} className='bg-gray-100 p-3 px-4 rounded-lg'>Cancel</button>
               <button onClick={handleSubmit} className='bg-primary-600 text-white px-4 p-3 rounded-lg'>{loading ? "Start paying..." : "start pay"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {warning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 w-full shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Warning</h3>
+            <p className="text-gray-600 mb-6">
+              Deleting verified documents will interrupt the entire verification process. Do you want to proceed?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">Cancel</button>
+              <button   onClick={() => {
+              if (deleteIndex !== null) {
+                handleDelete(deleteIndex);
+                setDeleteIndex(null); 
+                setWarning(false);
+              }
+              }}
+             className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200">
+                Delete
+              </button>
             </div>
           </div>
         </div>
