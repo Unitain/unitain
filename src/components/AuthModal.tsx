@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
 import { useAuthStore } from '../lib/store';
 import { useNavigate } from 'react-router-dom';
-import { log } from 'util';
 
 interface AuthModalProps {
   isOpen: boolean;
