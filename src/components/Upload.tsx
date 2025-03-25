@@ -12,6 +12,28 @@ export const Upload = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    const fetchSubmission = async(userData) =>{
+      const { data, error } = await supabase
+      .from('submission')
+      .select('id, images')
+      .eq('user_id', userData?.id)
+
+      
+      if (data.length > 0) {
+        const latestSubmission = data.at(-1); 
+        console.log("latestSubmission", latestSubmission?.images);
+        
+        setImages(latestSubmission.images);
+        setVerifiedFiles(latestSubmission.images.map(img => img.verified));
+        localStorage.setItem("savedImages", JSON.stringify(latestSubmission.images));
+      }
+
+      console.log("🚀 data:", data)
+      if(error){
+        console.log("error", error); 
+      }
+    } 
+
     const userData = JSON.parse(localStorage.getItem("userData") || 'null')
     setUser(userData)
     
@@ -20,6 +42,8 @@ export const Upload = () => {
     if(savedImages){
     setImages(savedImages)
     setVerifiedFiles(savedImages.map(img => img.verified)); 
+    }else{
+      fetchSubmission(userData)
     }
   }, [])
 
@@ -43,35 +67,78 @@ export const Upload = () => {
   }
 
   const handleDelete = async (index: number) => {
-    const imageToDelete = images[index]
+    if (!user?.id || !images[index]) return;
+  
+    let { data: submission, error: fetchError } = await supabase
+      .from('submission')
+      .select('id, images')
+      .eq('user_id', user?.id)
+      .maybeSingle();
+  
+      console.log("submission", submission?.images);
+      
+    if (fetchError) {
+      console.error("Error fetching submission:", fetchError);
+      return;
+    }
+  
+    if (!submission || !submission?.images || submission?.images.length === 0) {
+      console.warn("No submission or images found!");
+      return;
+    }
+    console.log("submission.images[index]", submission.images[index]);
     
-    if (imageToDelete.verified) {
-
-      const fileName = imageToDelete.url.split('/').pop()
-      if (fileName && user?.id) {
-          await supabase.storage
-        .from('vehicle.uploads')
-        .remove([`${user.id}/${fileName}`])
-      }
-      } else {
-        URL.revokeObjectURL(imageToDelete.url)
-      }
-
+    const fileToDelete = submission.images[index]?.url;
+    console.log("🚀 ~ handleDelete ~ fileToDelete:", fileToDelete)
+    
+    if (!fileToDelete) {
+      console.warn("File URL not found in submission!");
+      return;
+    }
+    const fileName = fileToDelete.split('/').pop(); 
+    console.log("🚀 ~ handleDelete ~ fileName:", fileName)
+  
+    const { error: deleteError } = await supabase.storage
+      .from('vehicle.uploads')
+      .remove([`${user.id}/${fileName}`]);
+  
+    if (deleteError) {
+      console.error("Error deleting file from storage:", deleteError);
+      return;
+    }
+  
+    console.log("✅ File deleted from storage successfully!");
+    let updatedImages = submission.images.filter(img => img.url !== fileToDelete);
+    console.log("🚀 ~ handleDelete ~ updatedImages:", updatedImages)
+  
+    const { error: updateError } = await supabase
+      .from('submission')
+      .update({ images: updatedImages })
+      .eq('id', submission.id);
+  
+    if (updateError) {
+      console.error("Error updating submission:", updateError);
+    } else {
       const updatedImages = images.filter((_, i) => i !== index)
       const updatedVerifiedFiles = updatedImages.map(img => img.verified);
+      console.log("🚀 ~ handleDelete ~ updatedVerifiedFiles:", updatedVerifiedFiles)
       setImages(updatedImages)
       setVerifiedFiles(updatedVerifiedFiles)
       localStorage.setItem('savedImages', JSON.stringify(updatedImages.filter(img => img.verified)))
-  }
+      console.log("✅ Image removed from submission successfully!");
+    }
+  };
 
   const sanitizeFileName = (name: string) => {
     return name.replace(/[^a-zA-Z0-9._-]/g, "_");
   };
-
   
   const handleVerify = async (index: number) => {
+    console.log("function chal raha hai");
+    
     try {
       const imageToVerify = images[index];
+      console.log("🚀 ~imageToVerify :", imageToVerify)
   
       if (imageToVerify.verified) {
         alert("This image is already verified");
@@ -96,7 +163,7 @@ export const Upload = () => {
       const { data: urlData } = supabase.storage
         .from('vehicle.uploads')
         .getPublicUrl(fileName);
-  
+            
       const updatedImages = [...images];
       updatedImages[index] = {
         ...updatedImages[index],
@@ -112,6 +179,41 @@ export const Upload = () => {
         JSON.stringify(updatedImages.filter((img) => img.verified))
       );
 
+          let { data: submission, error: fetchError } = await supabase
+          .from('submission')
+          .select('images, id')
+          .eq('user_id', user?.id) 
+          .maybeSingle();
+    
+          if (fetchError) {
+            console.error("Error fetching submission:", fetchError);
+            return;
+          }
+          console.log("🚀 ~ handleVerify ~ updatedImages:", updatedImages)
+
+          if (submission) {
+            const { error: updateError } = await supabase
+              .from('submission')
+              .update({ images: updatedImages })
+              .eq('id', submission.id); 
+        
+            if (updateError) {
+              console.error("Error updating submission:", updateError);
+            } else {
+              console.log("Submission updated successfully!");
+            }
+          } else {
+            const { error: insertError } = await supabase
+              .from('submission')
+              .insert([{user_id: user?.id, payment_status: 'pending', submission_complete: false, images: updatedImages,},])
+              .select(); 
+    
+              if (insertError) {
+                console.error("Error inserting submission:", insertError);
+              } else {
+                console.log("Submission created successfully!");
+              }
+         }
     } catch (error) {
       console.error("Verification failed:", error);
       alert("Verification failed. Please try again.");

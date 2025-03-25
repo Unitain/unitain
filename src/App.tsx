@@ -44,9 +44,10 @@ function getUserCookie() {
 
 
     console.log("✅ Session cleared: Cookies & LocalStorage removed");
-    // window.location.href = "http://localhost:5173/?returnTo=login"
-    window.location.href = "https://unitain.net/?returnTo=login"
+    window.location.href = "http://localhost:5173/?returnTo=login"
+    // window.location.href = "https://unitain.net/?returnTo=login"
     localStorage.removeItem('userData')
+    localStorage.removeItem('savedImages')
   };
 
   return (
