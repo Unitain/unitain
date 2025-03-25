@@ -12,8 +12,6 @@ export function DashboardChatGPT() {
   const { user} = useAuthStore();
 
   useEffect(() => {
-    console.log(user?.id);
-    
     if(!user?.id) return;
     
     const fetchSubmission = async () => {
