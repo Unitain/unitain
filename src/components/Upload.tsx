@@ -62,6 +62,11 @@ export const Upload = () => {
           localStorage.setItem('savedImages', JSON.stringify(updatedImages.filter(img => img.verified)))
   }
 
+  const sanitizeFileName = (name: string) => {
+    return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  };
+
+  
   const handleVerify = async (index: number) => {
     try {
       const imageToVerify = images[index];
@@ -75,8 +80,8 @@ export const Upload = () => {
         alert("Missing file data or user information");
         return;
       }
-  
-      const fileName = `${user.id}/${Date.now()}_${imageToVerify.name}`;
+      const safeFileName = sanitizeFileName(imageToVerify.name); 
+      const fileName = `${user.id}/${Date.now()}_${safeFileName}`;
       const { error: uploadError } = await supabase.storage
         .from('vehicle.uploads')
         .upload(fileName, imageToVerify.file, {
