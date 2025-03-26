@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UploadIcon, CarIcon, Check, EyeIcon, DownloadIcon, UserIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon } from "lucide-react"
+import { UploadIcon, CarIcon, Check, EyeIcon, DownloadIcon, UserIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon, LogOut } from "lucide-react"
 import { supabase } from '../lib/supabase'
 import axios from "axios"
 
@@ -15,42 +15,6 @@ export const Upload = () => {
   const [paymentStatus, setPaymentStatus] = useState(null)
   const [isPaid, setIsPaid] = useState(false)
   console.log("🚀 ~ Upload ~ isPaid:", isPaid)
-
-  const fetchPaymentStatus = async() => {
-    console.log(user?.id);
-    
-    if (!user?.id) {
-      console.error("User ID is undefined or null before making the query");
-      return;
-    }
-
-    const { data, error } = await supabase
-    .from('users')
-    .select('payment_status')
-    .eq('id', user.id)
-    .single();
-
-    
-    if(error){
-      console.log("getting error", error);
-    }else{
-      setPaymentStatus(data?.payment_status)
-      localStorage.setItem('paymentStatus', data?.payment_status)
-    }
-
-  }
-
-  useEffect(()=>{
-    console.log('fetching paymentStatus', paymentStatus);
-    
-    const savedPaymentStatus = localStorage.getItem('paymentStatus')    
-    if(savedPaymentStatus){
-    console.log("payment status found in localstorage");  
-    setPaymentStatus(savedPaymentStatus)
-    }else{
-       fetchPaymentStatus()
-    }
-  }, [])
 
   useEffect(() => {
     const fetchSubmission = async(userData) =>{
@@ -87,6 +51,42 @@ export const Upload = () => {
       fetchSubmission(userData)
     }
   }, [])
+  
+  const fetchPaymentStatus = async() => {
+  try{
+    console.log(user?.id);
+
+    const { data, error } = await supabase
+    .from('users')
+    .select('payment_status')
+    .eq('id', user?.id)
+    .single();
+
+    if (error) throw error;
+
+    if (data) {
+      setPaymentStatus(data.payment_status);
+      localStorage.setItem('paymentStatus', data.payment_status);
+      
+      if (data.payment_status === "approved") {
+        setPaymentModal(false);
+      }
+  }
+  }catch(error){
+    console.log("error", error);
+  }
+}
+  useEffect(()=>{
+    console.log('fetching paymentStatus', paymentStatus);
+    
+    const savedPaymentStatus = localStorage.getItem('paymentStatus')    
+    if(savedPaymentStatus){
+    console.log("payment status found in localstorage");  
+    setPaymentStatus(savedPaymentStatus)
+    }else{
+       fetchPaymentStatus()
+    }
+  }, [paymentStatus, user])
 
   const viewImage = (url: string) => {
     setSelectedImage(url)
@@ -411,9 +411,16 @@ export const Upload = () => {
             onClick={() => {
               if (verifiedFiles.filter(Boolean).length >= 4) {
                 if (paymentStatus === "approved") {
+                  console.log("if");
                   setIsPaid(true);
                 } else {
+                  console.log("else",  localStorage.getItem("paymentStatus") === "approved");
+                  if( localStorage.getItem("paymentStatus") === "approved"){
+                  setIsPaid(true);
+                  setPaymentModal(false);
+                }else{
                   setPaymentModal(true);
+                  }
                 }
               }
             }}
@@ -421,7 +428,7 @@ export const Upload = () => {
               ${verifiedFiles.filter(Boolean).length >= 4 
                 ? "bg-green-600 text-white cursor-pointer hover:bg-green-700 focus:ring-green-500" 
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-            disabled={verifiedFiles.filter(Boolean).length < 4}
+            // disabled={verifiedFiles.filter(Boolean).length < 4}
           >
             {paymentStatus === "approved" ? "Payment Completed" : "Start Process"}
           </button>
@@ -479,7 +486,7 @@ export const Upload = () => {
         </div>
       )}
       
-      {isPaid && (
+      {isPaid &&  (
        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
        <div className="relative w-full max-w-md overflow-hidden bg-white rounded-2xl shadow-2xl">
          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
