@@ -48,6 +48,7 @@ function getUserCookie() {
     // window.location.href = "https://unitain.net/?returnTo=login"
     localStorage.removeItem('userData')
     localStorage.removeItem('savedImages')
+    localStorage.removeItem('paymentStatus')
   };
 
   return (

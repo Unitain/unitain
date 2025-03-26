@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UploadIcon, CarIcon, EyeIcon, DownloadIcon, UserIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon } from "lucide-react"
+import { UploadIcon, CarIcon, Check, EyeIcon, DownloadIcon, UserIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon } from "lucide-react"
 import { supabase } from '../lib/supabase'
 import axios from "axios"
 
@@ -12,7 +12,45 @@ export const Upload = () => {
   const [loading, setLoading] = useState(false)
   const [warning, setWarning] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState(null)
+  const [isPaid, setIsPaid] = useState(false)
+  console.log("🚀 ~ Upload ~ isPaid:", isPaid)
 
+  const fetchPaymentStatus = async() => {
+    console.log(user?.id);
+    
+    if (!user?.id) {
+      console.error("User ID is undefined or null before making the query");
+      return;
+    }
+
+    const { data, error } = await supabase
+    .from('users')
+    .select('payment_status')
+    .eq('id', user.id)
+    .single();
+
+    
+    if(error){
+      console.log("getting error", error);
+    }else{
+      setPaymentStatus(data?.payment_status)
+      localStorage.setItem('paymentStatus', data?.payment_status)
+    }
+
+  }
+
+  useEffect(()=>{
+    console.log('fetching paymentStatus', paymentStatus);
+    
+    const savedPaymentStatus = localStorage.getItem('paymentStatus')    
+    if(savedPaymentStatus){
+    console.log("payment status found in localstorage");  
+    setPaymentStatus(savedPaymentStatus)
+    }else{
+       fetchPaymentStatus()
+    }
+  }, [])
 
   useEffect(() => {
     const fetchSubmission = async(userData) =>{
@@ -240,7 +278,6 @@ export const Upload = () => {
     axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id })
     .then(res => {
       window.location.href = res.data;
-      localStorage.setItem('payment_success', 'true');
       setLoading(false)
     })
     .catch(error => {
@@ -349,15 +386,44 @@ export const Upload = () => {
             ):(
               <div className="text-center text-sm text-gray-500 mb-4">Start by uploading and verifying your first document</div>
             )}
-          <button
-            onClick={verifiedFiles.filter(Boolean).length >= 4 ? () => setPaymentModal(true) : undefined}
+          {/* <button
+            onClick={() => {
+              if (paymentStatus !== "approved" && verifiedFiles.filter(Boolean).length >= 4) {
+                console.log("if", paymentStatus);
+                setPaymentModal(true);
+              }else{
+                console.log("okay");
+                setIsPaid(true)
+                setPaymentModal(false);
+              }
+            }}
             className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 
               ${verifiedFiles.filter(Boolean).length >= 4 
                 ? "bg-green-600 text-white cursor-pointer hover:bg-green-700 focus:ring-green-500" 
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-                disabled={verifiedFiles.filter(Boolean).length < 4}
+                // disabled={verifiedFiles.filter(Boolean).length < 4}
+                // disabled={verifiedFiles.filter(Boolean).length < 4 || paymentStatus === "approved"}
               >
               Start Process
+          </button> */}
+
+          <button
+            onClick={() => {
+              if (verifiedFiles.filter(Boolean).length >= 4) {
+                if (paymentStatus === "approved") {
+                  setIsPaid(true);
+                } else {
+                  setPaymentModal(true);
+                }
+              }
+            }}
+            className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 
+              ${verifiedFiles.filter(Boolean).length >= 4 
+                ? "bg-green-600 text-white cursor-pointer hover:bg-green-700 focus:ring-green-500" 
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+            disabled={verifiedFiles.filter(Boolean).length < 4}
+          >
+            {paymentStatus === "approved" ? "Payment Completed" : "Start Process"}
           </button>
         </div>
       </div>
@@ -411,6 +477,22 @@ export const Upload = () => {
             </div>
           </div>
         </div>
+      )}
+      
+      {isPaid && (
+       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+       <div className="relative w-full max-w-md overflow-hidden bg-white rounded-2xl shadow-2xl">
+         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+         <div className="flex flex-col items-center px-8 pt-10 pb-8 text-center">
+           <div className="flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-lg shadow-green-200">
+             <Check className="w-10 h-10 text-white" strokeWidth={3} />
+           </div>
+           <h3 className="mb-4 text-2xl font-bold text-gray-900">You've already made a payment</h3>
+           <p className="text-gray-600 mb-6">Your payment is confirmed. No further action is needed.</p>
+           <button onClick={() => {setIsPaid(false)}}className="px-8 py-3 text-white text-lg font-medium bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"> Close </button>
+          </div>
+        </div>
+      </div>
       )}
   </div>
   )

@@ -17,12 +17,29 @@ export function DashboardChatGPT() {
   const [paymentDetail, setPaymentDetail] = useState(null)
   const navigate = useNavigate()
 
+  const updatePaymentSatatus = async (status, userId, session) =>{
+    console.log("status", status);
+    
+    const { error } = await supabase
+    .from('users')
+    .update({ payment_status:  status, payment_id: session })
+    .eq('id', userId)
+
+    if(error){
+      alert("An error occur while updating payment status")
+      console.error("error occur when updating payment status");
+    }else{
+      localStorage.setItem('paymentStatus', status)
+    }
+  }
+
   useEffect(() => {
     const params = Object.fromEntries(searchParams.entries());
       
     if (params.session && params.userId && params.status) {
       setPaymentDetail(params)
       setShowModal(true);
+      updatePaymentSatatus(params?.status, params.userId, params.session)
     }
   }, [searchParams]);
   

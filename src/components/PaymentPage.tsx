@@ -33,7 +33,6 @@ export function PaymentPage({ onBack }: PaymentPageProps) {
     axios.post('https://unitain-server.vercel.app/api/payment', { user_id: user?.id, successUrl: url })
     .then(res => {
       window.location.href = res.data;
-      localStorage.setItem('payment_success', 'true');
       toast.success(t('payment.success'));
       setLoading(false)
     })
