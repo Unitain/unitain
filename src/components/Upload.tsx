@@ -313,7 +313,7 @@ export const Upload = () => {
           </div>
         </div>
 
-          <div className='overflow-auto max-h-[496px] text-center py-6 overscroll-contain p-6'>
+          <div className="flex text-white max-h-[496px] overflow-y-auto no-scrollbar scrollbar-none">
             {images.length === 0 ? (
               <div>
                 <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-file-text mx-auto h-12 w-12 text-gray-400'><path d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'></path><path d='M14 2v4a2 2 0 0 0 2 2h4'></path><path d='M10 9H8'></path><path d='M16 13H8'></path><path d='M16 17H8'></path></svg>
@@ -321,15 +321,16 @@ export const Upload = () => {
                 <p className='mt-1 text-sm text-gray-500'>Upload files to get started</p>
               </div>
             ) : (
-              <ul className='space-y-4'>
+              <ul className='space-y-4 w-full'>
                 {images.length > 0 && images.map((file, index) => (
-                  <li key={file.id} className='flex items-center justify-between px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overflow-scroll'>
-                    <div className='flex gap-4 items-center'>
-                      <img  src={file.url} alt="uploaded" className="w-16 h-16 object-cover rounded-lg" />
-                      <span className='text-sm text-left text-gray-800'>{file.name}</span>
-                    </div>                     
-                    <div className='flex items-center gap-5 text-sm text-gray-500'>
-                      <p>{new Date().toLocaleDateString()}</p>
+                  <li key={file.id} className='flex relative items-center justify-between no-scrollbar scrollbar-none no-scrollbar px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overscroll-contain'>
+                    <div className='flex md:w-auto gap-4 items-center mt-4'>
+                      <img  src={file.url} alt="uploaded" className="md:w-16 md:h-16 w-11 h-11 object-cover rounded-lg" />
+                      <span className='md:text-sm text-xs text-left text-gray-800'>{file.name}</span>
+                    </div>
+                  <div className="flex gap-4 flex-col items-end">
+                    <div className='flex items-center gap-2 text-sm text-gray-500'>
+                      <p className='md:block hidden'>{new Date().toLocaleDateString()}</p>
                       <button onClick={() => viewImage(file.url)}><EyeIcon className="h-5 w-5" /></button>
                       <a href={file.url} download><DownloadIcon className="h-5 w-5" /></a>
                       <button 
@@ -345,6 +346,10 @@ export const Upload = () => {
                       <button onClick={() => handleDelete(index)} className='text-red-500 cursor-pointer'><TrashIcon className="h-5 w-5" /></button>
                     )}
                     </div>
+                    <div className='text-gray-600 absolute bottom-1 md:hidden'>
+                      <p className='text-xs'>{new Date().toLocaleDateString()}</p>
+                    </div>
+                    </div>                     
                   </li>
                 ))}
               </ul>
