@@ -14,6 +14,7 @@ export const Upload = () => {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [paymentStatus, setPaymentStatus] = useState(null)
   const [isPaid, setIsPaid] = useState(false)
+  const [dragActive, setDragActive] = useState(false);
   console.log("🚀 ~ Upload ~ isPaid:", isPaid)
 
   useEffect(() => {
@@ -285,7 +286,32 @@ export const Upload = () => {
       console.error('Payment success handler error:', error);
     })
   }
-
+  
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+  
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const newImages = Array.from(e.dataTransfer.files).map(file => ({
+        id: `temp-${Date.now()}-${file.name}`,
+        url: URL.createObjectURL(file),
+        name: file.name,
+        verified: false,
+        file: file
+      }));
+      setImages(prev => [...prev, ...newImages]);
+    }
+  };
 
   const verifiedCount = images.filter(img => img.verified).length
   return (
@@ -293,7 +319,9 @@ export const Upload = () => {
         <div className='lg:col-span-8 space-y-6 sm:space-y-8'>
           <div className='bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up'>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Documents</h2>
-          <label className="border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out block">
+          {/* <label className="border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out block"> */}
+          <label className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out block ${dragActive ? "border-primary-500 bg-primary-50" : "border-gray-300" }`}
+           onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
             <UploadIcon  className={`mx-auto h-10 sm:h-12 w-10 sm:w-12 transition-colors duration-300 text-primary-500`} />
             <p className="mt-4 text-sm sm:text-base text-gray-600">
                   <span className="hidden sm:inline">Drag & drop files here, or </span>
