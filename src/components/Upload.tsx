@@ -475,8 +475,8 @@ export const Upload = () => {
               Deleting verified documents will interrupt the entire verification process. Do you want to proceed?
             </p>
             <div className="flex justify-end space-x-3">
-              <button className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">Cancel</button>
-              <button   onClick={() => {
+              <button onClick={()=> setWarning(false)} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">Cancel</button>
+              <button  onClick={() => {
               if (deleteIndex !== null) {
                 handleDelete(deleteIndex);
                 setDeleteIndex(null); 
