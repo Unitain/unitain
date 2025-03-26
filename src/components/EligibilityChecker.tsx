@@ -193,9 +193,10 @@ function EligibilityChecker({ onShowPayment, onShowContact, userCookie }: Eligib
         if (!user) {
           console.log("user", user);
           
-          setShowAuthModal(true); // Show login modal if user is not logged in
+          setShowAuthModal(true);
         }else{
-          toast.error('Based on your responses, you may not be eligible for tax exemption.');
+          // toast.error('Based on your responses, you may not be eligible for tax exemption.');
+          setShowEligibilityModal(true);
           const { error } = await supabase
           .from('users')
           .update({ is_eligible: false })
@@ -300,7 +301,7 @@ function EligibilityChecker({ onShowPayment, onShowContact, userCookie }: Eligib
           <button
             key={option}
             onClick={() => handleAnswer(option)}
-            className="w-full p-4 text-left border rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            className="w-full p-4 text-left border cursor-pointer rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             type="button"
           >
             {t(`eligibility.options.${option}`)}
@@ -343,10 +344,20 @@ function EligibilityChecker({ onShowPayment, onShowContact, userCookie }: Eligib
       }}
     />
 
-    <EligibilityModal 
+    {/* <EligibilityModal 
     isOpen={showEligibilityModal}
     onClose={() => setShowEligibilityModal(false)}
-    />
+    /> */}
+
+<EligibilityModal 
+  isOpen={showEligibilityModal}
+  onClose={() => setShowEligibilityModal(false)}
+  message={isEligible 
+    ? "Based on your responses, you may be eligible for tax exemption!" 
+    : "Based on your responses, you may not be eligible for tax exemption. You can still log in and reach out to our support team."}
+    bgColor={isEligible ? "bg-green-50 border-green-100 text-green-800" : "bg-gray-50 text-gary-600 border-black-100"} 
+/>
+
     </div>
   );
 }

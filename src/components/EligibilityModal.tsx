@@ -9,7 +9,7 @@ interface EligibilityModalProps {
   // onNavigateToDashboard: () => void;
 }
 
-export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
+export function EligibilityModal({ isOpen, onClose, message, bgColor }: EligibilityModalProps) {
   if (!isOpen) return null;
   const navigate = useNavigate();
 
@@ -19,10 +19,6 @@ export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-900">Eligibility Assessment</h2>
           <button
-          // onClick={() => {
-          //   onClose();
-          //   navigate("/", { replace: true });
-          // }}
           onClick={() => {
             onClose();
             window.history.replaceState({}, document.title, "/");
@@ -36,10 +32,8 @@ export function EligibilityModal({ isOpen, onClose }: EligibilityModalProps) {
         </div>
         
         <div className="p-6">
-          <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-6">
-            <p className="text-green-800 font-medium">
-              Based on your responses, you may be eligible for tax exemption!
-            </p>
+          <div className={`${bgColor} border rounded-lg p-4 mb-6`}>
+            <p className="font-medium">{message}</p>
           </div>
 
           <h3 className="text-lg font-semibold mb-4">Next steps:</h3>
