@@ -156,6 +156,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                   created_at: new Date().toISOString(),
                   payment_status: 'pending',
                   is_eligible: false,
+                  ToS_checked: true
                 },
               ]);
   
