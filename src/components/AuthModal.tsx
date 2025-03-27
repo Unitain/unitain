@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
@@ -15,38 +15,42 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
+  const [isLogin, setIsLogin] = useState(true); 
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-
+  const [currentVersion, setCurrentVersion] = useState<string>('1.8.9'); 
+  const [ipAddress, setIpAddress] = useState('');
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
 
-  // function setUserCookie(userData: any) {
-  //   if (!userData) {
-  //       console.error("🚨 No userData provided, cannot set cookie.");
-  //       return;
-  //   }
-  //   console.log("🚀 Setting Cookie: ", userData);
-  //   const value = JSON.stringify(userData);
-
-  //   let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
-
-  //   document.cookie = cookieBase;
-  //   // console.log("✅ Cookie set for localhost:", document.cookie);
-
-  //   if (window.location.hostname !== "localhost") {
-  //       document.cookie = cookieBase + " Domain=.unitain.net;";
-  //       console.log("✅ Cookie set for unitain.net:", document.cookie);
-  //   }
-  // }
+  useEffect(() => {
+    async function fetchIP() {
+      try {
+        const res = await fetch('https://api64.ipify.org?format=json');
+        const data = await res.json();
+        setIpAddress(data.ip);
+      } catch (error) {
+        console.error('Error fetching IP:', error);
+      }
+    }
+    fetchIP();
+  }, []);
 
   function setUserCookie(userData: any) {
     if (!userData) {
         console.error("🚨 No userData provided, cannot set cookie.");
         return;
     }
-    console.log("🚀 Setting Cookie: ", userData);
-    const value = JSON.stringify(userData);
+    const trimmedUserData = {
+      id: userData.id,
+      email: userData.email,
+      created_at: userData.created_at,
+      payment_status: userData.payment_status,
+      is_eligible: userData.is_eligible,
+      ToS_checked: userData.ToS_checked
+  };
+
+    console.log("🚀 Setting Cookie: ", trimmedUserData);
+    const value = JSON.stringify(trimmedUserData);
 
     let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
 
@@ -106,15 +110,6 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           if(userData?.is_eligible === false){
             console.log("is_eligible false hai 🧠");
             navigate("/", { replace: true });
-              // const { error: eligibleError } = await supabase
-              // .from('users')
-              // .update({is_eligible: true })
-              // .eq('id', userData?.id)
-              // console.log("🚀 eligible Error:", eligibleError)
-              // console.log("hajra home 👀👀");
-              // if(eligibleError){
-              //   toast.error('Failed to save eligibility check:', eligibleError);
-              // }
           }else{
             window.location.href = "https://app.unitain.net"
               // window.location.href = "http://localhost:5174"
@@ -143,8 +138,6 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           password,
         });
 
-        console.log("🚀🚀data", data);
-        
         if (error) {throw error;}
 
           const { error: insertError } = await supabase
@@ -156,7 +149,14 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                   created_at: new Date().toISOString(),
                   payment_status: 'pending',
                   is_eligible: false,
-                  ToS_checked: true
+                  ToS_checked: true,
+                  tos_acceptance: {
+                  version: currentVersion, 
+                  accepted_at: new Date().toISOString(),
+                  ip_address: ipAddress,
+                  device_info: navigator.userAgent,
+                  }
+
                 },
               ]);
   
@@ -169,11 +169,11 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
             .select('*')
             .eq('id', data.user.id)
             .maybeSingle();
-    
+            
+            console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀 cookie set", userData);
             localStorage.setItem('userData', JSON.stringify(userData));
             setUser(userData);
             setUserCookie(userData);
-            console.log("🚀 🚀 🚀🚀 🚀 🚀🚀 🚀 🚀 cookie set", userData);
 
             if (fetchError) {
               console.error('Error fetching user data: ', fetchError);
@@ -206,7 +206,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     }
   };
 
-  if (!isOpen) return null; // Don't render the modal if it's not open
+  if (!isOpen) return null; 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
