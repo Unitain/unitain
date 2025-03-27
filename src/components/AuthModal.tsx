@@ -223,9 +223,10 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         </button>
 
         {/* Modal Title */}
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isLogin ? 'Log In' : 'Sign Up'}
+        <h2 className="text-2xl font-bold mb-2 text-center">
+          {isLogin ? 'Log In' : 'Secure Your Access'}
         </h2>
+        <p className='text-gray-600 p-4 mb-4 text-center'>To continue and access your personal dashboard, please sign up or log in.</p>
 
         {/* Auth Form */}
         <form onSubmit={handleAuth} className="space-y-4">

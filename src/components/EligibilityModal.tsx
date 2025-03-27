@@ -40,21 +40,18 @@ export function EligibilityModal({ isOpen, onClose, message, bgColor }: Eligibil
           <ul className="space-y-4 mb-6">
             <li className="flex items-start">
               <ArrowRight className="h-5 w-5 text-primary-600 mt-1 mr-2 flex-shrink-0" />
-              <p>Use our free interactive dashboard to prepare and upload all the needed documents.</p>
+              <p>Download our comprehensive Guide PDF with checklists for every step.</p>
             </li>
             <li className="flex items-start">
               <ArrowRight className="h-5 w-5 text-primary-600 mt-1 mr-2 flex-shrink-0" />
-              <p>Read the comprehensive Guide PDF with check lists for all your preparation tasks.</p>
+              <p>Prepare and upload your documents in our <span className='font-semibold'>free</span> interactive dashboard.</p>
             </li>
             <li className="flex items-start">
               <ArrowRight className="h-5 w-5 text-primary-600 mt-1 mr-2 flex-shrink-0" />
-              <p>Get support from our chat bot to check all your documents in detail.</p>
-            </li>
-            <li className="flex items-start">
-              <ArrowRight className="h-5 w-5 text-primary-600 mt-1 mr-2 flex-shrink-0" />
-              <p>Once everything is ready, start the process and secure your tax exemption and road registration in Portugal.</p>
+              <p>Get <span className='font-semibold'>free</span> support from our chatbot to review your documents in detail.</p>
             </li>
           </ul>
+          <p className="font-semibold mb-6">It’s all free!</p>
 
           <button
             // onClick={() => window.location.href = "http://localhost:5174"}  

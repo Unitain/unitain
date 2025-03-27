@@ -353,8 +353,8 @@ function EligibilityChecker({ onShowPayment, onShowContact, userCookie }: Eligib
   isOpen={showEligibilityModal}
   onClose={() => setShowEligibilityModal(false)}
   message={isEligible 
-    ? "Based on your responses, you may be eligible for tax exemption!" 
-    : "Based on your responses, you may not be eligible for tax exemption. You can still log in and reach out to our support team."}
+    ? "You may be eligible for a tax exemption for your vehicle!" 
+    : "You may not be eligible for tax exemption. You can still log in and reach out to our support team."}
     bgColor={isEligible ? "bg-green-50 border-green-100 text-green-800" : "bg-gray-50 text-gary-600 border-black-100"} 
 />
 
