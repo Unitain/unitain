@@ -20,8 +20,27 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<string>('1.8.9'); 
   const [ipAddress, setIpAddress] = useState('');
+  const [activeToS, setActiveTos] = useState(null)
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
+  
+  const fetchActiveTermsOfService = async () => {
+    const { data, error } = await supabase
+      .from('terms_of_service')
+      .select('*')
+      .eq('is_active', true)
+      .single();
+
+    if(error){
+      console.error("error", error);
+      return
+    }
+    setActiveTos(data)
+  };
+
+  useEffect(()=>{
+    fetchActiveTermsOfService()
+  }, [])
 
   useEffect(() => {
     if (!isOpen) return;
@@ -128,6 +147,17 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
 
+    const { data:ToSData, error:ToSError } = await supabase
+    .from('user_tos_acceptance')
+    .insert([
+      {
+      user_id: data?.user?.id,
+      tos_version_id: activeToS.id,
+      ip_address: ipAddress,
+      device_info: navigator.userAgent,
+    }
+  ]).select().single();
+  
     const { error: insertError } = await supabase.from("users").insert([
       {
         id: data?.user?.id,
@@ -136,15 +166,11 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
         payment_status: "pending",
         is_eligible: false,
         ToS_checked: true,
-        tos_acceptance: {
-          version: currentVersion,
-          accepted_at: new Date().toISOString(),
-          ip_address: ipAddress,
-          device_info: navigator.userAgent,
-        },
+        tos_acceptance: ToSData.id
       },
     ]);
 
+    if(ToSError) throw new Error("Error while insert user_tos_acceptance")
     if (insertError) throw insertError;
     if (!data) throw new Error("Error while signing up user");
 
@@ -157,7 +183,6 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
     if (fetchError) throw fetchError;
     if (!userData) throw new Error("User data not found after signup");
 
-     
     console.log("User created: ", userData);
     localStorage.setItem("userData", JSON.stringify(userData));
     setUserCookie(userData);
