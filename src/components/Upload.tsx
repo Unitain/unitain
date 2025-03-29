@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { UploadIcon, CarIcon, Check, EyeIcon, DownloadIcon, UserIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon, LogOut } from "lucide-react"
 import { supabase } from '../lib/supabase'
 import axios from "axios"
+import { log } from 'console'
 
 export const Upload = () => {
   const [images, setImages] = useState<File[]>([])
@@ -15,9 +16,45 @@ export const Upload = () => {
   const [paymentStatus, setPaymentStatus] = useState(null)
   const [isPaid, setIsPaid] = useState(false)
   const [dragActive, setDragActive] = useState(false);
-  console.log("🚀 ~ Upload ~ isPaid:", isPaid)
+  const [showReloadWarning, setShowReloadWarning] = useState(false);
 
   useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const hasUnverified = images.some(img => !img.verified);
+      if (hasUnverified) {
+        e.preventDefault();
+        e.returnValue = 'You have unverified images that will be lost if you reload. Are you sure?';
+        return e.returnValue;
+      }
+    };
+
+    const hasUnverified = images.some(img => !img.verified);
+    if (hasUnverified) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [images]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        const hasUnverified = images.some(img => !img.verified);
+        if (hasUnverified) {
+          e.preventDefault();
+          setShowReloadWarning(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [images]);
+
     const fetchSubmission = async(userData) =>{
       const { data, error } = await supabase
       .from('submission')
@@ -31,15 +68,20 @@ export const Upload = () => {
         
         setImages(latestSubmission.images);
         setVerifiedFiles(latestSubmission.images.map(img => img.verified));
+    
         localStorage.setItem("savedImages", JSON.stringify(latestSubmission.images));
+        console.log("🙌🙌 this is a latest Submission images", latestSubmission?.images);
+        
+        sessionStorage.setItem("allImages", JSON.stringify(latestSubmission.images));
       }
 
-      console.log("🚀 data:", data)
       if(error){
         console.log("error", error); 
       }
     } 
 
+  useEffect(() => {
+  console.log("not working");
     const userData = JSON.parse(localStorage.getItem("userData") || 'null')
     setUser(userData)
     
@@ -78,11 +120,8 @@ export const Upload = () => {
   }
 }
   useEffect(()=>{
-    console.log('fetching paymentStatus', paymentStatus);
-    
     const savedPaymentStatus = localStorage.getItem('paymentStatus')    
     if(savedPaymentStatus){
-    console.log("payment status found in localstorage");  
     setPaymentStatus(savedPaymentStatus)
     }else{
        fetchPaymentStatus()
@@ -103,13 +142,24 @@ export const Upload = () => {
         verified: false,
         file: file
       }))
-
+      const updatedImages = [...images, ...newImages]
       setImages(prev => [...prev, ...newImages])
+      console.log("updatedImages", updatedImages);
+      
+      sessionStorage.setItem('allImages', JSON.stringify(updatedImages))
     }
   }
 
   const handleDelete = async (index: number) => {
     if (!user?.id || !images[index]) return;
+
+    if (!images[index].verified) {
+      const updatedImages = images.filter((_, i) => i !== index);
+      setImages(updatedImages);
+      setVerifiedFiles(updatedImages.map(img => img.verified));
+      sessionStorage.setItem('allImages', JSON.stringify(updatedImages));
+      return;
+    }
   
     let { data: submission, error: fetchError } = await supabase
       .from('submission')
@@ -150,7 +200,8 @@ export const Upload = () => {
     }
   
     console.log("✅ File deleted from storage successfully!");
-    let updatedImages = submission.images.filter(img => img.url !== fileToDelete);
+    // let updatedImages = submission.images.filter(img => img.url !== fileToDelete);
+    const updatedImages = submission.images.filter((_, i) => i !== index);
     console.log("🚀 ~ handleDelete ~ updatedImages:", updatedImages)
   
     const { error: updateError } = await supabase
@@ -167,6 +218,7 @@ export const Upload = () => {
       setImages(updatedImages)
       setVerifiedFiles(updatedVerifiedFiles)
       localStorage.setItem('savedImages', JSON.stringify(updatedImages.filter(img => img.verified)))
+      sessionStorage.setItem('allImages', JSON.stringify(updatedImages));
       console.log("✅ Image removed from submission successfully!");
     }
   };
@@ -176,8 +228,6 @@ export const Upload = () => {
   };
   
   const handleVerify = async (index: number) => {
-    console.log("function chal raha hai");
-    
     try {
       const imageToVerify = images[index];
       console.log("🚀 ~imageToVerify :", imageToVerify)
@@ -220,7 +270,10 @@ export const Upload = () => {
         'savedImages',
         JSON.stringify(updatedImages.filter((img) => img.verified))
       );
-
+      const sessionImages = JSON.parse(sessionStorage.getItem('allImages') || []);
+      const updatedSessionImages = sessionImages.filter((_, i) => i !== index);
+      sessionStorage.setItem('allImages', JSON.stringify(updatedSessionImages));
+  
           let { data: submission, error: fetchError } = await supabase
           .from('submission')
           .select('images, id')
@@ -419,27 +472,6 @@ export const Upload = () => {
             ):(
               <div className="text-center text-sm text-gray-500 mb-4">Start by uploading and verifying your first document</div>
             )}
-          {/* <button
-            onClick={() => {
-              if (paymentStatus !== "approved" && verifiedFiles.filter(Boolean).length >= 4) {
-                console.log("if", paymentStatus);
-                setPaymentModal(true);
-              }else{
-                console.log("okay");
-                setIsPaid(true)
-                setPaymentModal(false);
-              }
-            }}
-            className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 
-              ${verifiedFiles.filter(Boolean).length >= 4 
-                ? "bg-green-600 text-white cursor-pointer hover:bg-green-700 focus:ring-green-500" 
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-                // disabled={verifiedFiles.filter(Boolean).length < 4}
-                // disabled={verifiedFiles.filter(Boolean).length < 4 || paymentStatus === "approved"}
-              >
-              Start Process
-          </button> */}
-
           <button
             onClick={() => {
               if (verifiedFiles.filter(Boolean).length >= 4) {
@@ -534,6 +566,34 @@ export const Upload = () => {
         </div>
       </div>
       )}
+
+    {showReloadWarning && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-sm mx-4 w-full shadow-xl">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Unsaved Changes</h3>
+          <p className="text-gray-600 mb-6">
+            You have unverified images that will be lost if you reload. 
+            Are you sure you want to continue?
+          </p>
+          <div className="flex justify-end space-x-3">
+            <button 
+              onClick={() => setShowReloadWarning(false)}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={() => {
+                setShowReloadWarning(false);
+              }}
+              className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
+            >
+              Reload Anyway
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   </div>
   )
 }
