@@ -198,8 +198,8 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
         .maybeSingle();
         
         localStorage.setItem('userData', JSON.stringify(updatedUserData));
-        window.location.href = "http://localhost:5174/"
         window.location.href = "https://app.unitain.net"
+        // window.location.href = "http://localhost:5174/"
       } catch (error) {
         console.error("Error in onSuccess callback:", error);
         throw error;
