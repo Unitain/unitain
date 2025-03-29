@@ -1,17 +1,43 @@
-import React from 'react';
 import { X, ArrowRight } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import { AuthModal } from "./AuthModal";
+import { supabase } from '../lib/supabase';
+import { useState } from 'react';
+import { useAuthStore } from "../lib/store";
+import toast from "react-hot-toast";
 
 interface EligibilityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // onNavigateToDashboard: () => void;
+  message: string;
+  bgColor: string;
+  onAuthRequired: () => void;
 }
 
-export function EligibilityModal({ isOpen, onClose, message, bgColor }: EligibilityModalProps) {
+export function EligibilityModal({ isOpen, onClose, message, bgColor, onAuthRequired }: EligibilityModalProps) {
   if (!isOpen) return null;
+  const { user } = useAuthStore();
   const navigate = useNavigate();
+  const [showAuthModal, setShowAuthModal] = useState(false)
+
+  const handleNavigation = async () => {
+    if(user) {
+      const { error } = await supabase
+      .from('users')
+      .update({ is_eligible: true })
+      .eq('id', user?.id);
+      console.log("its updating ");
+      
+    if(error){console.error("Error: while updating isEligible status", error);}
+  
+      window.location.href = "https://app.unitain.net"
+      // window.location.href = "http://localhost:5174"
+    } else {
+      toast.error("Login first to continue to the dashboard");
+      onAuthRequired();
+    }
+  }
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 text-black font-medium">
@@ -54,14 +80,18 @@ export function EligibilityModal({ isOpen, onClose, message, bgColor }: Eligibil
           <p className="font-semibold mb-6">It’s all free!</p>
 
           <button
-            // onClick={() => window.location.href = "http://localhost:5174"}  
-             onClick={() => window.location.href = "https://app.unitain.net"}  
+            onClick={handleNavigation}
             className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
           >
             Go to Dashboard
           </button>
         </div>
       </div>
+
+       <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+        />
     </div>
   );
 }

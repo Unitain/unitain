@@ -14,15 +14,10 @@ import { useAuthStore } from "./lib/store";
 import { CheckCircle, Clock, EuroIcon } from "lucide-react";
 import Success from "./Success";
 import Failed from "./Failed";
-// import { showTaxCheckModal } from "./components/TaxCheckModal";
 import {AuthModal} from "./components/AuthModal"; 
-import { supabase } from '../src/lib/supabase';
-
+import EligibilityChecker from "./components/EligibilityChecker"
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
-const EligibilityChecker = lazy(
-  () => import("./components/EligibilityChecker")
-);
 const PaymentPage = lazy(() => import("./components/PaymentPage"));
 const Footer = lazy(() => import("./components/Footer"));
 const ContactPage = lazy(() => import("./components/ContactPage"));
@@ -72,15 +67,7 @@ interface Feature {
   description: string;
 }
 
-interface MainContentProps {
-  handleShowContact: () => void;
-  handleShowPayment: () => void;
-}
-
-function MainContent({
-  handleShowContact,
-  handleShowPayment,
-}: MainContentProps) {
+function MainContent({ handleShowContact }: { handleShowContact: () => void }) {
   const [isChecking, setIsChecking] = useState(false);
   const { t } = useTranslation();
   const { user } = useAuthStore();
@@ -96,21 +83,21 @@ function MainContent({
   //   }
   // }
   
-  function getUserCookie() {
-    const cookies = document.cookie.split("; ");
-    for (let cookie of cookies) {
-      let [name, value] = cookie.split("=");
-      if (name === "userData") {
-        try {
-          return JSON.parse(decodeURIComponent(value));
-        } catch (error) {
-          console.error("❌ Error parsing userData cookie:", error);
-          return null;
-        }
-      }
-    }
-    return null; 
-  }
+  // function getUserCookie() {
+  //   const cookies = document.cookie.split("; ");
+  //   for (let cookie of cookies) {
+  //     let [name, value] = cookie.split("=");
+  //     if (name === "userData") {
+  //       try {
+  //         return JSON.parse(decodeURIComponent(value));
+  //       } catch (error) {
+  //         console.error("❌ Error parsing userData cookie:", error);
+  //         return null;
+  //       }
+  //     }
+  //   }
+  //   return null; 
+  // }
 
 
   // useEffect(()=>{
@@ -140,7 +127,9 @@ function MainContent({
   // }, []);
 
   useEffect(()=>{
-    console.log("user", user, "user?.is_eligible", user?.is_eligible);
+    console.log(user);
+    
+    console.log("user?.is_eligible", user?.is_eligible);
     
     if(user && user?.is_eligible){
       setIsChecking(user?.is_eligible)
@@ -251,8 +240,8 @@ function MainContent({
              <div className="flex justify-center items-center flex-col">
              <h2 className="text-3xl font-bold text-center mb-12">You can now access dashboard</h2>
              <button
-               onClick={() => window.location.href = "https://app.unitain.net"}  
-              //  onClick={() => window.location.href = "http://localhost:5174"}  
+              //  onClick={() => window.location.href = "https://app.unitain.net"}  
+               onClick={() => window.location.href = "http://localhost:5174"}  
                className="text-white bg-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-500 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                Go to dashboard
              </button>
@@ -262,15 +251,7 @@ function MainContent({
             <h2 className="text-3xl font-bold text-center mb-12">
               Checking eligibility...
             </h2>
-              <ErrorBoundary>
-              <Suspense fallback={<LoadingSpinner />}>
-                <EligibilityChecker
-                  onShowPayment={handleShowPayment}
-                  onShowContact={handleShowContact}
-                  userCookie={getUserCookie}
-                />
-              </Suspense>
-            </ErrorBoundary>
+              <EligibilityChecker/>
           </div>
           )}
         </div>

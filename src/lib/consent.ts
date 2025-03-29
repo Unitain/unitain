@@ -11,21 +11,21 @@ const CONSENT_VERSION = '1.0.0';
 
 export const getConsentSettings = (): ConsentSettings | null => {
   try {
-    console.debug('Consent: Getting stored settings');
+    // console.debug('Consent: Getting stored settings');
     const stored = localStorage.getItem(CONSENT_KEY);
     if (!stored) {
-      console.debug('Consent: No stored settings found');
+      // console.debug('Consent: No stored settings found');
       return null;
     }
     
     const settings = JSON.parse(stored);
     if (!settings.version || settings.version !== CONSENT_VERSION) {
-      console.debug('Consent: Invalid version, clearing settings');
+      // console.debug('Consent: Invalid version, clearing settings');
       localStorage.removeItem(CONSENT_KEY);
       return null;
     }
     
-    console.debug('Consent: Retrieved valid settings', settings);
+    // console.debug('Consent: Retrieved valid settings', settings);
     return settings;
   } catch (error) {
     console.error('Error reading consent settings:', error);
@@ -69,7 +69,7 @@ export const saveConsentSettings = (settings: Partial<ConsentSettings>) => {
 };
 
 export const initializeConsent = () => {
-  console.debug('Consent: Initializing');
+  // console.debug('Consent: Initializing');
   // Set default consent state to denied
   if (typeof window.gtag === 'function') {
     window.gtag('consent', 'default', {
