@@ -13,8 +13,6 @@ interface HeaderProps {
 }
 
 export function Header({ user, onLogout }: HeaderProps) {
-console.log("🚀 ~ Header ~ user:", user)
-
   return (
   <>
     <header className="bg-white/80 backdrop-blur-glass border-b border-gray-200/50 sticky top-0 z-20">

@@ -1,185 +1,128 @@
 {
-  "nav": {
-    "signin": "Sign In",
-    "signout": "Sign Out",
-    "signingout": "Signing Out..."
+  "guide": {
+    "title": "Download Guide",
+    "description": "Get our comprehensive guide on vehicle tax exemption procedures and requirements",
+    "downloadButton": "Download Guide",
+    "downloadSuccess": "Guide downloaded successfully!",
+    "updateError": "Failed to update guide status. Please try again.",
+    "downloadError": "Failed to download guide. Please try again."
   },
-  "common": {
-    "back": "Back",
-    "loading": "Loading...",
-    "error": "Error",
-    "retry": "Try Again",
-    "success": "Success",
-    "next": "Next",
-    "previous": "Previous",
-    "submit": "Submit",
-    "cancel": "Cancel",
-    "close": "Close"
+  "nextSteps": {
+  "heading": "Next Steps",
+  "completed": "completed",
+  "modalTitle": "Document Checklist",
+  "viewFullChecklist": "View Full Checklist",
+  "vehicleRegistration": {
+    "title": "Vehicle Registration",
+    "description": "Upload your current vehicle registration document"
   },
-  "hero": {
-    "title": "Avoid High Import Taxes – See If You Qualify in Minutes!",
-    "subtitle": "Most expats pay thousands in unnecessary car import taxes. Find out if you can skip them with our quick and hassle-free tax check.",
-    "cta": "Start Your Tax Check Now"
+  "ownership": {
+    "title": "Proof of Ownership",
+    "description": "Provide documentation showing you own the vehicle"
   },
-  "benefits": {
-    "tax": {
-      "title": "✅ Save Thousands on Import Taxes",
-      "description": "Find out in minutes if you don't have to pay Portugal's expensive car import tax."
-    },
-    "paperwork": {
-      "title": "📄 No Paperwork, No Headaches",
-      "description": "We take care of all the forms and legal steps, so you don't have to deal with Portuguese bureaucracy."
-    },
-    "process": {
-      "title": "⚡ Fast & Simple Process",
-      "description": "Answer a few questions now—if you qualify, we handle everything to get your car legally imported."
-    }
+  "tax": {
+    "title": "Tax Documents",
+    "description": "Submit relevant tax documentation from your home country"
   },
-  "eligibility": {
-    "title": "Check Your Eligibility",
-    "progress": "Step {{current}} of {{total}}",
-    "categories": {
-      "residency_status": "Residency Status",
-      "vehicle_ownership": "Vehicle Ownership",
-      "vehicle_registration": "Vehicle Registration",
-      "tax_status": "Tax Status",
-      "additional_information": "Additional Information"
-    },
-    "questions": {
-      "permanentMove": "Are you planning to permanently move to Portugal?",
-      "deregistered": "Have you deregistered from your home country?",
-      "previousResidence": "Have you lived outside Portugal for at least 12 months?",
-      "ownershipDuration": "Have you owned the vehicle for at least 6 months?",
-      "personalGoods": "Are you importing the vehicle as part of your personal belongings?",
-      "registeredName": "Is the vehicle registered in your name?",
-      "euRegistration": "Is the vehicle registered in the EU?",
-      "documentation": "Do you have all required vehicle documentation?",
-      "vatPaid": "Has VAT been paid on the vehicle within the EU?",
-      "proofDocuments": "Can you prove the purchase and tax payment?",
-      "importType": "How do you want to import the vehicle?",
-      "additionalVehicles": "Have you imported other vehicles in the last 12 months?"
-    },
-    "options": {
-      "yes": "Yes",
-      "no": "No",
-      "individual": "Individual",
-      "company": "Company"
-    },
-    "buttons": {
-      "previous": "Previous",
-      "next": "Next",
-      "reviewAnswers": "Review Answers",
-      "buyNow": "Continue to Payment",
-      "contactUs": "Contact Support"
-    },
-    "results": {
-      "title": "Eligibility Assessment",
-      "eligible": "Based on your responses, you may be eligible for tax exemption!",
-      "nextSteps": "Next steps",
-      "steps": {
-        "documents": "Prepare all required documentation",
-        "consultation": "Schedule a consultation with our experts",
-        "application": "Begin your application process"
-      },
-      "notEligible": "Based on your responses, you may not be eligible for tax exemption.",
-      "consultRecommended": "We recommend consulting with our experts to explore your options.",
-      "needsMoreInfo": "We need more information to fully assess your eligibility."
-    },
-    "errors": {
-      "loadingFailed": "Failed to load eligibility check",
-      "saveFailed": "Failed to save eligibility check",
-      "answerFailed": "Failed to save answer",
-      "noAnswers": "Please answer all questions"
-    }
+  "identity": {
+    "title": "Identity Verification",
+    "description": "Upload your passport or national ID card"
   },
-  "process": {
-    "title": "How It Works",
-    "step1": {
-      "title": "Check Eligibility",
-      "description": "Answer a few simple questions about your situation"
-    },
-    "step2": {
-      "title": "Submit Documents",
-      "description": "Upload required documentation through our secure platform"
-    },
-    "step3": {
-      "title": "We Process",
-      "description": "Our experts handle all communication with authorities"
-    },
-    "step4": {
-      "title": "Ready to Drive",
-      "description": "Get your vehicle legally registered and ready for the road"
-    }
+  "residency": {
+    "title": "Residency Proof",
+    "description": "Provide proof of your Portuguese residency"
   },
-  "contact": {
-    "title": "Contact Us",
-    "subtitle": "Get Expert Help with Your Tax Exemption",
-    "form": {
-      "name": "Name",
-      "namePlaceholder": "Enter your full name",
-      "email": "Email",
-      "emailPlaceholder": "Enter your email address",
-      "message": "Message",
-      "messagePlaceholder": "How can we help you?",
-      "send": "Send Message",
-      "sending": "Sending...",
-      "usingAccountEmail": "Using email from your account"
-    },
-    "features": {
-      "consultation": {
-        "title": "Free Initial Consultation",
-        "description": "Get expert advice on your specific situation"
-      },
-      "response": {
-        "title": "Quick Response Time",
-        "description": "We typically respond within 24 hours"
-      },
-      "security": {
-        "title": "Secure Communication",
-        "description": "Your information is protected"
-      }
-    }
+  "inspection": {
+    "title": "Technical Inspection",
+    "description": "Upload vehicle technical inspection report"
+  },
+  "insurance": {
+    "title": "Insurance Documents",
+    "description": "Provide valid vehicle insurance documentation"
+  },
+  "customs": {
+    "title": "Customs Declaration",
+    "description": "Complete and upload customs declaration forms"
   },
   "payment": {
-    "title": "Complete Your Tax Check",
-    "subtitle": "Professional Tax Exemption Assessment",
-    "amount": "€99",
-    "oneTime": "One-time payment",
-    "noHiddenFees": "No hidden fees or recurring charges",
-    "signInRequired": "Please sign in to continue",
-    "signInMessage": "You need to be signed in to complete your payment",
-    "signIn": "Sign In Now",
-    "loading": "Loading payment system...",
-    "success": "Payment successful!",
-    "error": "Payment failed. Please try again.",
-    "cancelled": "Payment was cancelled",
-    "back": "Back to Eligibility Check",
-    "features": {
-      "secure": "Secure Payment",
-      "support": "24/7 Support",
-      "encrypted": "Encrypted Data",
-      "verified": "Verified Process"
-    },
-    "legal": "By proceeding, you agree to our",
-    "termsLink": "Terms of Service",
-    "andText": "and",
-    "privacyLink": "Privacy Policy"
+    "title": "Payment Confirmation",
+    "description": "Submit proof of payment for applicable fees"
   },
-  "cookies": {
-    "title": "Cookie Settings",
-    "description": "We use cookies to enhance your browsing experience and analyze our traffic. Please choose your preferences below.",
-    "accept": "Accept All",
-    "decline": "Decline Optional",
-    "privacyLink": "Privacy Policy",
-    "learnMore": "Learn More"
-  },
-  "testimonials": {
-    "title": "What Our Clients Say"
-  },
-  "cta": {
-    "title": "Ready to Check Your Tax Exemption Eligibility?",
-    "subtitle": "Start your application today and let our experts handle the rest.",
-    "contact": "Contact Us",
-    "privacy": "Privacy Policy"
+  "review": {
+    "title": "Final Review",
+    "description": "Review all submitted documents before processing"
   }
+},
+"logoutWarning": {
+  "title": "Unsaved Changes",
+  "description": "You have unverified images that will be lost if you logout. Are you sure you want to continue?",
+  "cancel": "Cancel",
+  "logoutAnyway": "Logout Anyway"
+},
+"chat": {
+  "title": "Chat Support",
+  "placeholder": "Type your message...",
+  "welcome1": "Hello! How can we help you today?",
+  "welcome2": "Our support team is here to assist you with any questions about vehicle tax exemption.",
+  "fileUploaded": "I see you've uploaded \"{{file}}\". Our team will review this document shortly. Is there anything specific you'd like to know about it?",
+  "fileDeleted": "I notice you've removed some files. Let me know if you need help with uploading new documents.",
+  "autoReply": "Thank you for your message. Our team will review your request and get back to you shortly."
+},
+"upload": {
+  "title": "Upload Documents",
+  "dragDrop": "Drag & drop files here, or ",
+  "tapUpload": "Tap to upload or ",
+  "browse": "browse files",
+  "supportedFormats": "Supported formats: PDF, JPEG, PNG, DOC (Max 10MB)",
+  "progressTitle": "Document Progress",
+  "verifiedLabel": "verified",
+  "allVerified": "All required documents have been verified",
+  "startHint": "Start by uploading and verifying your first document",
+  "paymentDone": "Payment Completed",
+  "startProcess": "Start Process",
+  "filesTitle": "Your Uploaded Files",
+  "filesCount": "files",
+  "noFilesTitle": "No files",
+  "noFilesSubtitle": "Upload files to get started",
+  "verify": "Verify",
+  "verified": "Verified",
+  "modalTitle": "Confirm Process",
+  "modalDescription": "Would you like to place a paid order?",
+  "startPay": "Start Pay",
+  "loadingPay": "Start paying...",
+  "warningTitle": "Warning",
+  "warningMessage": "Deleting verified documents will interrupt the entire verification process. Do you want to proceed?",
+  "alreadyPaidTitle": "You've already made a payment",
+  "alreadyPaidMessage": "Your payment is confirmed. No further action is needed.",
+  "reloadTitle": "Unsaved Changes",
+  "reloadMessage": "You have unverified images that will be lost if you reload. Are you sure you want to continue?",
+  "reloadAnyway": "Reload Anyway",
+  "moreToVerify": "more documents to verify"
+},
+"common": {
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "close": "Close"
+},
+"dashboard": {
+  "title": "Document Management",
+  "payment": {
+    "waiting": "Please be patient for a moment.",
+    "success": "Your payment has been successful",
+    "creating": "Your postage stamp is being created.",
+    "totalLabel": "TOTAL"
+  }
+},
+"unauthorized": {
+  "title": "Access Restricted",
+  "message": "User not found",
+  "description": "Please login first to access app.unitain",
+  "loginButton": "Login to Continue",
+  "help": "Need help?",
+  "contact": "Contact support"
+},
+"error": {
+  "message": "Oops! The page you are looking for doesn't exist.",
+  "goHome": "Go Home"
+}
 }

@@ -1,185 +1,127 @@
 {
-  "nav": {
-    "signin": "Inloggen",
-    "signout": "Uitloggen",
-    "signingout": "Uitloggen..."
+  "guide": {
+    "title": "Gids downloaden",
+    "description": "Ontvang onze uitgebreide gids over belastingvrijstelling voor voertuigen",
+    "downloadButton": "Gids downloaden",
+    "downloadSuccess": "Gids succesvol gedownload!",
+    "updateError": "Gidsstatus bijwerken mislukt. Probeer het opnieuw.",
+    "downloadError": "Gids downloaden mislukt. Probeer het opnieuw."
   },
-  "common": {
-    "back": "Terug",
-    "loading": "Laden...",
-    "error": "Fout",
-    "retry": "Opnieuw proberen",
-    "success": "Succes",
-    "next": "Volgende",
-    "previous": "Vorige",
-    "submit": "Verzenden",
-    "cancel": "Annuleren",
-    "close": "Sluiten"
+  "nextSteps": {
+  "heading": "Volgende stappen",
+  "completed": "voltooid",
+  "modalTitle": "Documentenchecklist",
+  "viewFullChecklist": "Volledige checklist bekijken",
+  "vehicleRegistration": {
+    "title": "Voertuigregistratie",
+    "description": "Upload je huidige voertuigregistratiedocument"
   },
-  "hero": {
-    "title": "Voorkom Hoge Invoerbelastingen – Controleer Uw Geschiktheid in Enkele Minuten!",
-    "subtitle": "De meeste expats betalen duizenden euro's aan onnodige auto-invoerbelastingen. Ontdek of u deze kunt vermijden met onze snelle en eenvoudige belastingcontrole.",
-    "cta": "Start Nu Uw Belastingcontrole"
+  "ownership": {
+    "title": "Bewijs van eigendom",
+    "description": "Lever documentatie aan waaruit blijkt dat je de eigenaar bent"
   },
-  "benefits": {
-    "tax": {
-      "title": "✅ Bespaar Duizenden op Invoerbelasting",
-      "description": "Ontdek binnen enkele minuten of u de dure Portugese auto-invoerbelasting niet hoeft te betalen."
-    },
-    "paperwork": {
-      "title": "📄 Geen Papierwerk, Geen Zorgen",
-      "description": "Wij regelen alle formulieren en juridische stappen, zodat u zich geen zorgen hoeft te maken over Portugese bureaucratie."
-    },
-    "process": {
-      "title": "⚡ Snel & Eenvoudig Proces",
-      "description": "Beantwoord nu enkele vragen—als u in aanmerking komt, regelen wij alles voor de legale import van uw auto."
-    }
+  "tax": {
+    "title": "Belastingdocumenten",
+    "description": "Dien relevante belastingdocumenten in van je thuisland"
   },
-  "eligibility": {
-    "title": "Controleer Uw Geschiktheid",
-    "progress": "Stap {{current}} van {{total}}",
-    "categories": {
-      "residency_status": "Verblijfsstatus",
-      "vehicle_ownership": "Voertuigeigendom",
-      "vehicle_registration": "Voertuigregistratie",
-      "tax_status": "Belastingstatus",
-      "additional_information": "Aanvullende Informatie"
-    },
-    "questions": {
-      "permanentMove": "Bent u van plan permanent naar Portugal te verhuizen?",
-      "deregistered": "Heeft u zich uitgeschreven in uw thuisland?",
-      "previousResidence": "Heeft u minimaal 12 maanden buiten Portugal gewoond?",
-      "ownershipDuration": "Bent u al minimaal 6 maanden eigenaar van het voertuig?",
-      "personalGoods": "Importeert u het voertuig als onderdeel van uw persoonlijke bezittingen?",
-      "registeredName": "Staat het voertuig op uw naam geregistreerd?",
-      "euRegistration": "Is het voertuig in de EU geregistreerd?",
-      "documentation": "Heeft u alle vereiste voertuigdocumentatie?",
-      "vatPaid": "Is er BTW betaald over het voertuig binnen de EU?",
-      "proofDocuments": "Kunt u de aankoop en belastingbetaling aantonen?",
-      "importType": "Hoe wilt u het voertuig importeren?",
-      "additionalVehicles": "Heeft u in de afgelopen 12 maanden andere voertuigen geïmporteerd?"
-    },
-    "options": {
-      "yes": "Ja",
-      "no": "Nee",
-      "individual": "Particulier",
-      "company": "Bedrijf"
-    },
-    "buttons": {
-      "previous": "Vorige",
-      "next": "Volgende",
-      "reviewAnswers": "Antwoorden Bekijken",
-      "buyNow": "Doorgaan naar Betaling",
-      "contactUs": "Contact Opnemen"
-    },
-    "results": {
-      "title": "Geschiktheidsbeoordeling",
-      "eligible": "Op basis van uw antwoorden komt u mogelijk in aanmerking voor belastingvrijstelling!",
-      "nextSteps": "Volgende stappen",
-      "steps": {
-        "documents": "Bereid alle vereiste documentatie voor",
-        "consultation": "Plan een consult met onze experts",
-        "application": "Start uw aanvraagproces"
-      },
-      "notEligible": "Op basis van uw antwoorden komt u mogelijk niet in aanmerking voor belastingvrijstelling.",
-      "consultRecommended": "We raden aan om met onze experts te overleggen om uw opties te bespreken.",
-      "needsMoreInfo": "We hebben meer informatie nodig om uw geschiktheid volledig te beoordelen."
-    },
-    "errors": {
-      "loadingFailed": "Geschiktheidscontrole laden mislukt",
-      "saveFailed": "Geschiktheidscontrole opslaan mislukt",
-      "answerFailed": "Antwoord opslaan mislukt",
-      "noAnswers": "Beantwoord alle vragen"
-    }
+  "identity": {
+    "title": "Identiteitsverificatie",
+    "description": "Upload je paspoort of nationale identiteitskaart"
   },
-  "process": {
-    "title": "Hoe Het Werkt",
-    "step1": {
-      "title": "Controleer Geschiktheid",
-      "description": "Beantwoord enkele eenvoudige vragen over uw situatie"
-    },
-    "step2": {
-      "title": "Documenten Indienen",
-      "description": "Upload vereiste documentatie via ons beveiligde platform"
-    },
-    "step3": {
-      "title": "Wij Verwerken",
-      "description": "Onze experts regelen alle communicatie met autoriteiten"
-    },
-    "step4": {
-      "title": "Klaar om te Rijden",
-      "description": "Uw voertuig wordt legaal geregistreerd en is klaar voor gebruik"
-    }
+  "residency": {
+    "title": "Bewijs van verblijf",
+    "description": "Lever een bewijs van je verblijf in Portugal aan"
   },
-  "contact": {
-    "title": "Neem Contact Op",
-    "subtitle": "Krijg Expert Hulp bij Uw Belastingvrijstelling",
-    "form": {
-      "name": "Naam",
-      "namePlaceholder": "Vul uw volledige naam in",
-      "email": "E-mail",
-      "emailPlaceholder": "Vul uw e-mailadres in",
-      "message": "Bericht",
-      "messagePlaceholder": "Hoe kunnen we u helpen?",
-      "send": "Bericht Versturen",
-      "sending": "Versturen...",
-      "usingAccountEmail": "E-mail van uw account wordt gebruikt"
-    },
-    "features": {
-      "consultation": {
-        "title": "Gratis Eerste Consult",
-        "description": "Krijg deskundig advies over uw specifieke situatie"
-      },
-      "response": {
-        "title": "Snelle Reactietijd",
-        "description": "We reageren meestal binnen 24 uur"
-      },
-      "security": {
-        "title": "Veilige Communicatie",
-        "description": "Uw informatie is beschermd"
-      }
-    }
+  "inspection": {
+    "title": "Technische keuring",
+    "description": "Upload het rapport van de technische keuring van het voertuig"
+  },
+  "insurance": {
+    "title": "Verzekeringsdocumenten",
+    "description": "Voorzie geldige voertuigverzekeringsdocumenten"
+  },
+  "customs": {
+    "title": "Douaneaangifte",
+    "description": "Vul de formulieren voor douaneaangifte in en upload ze"
   },
   "payment": {
-    "title": "Voltooi Uw Belastingcontrole",
-    "subtitle": "Professionele Belastingvrijstellingsbeoordeling",
-    "amount": "€99",
-    "oneTime": "Eenmalige betaling",
-    "noHiddenFees": "Geen verborgen kosten of terugkerende betalingen",
-    "signInRequired": "Log in om door te gaan",
-    "signInMessage": "U moet ingelogd zijn om de betaling te voltooien",
-    "signIn": "Nu Inloggen",
-    "loading": "Betalingssysteem wordt geladen...",
-    "success": "Betaling geslaagd!",
-    "error": "Betaling mislukt. Probeer het opnieuw.",
-    "cancelled": "Betaling is geannuleerd",
-    "back": "Terug naar Geschiktheidscontrole",
-    "features": {
-      "secure": "Veilige Betaling",
-      "support": "24/7 Ondersteuning",
-      "encrypted": "Versleutelde Gegevens",
-      "verified": "Geverifieerd Proces"
-    },
-    "legal": "Door verder te gaan gaat u akkoord met onze",
-    "termsLink": "Gebruiksvoorwaarden",
-    "andText": "en",
-    "privacyLink": "Privacybeleid"
+    "title": "Betalingsbevestiging",
+    "description": "Dien een bewijs van betaling van de verschuldigde kosten in"
   },
-  "cookies": {
-    "title": "Cookie-instellingen",
-    "description": "We gebruiken cookies om uw browse-ervaring te verbeteren en ons verkeer te analyseren. Selecteer hieronder uw voorkeuren.",
-    "accept": "Alles Accepteren",
-    "decline": "Optionele Weigeren",
-    "privacyLink": "Privacybeleid",
-    "learnMore": "Meer Informatie"
-  },
-  "testimonials": {
-    "title": "Wat Onze Klanten Zeggen"
-  },
-  "cta": {
-    "title": "Klaar om Uw Belastingvrijstelling te Controleren?",
-    "subtitle": "Start vandaag uw aanvraag en laat onze experts de rest regelen.",
-    "contact": "Contact Opnemen",
-    "privacy": "Privacybeleid"
+  "review": {
+    "title": "Eindcontrole",
+    "description": "Controleer alle ingediende documenten voordat ze worden verwerkt"
   }
+},
+"logoutWarning": {
+  "title": "Niet-opgeslagen wijzigingen",
+  "description": "Je hebt niet-geverifieerde afbeeldingen die verloren gaan als je uitlogt. Weet je zeker dat je wilt doorgaan?",
+  "cancel": "Annuleren",
+  "logoutAnyway": "Toch uitloggen"
+},
+"chat": {
+  "title": "Chatondersteuning",
+  "placeholder": "Typ je bericht...",
+  "welcome1": "Hallo! Hoe kunnen we je vandaag helpen?",
+  "welcome2": "Ons ondersteuningsteam staat klaar om je te helpen met vragen over belastingvrijstelling voor voertuigen.",
+  "fileUploaded": "Ik zie dat je \"{{file}}\" hebt geüpload. Ons team zal dit document binnenkort beoordelen. Wil je ergens specifiek informatie over?",
+  "fileDeleted": "Ik merk dat je enkele bestanden hebt verwijderd. Laat het me weten als je hulp nodig hebt bij het uploaden van nieuwe documenten.",
+  "autoReply": "Bedankt voor je bericht. Ons team zal je aanvraag bekijken en neemt binnenkort contact met je op."
+},
+"upload": {
+    "title": "Documenten uploaden",
+    "dragDrop": "Sleep bestanden hierheen of ",
+    "tapUpload": "Tik om te uploaden of ",
+    "browse": "blader door bestanden",
+    "supportedFormats": "Ondersteunde formaten: PDF, JPEG, PNG, DOC (Max. 10MB)",
+    "progressTitle": "Voortgang van documenten",
+    "verifiedLabel": "geverifieerd",
+    "allVerified": "Alle vereiste documenten zijn geverifieerd",
+    "startHint": "Begin met het uploaden en verifiëren van je eerste document",
+    "paymentDone": "Betaling voltooid",
+    "startProcess": "Start proces",
+    "filesTitle": "Je geüploade bestanden",
+    "filesCount": "bestanden",
+    "noFilesTitle": "Geen bestanden",
+    "noFilesSubtitle": "Upload bestanden om te beginnen",
+    "verify": "Verifiëren",
+    "verified": "Geverifieerd",
+    "modalTitle": "Bevestig proces",
+  "modalDescription": "Wil je een betaalde bestelling plaatsen?",
+  "startPay": "Start betaling",
+  "loadingPay": "Betaling wordt gestart...",
+  "warningTitle": "Waarschuwing",
+  "warningMessage": "Het verwijderen van geverifieerde documenten onderbreekt het verificatieproces. Wil je doorgaan?",
+  "alreadyPaidTitle": "Je hebt al betaald",
+  "alreadyPaidMessage": "Je betaling is bevestigd. Geen verdere actie nodig.",
+  "reloadTitle": "Niet-opgeslagen wijzigingen",
+  "reloadMessage": "Je hebt niet-geverifieerde afbeeldingen. Deze gaan verloren als je opnieuw laadt. Wil je doorgaan?",
+  "reloadAnyway": "Toch opnieuw laden"
+},
+"common": {
+  "cancel": "Annuleren",
+  "delete": "Verwijderen",
+  "close": "Sluiten"
+},
+"dashboard": {
+  "title": "Documentbeheer",
+  "payment": {
+    "waiting": "Een ogenblik geduld alstublieft.",
+    "success": "Je betaling is succesvol",
+    "creating": "Je postzegel wordt aangemaakt.",
+    "totalLabel": "TOTAAL"
+  }
+},
+"unauthorized": {
+  "title": "Toegang beperkt",
+  "message": "Gebruiker niet gevonden",
+  "description": "Log eerst in om toegang te krijgen tot app.unitain",
+  "loginButton": "Inloggen om verder te gaan",
+  "help": "Hulp nodig?",
+  "contact": "Neem contact op met support"
+},
+"error": {
+  "message": "Oeps! De pagina die je zoekt bestaat niet.",
+  "goHome": "Ga naar home"
+}
 }

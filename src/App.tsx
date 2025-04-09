@@ -5,11 +5,13 @@ import Dashboard from './pages/Dashboard';
 import { Header } from './components/Header';
 import ErrorPage from './pages/ErrorPage';
 import UnAuthorized from "./pages/UnAuthorized"
+import { useTranslation } from 'react-i18next';
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [showLogoutWarning, setShowLogoutWarning] = useState(false);
   const [hasUnverifiedImages ,setHasUnverifiedImages] = useState(false)
+  const { t } = useTranslation();
 
 function getUserCookie() {
   const cookies = document.cookie.split("; ");
@@ -79,23 +81,21 @@ function getUserCookie() {
       {showLogoutWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4 w-full shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Unsaved Changes</h3>
-            <p className="text-gray-600 mb-6">
-              You have unverified images that will be lost if you logout.
-              Are you sure you want to continue?
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('logoutWarning.title')}</h3>
+            <p className="text-gray-600 mb-6">{t('logoutWarning.description')}</p>
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowLogoutWarning(false)}
                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
-                Cancel
+                  {t('logoutWarning.cancel')}
               </button>
               <button
                 onClick={performLogout}
                 className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
               >
-                Logout Anyway
+                {t('logoutWarning.logoutAnyway')}
               </button>
             </div>
           </div>

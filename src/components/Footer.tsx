@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, MessageSquare, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { ChangelogPopup } from './ChangelogPopup';
+// import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import semver from 'semver';
 
 function Footer() {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const [showChangelog, setShowChangelog] = useState(false);
   const [lastShownVersion, setLastShownVersion] = useState<string | null>(null);
   const [currentVersion, setCurrentVersion] = useState<string>('1.8.9'); // Default from package.json
@@ -175,12 +174,6 @@ function Footer() {
           </div>
         </div>
       </div>
-
-      {/* Changelog Popup */}
-      <ChangelogPopup 
-        isOpen={showChangelog} 
-        onClose={handleCloseChangelog} 
-      />
     </footer>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { useFiles } from '../context/FileContext';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -11,18 +12,19 @@ interface Message {
 }
 
 export function ChatSupport() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! How can we help you today?',
+      text: t('chat.welcome1'),
       sender: 'support',
       timestamp: new Date().toISOString()
     },
     {
       id: '2',
-      text: 'Our support team is here to assist you with any questions about vehicle tax exemption.',
+      text: t('chat.welcome2'),
       sender: 'support',
       timestamp: new Date().toISOString()
     }
@@ -43,7 +45,7 @@ export function ChatSupport() {
       newFiles.forEach(newFile => {
         const supportMessage: Message = {
           id: crypto.randomUUID(),
-          text: `I see you've uploaded "${newFile.name}". Our team will review this document shortly. Is there anything specific you'd like to know about it?`,
+          text: t('chat.fileUploaded', { file: newFile.name }),
           sender: 'support',
           timestamp: new Date().toISOString()
         };
@@ -150,7 +152,7 @@ export function ChatSupport() {
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-white sticky top-0 z-10">
-            <h3 className="text-lg font-semibold">Chat Support</h3>
+          <h3 className="text-lg font-semibold">{t('chat.title')}</h3>
             <button
               onClick={() => setIsOpen(false)}
               className="p-2 text-gray-400 hover:text-gray-600 touch-manipulation z-50"
@@ -199,7 +201,7 @@ export function ChatSupport() {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message..."
+                placeholder={t('chat.placeholder')}
                 className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                 style={{
                   fontSize: '16px', // Prevents iOS zoom on focus
