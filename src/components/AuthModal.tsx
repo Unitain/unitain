@@ -1,3 +1,4 @@
+
 // import { useState,useEffect } from 'react';
 // import { supabase } from '../lib/supabase';
 // import toast from 'react-hot-toast';
@@ -30,38 +31,31 @@
 //   const [showResetForm, setShowResetForm] = useState(false);
 
 //   useEffect(() => {
-//   if (forceResetForm) {
-//     setShowResetForm(true);
-//   }
-// }, [forceResetForm]);
-
-// const handlePasswordReset = async (e: React.FormEvent) => {
-//   e.preventDefault();
-  
-//   if (newPassword !== confirmPassword) {
-//     toast.error("Passwords don't match");
-//     return;
-//   }
-
-//   setLoading(true);
-//   try {
-//     const { data, error } = await supabase.auth.updateUser({
-//       password: newPassword,
-//     });
-
-//     if (error) throw error;
-
-//     toast.success('Password updated successfully!');
-//     setShowResetForm(false);
-//     setNewPassword('');
-//     setConfirmPassword('');
-//     onClose();
-//   } catch (error) {
-//     toast.error(error.message || 'Password update failed');
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+//     if (forceResetForm) {
+//       const params = new URLSearchParams(window.location.search);
+//       const token = params.get('code');
+//       const type = params.get('type');
+      
+//       if (token && type === 'recovery') {
+//         supabase.auth.getUser(token)
+//           .then(({ data: { user }, error }) => {
+//             if (error) {
+//               console.error('Error getting user from token:', error);
+//               toast.error('Invalid or expired password reset link');
+//               onClose();
+//               return;
+//             }
+            
+//             if (user?.email) {
+//               setEmail(user.email);
+//               setShowResetForm(true);
+//               setIsLogin(false);
+//               setIsResetPassword(false);
+//             }
+//           });
+//       }
+//     }
+//   }, [forceResetForm, onClose]);
 
 //   const fetchActiveTermsOfService = async () => {
 //     const { data, error } = await supabase
@@ -153,6 +147,7 @@
 //   }
 // };
 
+// // In your AuthModal component
 // const handlePasswordUpdate = async (e: React.FormEvent) => {
 //   e.preventDefault();
   
@@ -163,18 +158,31 @@
 
 //   setLoading(true);
 //   try {
-//     // Verify the token first
-//     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+//     // Get the token from URL
+//     const params = new URLSearchParams(window.location.search);
+//     const token = params.get('code');
     
-//     if (sessionError || !session) {
+//     if (!token) {
+//       throw new Error('Missing reset token');
+//     }
+
+//     // First verify the token by exchanging it for a session
+//     const { error: verifyError } = await supabase.auth.verifyOtp({
+//       email: email,
+//       token: token,
+//       type: 'recovery'
+//     });
+
+//     if (verifyError) {
 //       throw new Error('Invalid or expired password reset link');
 //     }
 
-//     const { error } = await supabase.auth.updateUser({
+//     // Now update the password
+//     const { error: updateError } = await supabase.auth.updateUser({
 //       password: newPassword,
 //     });
 
-//     if (error) throw error;
+//     if (updateError) throw updateError;
 
 //     toast.success('Password updated successfully!');
 //     setShowResetForm(false);
@@ -182,7 +190,8 @@
 //     setConfirmPassword('');
 //     onClose();
 //   } catch (error) {
-//     toast.error(error.message || 'Password update failed');
+//     console.error('Password reset error:', error);
+//     toast.error(error instanceof Error ? error.message : 'Password update failed');
 //   } finally {
 //     setLoading(false);
 //   }
@@ -235,8 +244,8 @@
 //           if(userData?.is_eligible === false){
 //             navigate("/", { replace: true });
 //           }else{
-//             window.location.href = "https://app.unitain.net"
-//             // window.location.href = "http://localhost:5174"
+//             // window.location.href = "https://app.unitain.net"
+//             window.location.href = "http://localhost:5174"
 //           }
 //   };
 //   }
@@ -512,7 +521,7 @@
 //   );
 // }
 
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
@@ -523,7 +532,7 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultView?: 'login' | 'signup';
-  forceResetForm?: boolean;  
+  forceResetForm?: boolean;
   onSuccess?: (userId: string) => Promise<void>;
 }
 
@@ -531,44 +540,73 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true); 
+  const [isLogin, setIsLogin] = useState(true);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState<string>('1.8.9'); 
+  const [currentVersion, setCurrentVersion] = useState<string>('1.8.9');
   const [ipAddress, setIpAddress] = useState('');
   const [activeToS, setActiveTos] = useState(null)
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
-  const [isResetPassword, setIsResetPassword] = useState(false); 
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showResetForm, setShowResetForm] = useState(false);
 
   useEffect(() => {
     if (forceResetForm) {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('code');
-      const type = params.get('type');
-      
-      if (token && type === 'recovery') {
-        supabase.auth.getUser(token)
-          .then(({ data: { user }, error }) => {
-            if (error) {
-              console.error('Error getting user from token:', error);
-              toast.error('Invalid or expired password reset link');
-              onClose();
-              return;
-            }
-            
-            if (user?.email) {
-              setEmail(user.email);
-              setShowResetForm(true);
-              setIsLogin(false);
-              setIsResetPassword(false);
-            }
-          });
-      }
+      setShowResetForm(true);
     }
-  }, [forceResetForm, onClose]);
+  }, [forceResetForm]);
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success('Password updated successfully!');
+      setShowResetForm(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      onClose();
+    } catch (error) {
+      toast.error(error.message || 'Password update failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add this new function to handle sending reset email
+  const handleResetEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast.success('Password reset link sent to your email!');
+      setIsResetPassword(false);
+      setEmail('');
+    } catch (error) {
+      toast.error(error.message || 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchActiveTermsOfService = async () => {
     const { data, error } = await supabase
@@ -584,7 +622,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
     setActiveTos(data)
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchActiveTermsOfService()
   }, [])
 
@@ -621,7 +659,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
       payment_status: userData.payment_status,
       is_eligible: userData.is_eligible,
       ToS_checked: userData.ToS_checked
-  };
+    };
 
     console.log("🚀 Setting Cookie: ", trimmedUserData);
     const value = JSON.stringify(trimmedUserData);
@@ -635,97 +673,24 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
         console.log("✅ Cookie set for unitain.net:", document.cookie);
     }
   }
-// Add this to your AuthModal component
-
-const handlePasswordResetRequest = async () => {
-  if (!email) {
-    toast.error('Please enter your email to reset your password');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/?type=recovery`,
-    });
-    
-    if (error) throw error;
-
-    toast.success('Password reset link sent to your email!');
-    setIsResetPassword(false);
-  } catch (error) {
-    toast.error(error.message || 'Failed to send reset email');
-  } finally {
-    setLoading(false);
-  }
-};
-
-// In your AuthModal component
-const handlePasswordUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (newPassword !== confirmPassword) {
-    toast.error("Passwords don't match");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    // Get the token from URL
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('code');
-    
-    if (!token) {
-      throw new Error('Missing reset token');
-    }
-
-    // First verify the token by exchanging it for a session
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: email,
-      token: token,
-      type: 'recovery'
-    });
-
-    if (verifyError) {
-      throw new Error('Invalid or expired password reset link');
-    }
-
-    // Now update the password
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (updateError) throw updateError;
-
-    toast.success('Password updated successfully!');
-    setShowResetForm(false);
-    setNewPassword('');
-    setConfirmPassword('');
-    onClose();
-  } catch (error) {
-    console.error('Password reset error:', error);
-    toast.error(error instanceof Error ? error.message : 'Password update failed');
-  } finally {
-    setLoading(false);
-  }
-};
 
 const handleAuth = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
 
+  if (isResetPassword) {
+    await handleResetEmail(e); 
+    return;
+  }
+  
   try {
-    if (showResetForm) {
-      await handlePasswordUpdate(e);
-    } else if (isResetPassword) {
-      await handlePasswordResetRequest();
-    } else if (isLogin) {
+    if (isLogin) {
       await handleLogin();
     } else {
       await handleSignup();
     }
   } catch (error) {
-    console.error('Authentication error:', error);
+    console.error(`${isLogin ? "Login" : "Signup"} error:`, error);
     toast.error(error instanceof Error ? error.message : "Authentication failed");
   } finally {
     setLoading(false);
@@ -757,12 +722,12 @@ const handleAuth = async (e: React.FormEvent) => {
           if(userData?.is_eligible === false){
             navigate("/", { replace: true });
           }else{
-            // window.location.href = "https://app.unitain.net"
-            window.location.href = "http://localhost:5174"
+            window.location.href = "https://app.unitain.net"
+            // window.location.href = "http://localhost:5174"
           }
-  };
-  }
-  
+        };
+      }
+
   // const handleSignup = async () => {
   //   if (!acceptedTerms) {
   //     throw new Error("Please accept the Terms of Use before signing up.");
@@ -813,7 +778,7 @@ const handleAuth = async (e: React.FormEvent) => {
   //   onClose();
   //   navigate("/", { replace: true });
   // };
-  
+
   const handleSignup = async () => {
     if (!acceptedTerms) {
       throw new Error("Please accept the Terms of Use");
@@ -858,10 +823,10 @@ const handleAuth = async (e: React.FormEvent) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-      {showResetForm ? (
+        {showResetForm ? (
           <div>
             <h2 className="text-2xl font-bold text-center mb-4">Reset Your Password</h2>
-            <form onSubmit={handlePasswordUpdate} className="space-y-4">
+            <form onSubmit={handlePasswordReset} className="space-y-4">
               <div>
                 <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
                   New Password
@@ -900,7 +865,7 @@ const handleAuth = async (e: React.FormEvent) => {
             </form>
           </div>
         ) : (
-        <>
+      <>
         <button
         onClick={() => {
           onClose();
@@ -982,7 +947,7 @@ const handleAuth = async (e: React.FormEvent) => {
                   className="text-primary-700 font-semibold hover:underline"
                   target="_blank"
                   rel="noreferrer"
-                  >
+                >
                   Terms of Use
                 </a>
                 <p className="text-gray-600 font-normal">
@@ -1000,7 +965,7 @@ const handleAuth = async (e: React.FormEvent) => {
             {loading ? (
               <span className="inline-block animate-spin">↻</span>
             ) : isResetPassword ? (
-              'Reset Password'
+              'Send Reset Link'
             ) : isLogin ? (
               'Log In'
             ) : (
@@ -1009,7 +974,7 @@ const handleAuth = async (e: React.FormEvent) => {
           </button>
         </form>
 
-         <div className="mt-4 text-center">
+        <div className="mt-4 text-center">
           <button
             type="button"
             onClick={() => {
@@ -1026,8 +991,8 @@ const handleAuth = async (e: React.FormEvent) => {
               'Already have an account? Log in'
             )}
           </button>
-         </div>
-        </>
+        </div>
+      </>
         )}
       </div>
     </div>
