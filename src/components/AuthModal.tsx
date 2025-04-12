@@ -139,75 +139,94 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
   };
   }
   
+  // const handleSignup = async () => {
+  //   if (!acceptedTerms) {
+  //     throw new Error("Please accept the Terms of Use before signing up.");
+  //   }
+  
+  //   if (!activeToS) {
+  //     throw new Error("Terms of Service information not loaded. Please try again.");
+  //   }
+  
+  //   const { data, error } = await supabase.auth.signUp({ 
+  //     email, 
+  //     password,
+  //     options: {
+  //       // Updated to point to your auth callback route
+  //       // emailRedirectTo: 'https://unitain.net/auth/callback',
+  //       emailRedirectTo: 'http://localhost:5176/auth/callback',
+  //       data: {
+  //         tos_version_id: activeToS.id,
+  //         ip_address: ipAddress,
+  //         device_info: navigator.userAgent,
+  //       }
+  //     },
+  //   });
+    
+  //   if (error) throw error;
+    
+  //   // Store pending signup info with additional metadata
+  //   const pendingSignup = {
+  //     email,
+  //     tosData: {
+  //       tos_version_id: activeToS.id,
+  //       ip_address: ipAddress,
+  //       device_info: navigator.userAgent,
+  //     },
+  //     timestamp: new Date().toISOString()
+  //   };
+    
+  //   localStorage.setItem('pendingSignup', JSON.stringify(pendingSignup));
+    
+  //   toast.success(
+  //     <div>
+  //       <p>Please check your email to confirm your account.</p>
+  //       <p>Your account will be fully created after confirmation.</p>
+  //     </div>,
+  //     { duration: 6000 }
+  //   );
+    
+  //   onClose();
+  //   navigate("/", { replace: true });
+  // };
+  
   const handleSignup = async () => {
     if (!acceptedTerms) {
-      throw new Error("Please accept the Terms of Use before signing up.");
+      throw new Error("Please accept the Terms of Use");
     }
-
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
-
-    const { data:ToSData, error:ToSError } = await supabase
-    .from('user_tos_acceptance')
-    .insert([
-      {
-      user_id: data?.user?.id,
-      tos_version_id: activeToS.id,
-      ip_address: ipAddress,
-      device_info: navigator.userAgent,
-    }
-  ]).select().single();
   
-    const { error: insertError } = await supabase.from("users").insert([
-      {
-        id: data?.user?.id,
-        email: data?.user?.email,
-        created_at: new Date().toISOString(),
-        payment_status: "pending",
-        is_eligible: false,
-        ToS_checked: true,
-        tos_acceptance: ToSData.id
-      },
-    ]);
-
-    if(ToSError) throw new Error("Error while insert user_tos_acceptance")
-    if (insertError) throw insertError;
-    if (!data) throw new Error("Error while signing up user");
-
-    const { data: userData, error: fetchError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", data.user?.id)
-      .maybeSingle();
-
-    if (fetchError) throw fetchError;
-    if (!userData) throw new Error("User data not found after signup");
-
-    console.log("User created: ", userData);
-    localStorage.setItem("userData", JSON.stringify(userData));
-    setUserCookie(userData);
-    setUser(userData);
-
-    if (onSuccess) {
-      try {
-        await onSuccess(data.user.id);
-        const { data: updatedUserData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', data.user.id)
-        .maybeSingle();
-        
-        localStorage.setItem('userData', JSON.stringify(updatedUserData));
-        window.location.href = "https://app.unitain.net"
-        // window.location.href = "http://localhost:5174/"
-      } catch (error) {
-        console.error("Error in onSuccess callback:", error);
-        throw error;
-      }
+    if (!activeToS) {
+      throw new Error("Terms of Service not loaded");
     }
-    toast.success("Signup successful! Please check your email for confirmation.");
+  
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          tos_version_id: activeToS.id,
+          ip_address: ipAddress,
+          device_info: navigator.userAgent,
+        }
+      },
+    });
+    
+    if (error) throw error;
+    
+    // Store pending signup info
+    localStorage.setItem('pendingSignup', JSON.stringify({
+      email,
+      tosData: {
+        tos_version_id: activeToS.id,
+        ip_address: ipAddress,
+        device_info: navigator.userAgent,
+      }
+    }));
+    
+    toast.success("Check your email for confirmation");
     onClose();
-    navigate("/", { replace: true });
+    navigate("/");
   };
 
   

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./Button";
-import { UserCircle2, LogOut, X, User } from "lucide-react";
+import { UserCircle2, LogOut, User } from "lucide-react";
 import { AuthModal } from "./AuthModal";
 import { LanguageSelector } from "./LanguageSelector";
 import { useTranslation } from "react-i18next";
@@ -16,101 +16,106 @@ export function Header() {
   const { t } = useTranslation();
   const location = useLocation();
 
-
-  function getUserCookie() {
+  const getUserCookie = () => {
     const cookies = document.cookie.split("; ");
     for (let cookie of cookies) {
-      let [name, value] = cookie.split("=");
-
+      const [name, value] = cookie.split("=");
         if (name === "userData") {
             try {
                 return JSON.parse(decodeURIComponent(value)); 
-  
+
             } catch (error) {
-                console.error("Error parsing userData cookie:", error);
-                return null;
+              console.error("Error parsing userData cookie:", error);
+              return null;
             }
-        }
+          }
     }
-    return null; 
-  }
-  
-  useEffect(()=>{
-    setUser(getUserCookie())
+    return null;
+  };
+
+  const loadUser = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        const fullUser = { ...session.user, ...(userData || {}) };
+        setUser(fullUser);
+        return;
+      }
+    } catch (error) {
+      console.error("Error loading user from Supabase:", error);
+    }
+
+    // Fallback to cookie
+    const cookieUser = getUserCookie();
+    if (cookieUser) {
+      setUser(cookieUser);
+    }
+  };
+
+  useEffect(() => {
+    loadUser();
 
     const observer = new MutationObserver(() => {
-      setUser(getUserCookie());
+      const cookieUser = getUserCookie();
+      if (cookieUser && cookieUser?.id !== user?.id) {
+        setUser(cookieUser);
+      }
     });
 
     observer.observe(document, { subtree: true, childList: true });
-
     return () => observer.disconnect();
-  },[])
-  
-  function clearUserSession() {
-    setUser(null)
-    document.cookie = "userData=; Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
-    document.cookie = "userData=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;";
-    console.log("✅ Session cleared: Cookies & LocalStorage removed");
-}
+  }, []);
 
   useEffect(() => {
-    const logoutUser = async () =>{
-      const urlParams = new URLSearchParams(window.location.search);
-      const returnTo = urlParams.get('returnTo');
-      if (returnTo === 'login') { 
-        try {
-          setIsSigningOut(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") loadUser();
+      if (event === "SIGNED_OUT") setUser(null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
-          localStorage.removeItem("sb-auth-token");
-          localStorage.removeItem("userData");
-          localStorage.removeItem("auth-storage");
-          localStorage.removeItem("pendingEligibilityCheck");
-          localStorage.removeItem("feedbackSubmitted");
-          localStorage.removeItem("payment_success");
-          localStorage.removeItem("app_timezone");
-          localStorage.removeItem("GuideModal");
-          localStorage.removeItem("UploadGuideShown");
-          setUser(null);
+  useEffect(() => {
+    const logoutUser = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const returnTo = urlParams.get("returnTo");
 
-          const { error } = await supabase.auth.signOut();
-          if (error && error.message !== "session_not_found") {
-            console.error("Sign out error:", error);
-            toast.error("There was a problem signing out. Please try again.");
-          } else {
-            toast.success("Successfully signed out");
-          }
-          setShowAuthModal(true);
-        } catch (error) {
-          console.error("Sign out error:", error);
-          toast.error("Failed to sign out. Please try again.");
-        } finally {
-          setIsSigningOut(false);
-        }
+      if (returnTo === "login") {
+        await handleSignOut();
+        setShowAuthModal(true);
       }
-  }
-  logoutUser()
-  }, [setUser, location.search]);
+    };
+    logoutUser();
+  }, [location.search]);
 
+  const clearUserSession = () => {
+    setUser(null);
+
+    const cookieOptions = [
+      "Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;",
+      "Path=/; Domain=.unitain.net; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;",
+    ];
+
+    cookieOptions.forEach(option => {
+      document.cookie = `userData=; ${option}`;
+    });
+
+    console.log("✅ Session cleared: Cookies & LocalStorage removed");
+  };
 
   const handleSignOut = async () => {
-    if (isSigningOut) return; // Prevent double-clicks
+    if (isSigningOut) return;
+
     try {
       setIsSigningOut(true);
-      // Clear local storage first
-      localStorage.removeItem("sb-auth-token");
-      localStorage.removeItem("userData");
-      localStorage.removeItem("auth-storage");
-      localStorage.removeItem("pendingEligibilityCheck");
-      localStorage.removeItem("feedbackSubmitted");
-      localStorage.removeItem("payment_success");
-      localStorage.removeItem("app_timezone");
-      localStorage.removeItem("GuideModal");
-      localStorage.removeItem("UploadGuideShown");
-      clearUserSession()
 
-      setUser(null);
-      window.location.reload()
+      localStorage.clear(); 
+      clearUserSession();
 
       const { error } = await supabase.auth.signOut();
       if (error && error.message !== "session_not_found") {
@@ -118,6 +123,7 @@ export function Header() {
         toast.error("There was a problem signing out. Please try again.");
       } else {
         toast.success("Successfully signed out");
+        window.location.reload();
       }
     } catch (error) {
       console.error("Sign out error:", error);
@@ -140,25 +146,18 @@ export function Header() {
 
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-visible">
             <LanguageSelector />
-
             {user ? (
             <div className="relative flex items-center gap-2 sm:gap-3 max-w-full">
-              <button type="button"
-                className="flex items-center space-x-2 sm:space-x-3 text-gray-700 hover:text-gray-900 transition-colors duration-200 touch-manipulation group"
-               >
+              <button type="button" className="flex items-center space-x-2 sm:space-x-3 text-gray-700 hover:text-gray-900 transition-colors duration-200 group">
                 {user?.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt=""
-                    className="h-9 w-9 rounded-full ring-2 ring-primary-200 group-hover:ring-primary-300 transition-all duration-200"
-                  />
+                  <img src={user.avatar_url} alt="" className="h-9 w-9 rounded-full ring-2 ring-primary-200 group-hover:ring-primary-300 transition-all duration-200" />
                 ) : (
-                  <div className="h-9 w-9 rounded-full bg-primary-50 ring-2 ring-primary-200 group-hover:ring-primary-300 transition-all duration-200 flex items-center justify-center">
+                  <div className="h-9 w-9 rounded-full bg-primary-50 ring-2 ring-primary-200 group-hover:ring-primary-300 flex items-center justify-center">
                     <User className="h-5 w-5 text-primary-600" />
                   </div>
                 )}
                 <span className="hidden sm:block text-sm font-medium truncate max-w-[150px]">
-                  {user?.email}
+                  {user.email}
                 </span>
               </button>
                 <Button
@@ -192,10 +191,7 @@ export function Header() {
       </div>
     </header>
 
-    <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
+    <AuthModal  isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
   </>
   );
 }

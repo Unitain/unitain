@@ -1,69 +1,156 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'
 import { useAuthStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
 import { LoadingSpinner } from './LoadingSpinner';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 export function AuthCallback() {
   const { setUser } = useAuthStore();
+  const navigate = useNavigate();
+  
+  const handleEmailConfirmation = async (user: any, pendingSignup: any) => {
+    try {
+      console.log("Starting email confirmation for user:", user.email);
+      
+      console.log("🚀 ~ handleEmailConfirmation ~ pendingSignup:", pendingSignup)
+      if (!pendingSignup) {
+        throw new Error("No pending signup data found in localStorage");
+      }
+  
+      // 1. First insert ToS acceptance record
+      console.log("Inserting ToS acceptance record...");
+      const { data: ToSData, error: ToSError } = await supabase
+        .from('user_tos_acceptance')
+        .insert({
+          user_id: user.id,
+          tos_version_id: pendingSignup.tosData.tos_version_id,
+          ip_address: pendingSignup.tosData.ip_address,
+          device_info: pendingSignup.tosData.device_info,
+        })
+        .select()
+        .single();
+  
+      if (ToSError) {
+        console.error("ToS insertion error:", ToSError);
+        throw ToSError;
+      }
+  
+      // 2. Then insert user record
+      console.log("Inserting user record...");
+      const { error: userError } = await supabase.from("users").upsert({
+        id: user.id,
+        email: user.email,
+        created_at: new Date().toISOString(),
+        payment_status: "pending",
+        is_eligible: false,
+        ToS_checked: true,
+        tos_acceptance: ToSData.id
+      });
+  
+      if (userError) {
+        console.error("User insertion error:", userError);
+        throw userError;
+      }
+  
+      // 3. Clean up and finalize
+      localStorage.removeItem('pendingSignup');
+      console.log("Signup data cleared from localStorage");
+  
+      const { data: userData, error: fetchError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+  
+      if (fetchError) throw fetchError;
+  
+      // 5. Update application state
+      setUser(userData);
+      toast.success('Email successfully confirmed!');
+      console.log("User confirmed and redirected");
+      navigate("/");
+  
+    } catch (error) {
+      console.error("Full confirmation error:", error);
+      toast.error("Confirmation failed. Please try signing in.");
+      navigate("/auth/signin");
+    }
+  };
 
   useEffect(() => {
-    const handleCallback = async () => {
+    const handleAuthCallback = async () => {
+      console.log("Auth callback initiated");
+      
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-
-        console.log('AuthCallback: Starting authentication process');
-        console.log('AuthCallback: Code present:', !!code);
-
-        if (!code) {
-          throw new Error('No code found in URL');
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token') || params.get('code');
+        const type = params.get('type');
+  
+        console.log("URL params:", { token, type });
+  
+        // Email confirmation flow
+        if (token && type === 'signup') {
+          console.log("Processing email confirmation...");
+          
+          const pendingSignup = JSON.parse(localStorage.getItem('pendingSignup') || 'null');
+          console.log("Pending signup data:", pendingSignup);
+  
+          if (!pendingSignup?.email) {
+            throw new Error("Couldn't find your signup data. Please sign up again.");
+          }
+  
+          console.log("Verifying OTP for email:", pendingSignup.email);
+          const { data, error } = await supabase.auth.verifyOtp({
+            email: pendingSignup.email,
+            token,
+            type: 'signup',
+          });
+  
+          console.warn("data", data)
+          if (error) {
+            console.error("OTP verification failed:", error);
+            throw error;
+          }
+  
+          if (!data.session?.user) {
+            throw new Error("Session creation failed");
+          }
+  
+          console.log("OTP verified, session created for:", data.session.user.email);
+          await handleEmailConfirmation(data.session.user, pendingSignup);
+          return;
         }
-
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (error) {
-          console.error('AuthCallback: Session exchange error:', error);
-          throw error;
+  
+        // Standard session check
+        console.log("Checking existing session...");
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          console.error("Session check failed:", sessionError);
+          throw sessionError || new Error("No active session found");
         }
-
-        if (data.session) {
-          // Store the session
-          localStorage.setItem('sb-auth-token', data.session.access_token);
-          
-          // Set the user in the store
-          setUser(data.session.user);
-          
-          // Handle redirect
-          const redirectUrl = localStorage.getItem('nextUrl') || `https://app.unitain.net`;
-          localStorage.removeItem('nextUrl');
-          
-          console.log('AuthCallback: Redirecting to:', redirectUrl);
-          
-          // Show success message and redirect
-          toast.success('Successfully signed in!');
-          window.location.href = redirectUrl;
-        } else {
-          console.error('AuthCallback: No session in response');
-          window.location.href = '/';
-          toast.error('Authentication failed. Please try again.');
-        }
+  
+        console.log("User session found:", sessionData.session.user.email);
+        setUser(sessionData.session.user);
+        navigate("/");
+  
       } catch (error) {
-        console.error('Auth callback error:', error);
-        window.location.href = '/';
-        toast.error(error instanceof Error ? error.message : 'Authentication failed. Please try again.');
+        console.error("Authentication process failed:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Authentication failed"
+        );
+        navigate("/auth/signin");
       }
     };
-    
-    handleCallback();
-  }, [setUser]);
+  
+    handleAuthCallback();
+  }, [navigate, setUser]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <LoadingSpinner size="lg" />
-        <p className="mt-4 text-gray-600">Completing authentication...</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner size="lg" />
+      <p className="mt-4 text-gray-600">Completing authentication...</p>
     </div>
   );
 }

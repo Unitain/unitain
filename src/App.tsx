@@ -16,6 +16,8 @@ import Success from "./Success";
 import Failed from "./Failed";
 import {AuthModal} from "./components/AuthModal"; 
 import EligibilityChecker from "./components/EligibilityChecker"
+import {AuthCallback} from "./components/AuthCallback"
+
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
 const PaymentPage = lazy(() => import("./components/PaymentPage"));
@@ -25,7 +27,6 @@ const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/TermsOfService"));
 const CookieConsent = lazy(() => import("./components/CookieConsent"));
 const FAQ = lazy(() => import("./components/FAQ"));
-const AuthCallback = lazy(() => import("./components/AuthCallback"));
 const DemoPage = lazy(() => import("./components/DemoPage"));
 
 
@@ -71,6 +72,9 @@ function MainContent({ handleShowContact }: { handleShowContact: () => void }) {
   const [isChecking, setIsChecking] = useState(false);
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  useEffect(()=>{
+    console.log("🚀 ~ MainContent ~ user:", user)
+  },[])
   const [userCookieData, setUserCookieData] = useState(null)
   interface User {is_eligible: boolean;}
 
@@ -374,8 +378,8 @@ function AppContent() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
-      <ErrorBoundary>
-        <Suspense fallback={<LoadingSpinner size="lg" />}>
+      {/* <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner size="lg" />}> */}
           <Routes>
             {/* <Route
               path="/dashboard/*"
@@ -385,14 +389,7 @@ function AppContent() {
                 // </ProtectedRoute>
               }
             /> */}
-            <Route
-              path="/auth/callback"
-              element={
-                <Suspense fallback={<LoadingSpinner size="lg" />}>
-                  <AuthCallback />
-                </Suspense>
-              }
-            />
+            <Route path="/auth/callback" element={<AuthCallback />}/>
             <Route
               path="/privacy"
               element={<PrivacyPolicy onBack={handleBack} />}
@@ -429,8 +426,8 @@ function AppContent() {
             <Route path="*" element={<Navigate to="/" replace />} />
             {/* <Route path="*" element={<div>Page Not Found. Redirecting...</div>} /> */}
           </Routes>
-        </Suspense>
-      </ErrorBoundary>
+        {/* </Suspense>
+      </ErrorBoundary> */}
 
       <ErrorBoundary>
         <Suspense fallback={null}>
