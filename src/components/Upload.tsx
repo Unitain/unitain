@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UploadIcon, CarIcon, Check, EyeIcon, DownloadIcon, UserIcon , ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon, CheckCheck } from "lucide-react"
+import { CarIcon, Check, EyeIcon, DownloadIcon, UserIcon, Upload as UploadIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon, CheckCheck } from "lucide-react"
 import { supabase } from "../lib/supabase";
 import axios from "axios";
 import { useTranslation } from "react-i18next"
@@ -494,7 +494,7 @@ export const Upload = () => {
                       </span>
                       {file.verified && (
                       <div className="text-green-700 flex text-xs gap-2 font-medium">
-                        <svg 
+                         <svg 
                           xmlns="http://www.w3.org/2000/svg" 
                           width="16" 
                           height="16" 
@@ -515,7 +515,7 @@ export const Upload = () => {
                       </div>
                     </div>
                     <div className="flex gap-4 flex-col items-end">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-5 text-sm text-gray-500">
                         <p className="md:block hidden">
                           {new Date().toLocaleDateString()}
                         </p>
@@ -526,20 +526,17 @@ export const Upload = () => {
                           <DownloadIcon className="h-5 w-5" />
                         </a>
                         <button
-                          onClick={() =>
-                            file.verified ? null : handleVerify(index)
-                          }
-                          className={`${
-                            file.verified
-                              ? "bg-green-500 text-white"
-                              : "bg-gray-100"
-                          } px-3 py-1 rounded transition-all`}
-                          disabled={file.verified}
-                        >
-                          {file.verified
-                            ? t("upload.verified")
-                            : t("upload.verify")}
-                        </button>
+                          onClick={() => {
+                              if (!file.verified) handleVerify(index);
+                            }}
+                            disabled={file.verified}
+                            className={`p-2 rounded-md ${
+                              file.verified? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 transition-colors"
+                            }`}
+                            title={file.verified ? "Already uploaded" : "Upload"}
+                          >
+                            <UploadIcon className="h-5 w-5" />
+                          </button>
                         {file.verified ? (
                           <button
                             onClick={() =>
@@ -580,9 +577,6 @@ export const Upload = () => {
               {t("upload.progressTitle")}
             </h2>
             <div className="text-sm font-medium text-gray-600">
-              <span>
-                {verifiedCount}/4 {t("upload.verifiedLabel")}
-              </span>
             </div>
           </div>
             {/* Horizontal traffic light indicator */}
