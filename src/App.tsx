@@ -347,17 +347,17 @@ function AppContent() {
   const { user } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalView, setAuthModalView] = useState<'login' | 'signup' | 'reset'>('login'); 
-  const params = new URLSearchParams(window.location.search);
-  const resetCode = params.get('code');
-  const resetType = params.get('type');
-
+  
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resetCode = params.get('code');
+    const resetType = params.get('type');
     
     if (resetCode && resetType === 'recovery') {
       setShowAuthModal(true);
       setAuthModalView('reset');
     }
-  }, [params]);
+  }, []);
 
 
   const handleShowContact = React.useCallback(() => {
