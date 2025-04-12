@@ -354,8 +354,6 @@ function AppContent() {
   useEffect(() => {
     
     if (resetCode && resetType === 'recovery') {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
       setShowAuthModal(true);
       setAuthModalView('reset');
     }
