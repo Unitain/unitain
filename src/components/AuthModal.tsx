@@ -1,4 +1,3 @@
-
 import { useState,useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
@@ -30,108 +29,6 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showResetForm, setShowResetForm] = useState(false);
 
-  // Updated handlePasswordUpdate function
-const handlePasswordUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (newPassword !== confirmPassword) {
-    toast.error("Passwords don't match");
-    return;
-  }
-
-  if (newPassword.length < 6) {
-    toast.error("Password must be at least 6 characters");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('code');
-    
-    if (!token) {
-      throw new Error('Missing reset token');
-    }
-
-    // First exchange the token for a session
-    const { data, error } = await supabase.auth.exchangeCodeForSession(token);
-    
-    if (error) {
-      throw error;
-    }
-
-    // Now update the password
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (updateError) throw updateError;
-
-    toast.success('Password updated successfully!');
-    setShowResetForm(false);
-    setNewPassword('');
-    setConfirmPassword('');
-    
-    // Clear the URL parameters without reloading
-    window.history.replaceState({}, document.title, window.location.pathname);
-    
-    // Close the modal
-    onClose();
-    
-    // Redirect to login
-    navigate('/login');
-  } catch (error) {
-    console.error('Password reset error:', error);
-    
-    let errorMessage = 'Password reset failed';
-    if (error instanceof Error) {
-      errorMessage = error.message.includes('flow state') 
-        ? 'Reset link expired or already used. Please request a new one.'
-        : error.message;
-    }
-    
-    toast.error(errorMessage);
-    
-    // Reset the form on certain errors
-    if (error.message.includes('expired') || error.message.includes('invalid')) {
-      setShowResetForm(false);
-      setIsResetPassword(true);
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-// Updated handlePasswordResetRequest function
-const handlePasswordResetRequest = async () => {
-  if (!email) {
-    toast.error('Please enter your email');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/?type=recovery`,
-    });
-    
-    if (error) throw error;
-
-    toast.success('Password reset link sent to your email!');
-    setIsResetPassword(false);
-  } catch (error) {
-    console.error('Reset request error:', error);
-    toast.error(
-      error instanceof Error 
-        ? error.message 
-        : 'Failed to send reset email'
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
-// Updated useEffect for handling reset token
   useEffect(() => {
     if (forceResetForm) {
       const params = new URLSearchParams(window.location.search);
@@ -139,24 +36,22 @@ const handlePasswordResetRequest = async () => {
       const type = params.get('type');
       
       if (token && type === 'recovery') {
-        // Show the reset form
-        setShowResetForm(true);
-        setIsLogin(false);
-        setIsResetPassword(false);
-        
-        // Try to extract email from token (optional)
-        try {
-          const base64Url = token.split('.')[1];
-          if (base64Url) {
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(atob(base64));
-            if (payload.email) {
-              setEmail(payload.email);
+        supabase.auth.getUser(token)
+          .then(({ data: { user }, error }) => {
+            if (error) {
+              console.error('Error getting user from token:', error);
+              toast.error('Invalid or expired password reset link');
+              onClose();
+              return;
             }
-          }
-        } catch (e) {
-          console.log("Couldn't extract email from token", e);
-        }
+            
+            if (user?.email) {
+              setEmail(user.email);
+              setShowResetForm(true);
+              setIsLogin(false);
+              setIsResetPassword(false);
+            }
+          });
       }
     }
   }, [forceResetForm, onClose]);
@@ -228,6 +123,78 @@ const handlePasswordResetRequest = async () => {
   }
 // Add this to your AuthModal component
 
+const handlePasswordResetRequest = async () => {
+  if (!email) {
+    toast.error('Please enter your email to reset your password');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/?type=recovery`,
+    });
+    
+    if (error) throw error;
+
+    toast.success('Password reset link sent to your email!');
+    setIsResetPassword(false);
+  } catch (error) {
+    toast.error(error.message || 'Failed to send reset email');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// In your AuthModal component
+const handlePasswordUpdate = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (newPassword !== confirmPassword) {
+    toast.error("Passwords don't match");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Get the token from URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('code');
+    
+    if (!token) {
+      throw new Error('Missing reset token');
+    }
+
+    // First verify the token by exchanging it for a session
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: email,
+      token: token,
+      type: 'recovery'
+    });
+
+    if (verifyError) {
+      throw new Error('Invalid or expired password reset link');
+    }
+
+    // Now update the password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) throw updateError;
+
+    toast.success('Password updated successfully!');
+    setShowResetForm(false);
+    setNewPassword('');
+    setConfirmPassword('');
+    onClose();
+  } catch (error) {
+    console.error('Password reset error:', error);
+    toast.error(error instanceof Error ? error.message : 'Password update failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
 const handleAuth = async (e: React.FormEvent) => {
   e.preventDefault();
