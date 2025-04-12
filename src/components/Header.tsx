@@ -123,7 +123,6 @@ export function Header() {
         toast.error("There was a problem signing out. Please try again.");
       } else {
         toast.success("Successfully signed out");
-        window.location.reload();
       }
     } catch (error) {
       console.error("Sign out error:", error);
