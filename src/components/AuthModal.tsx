@@ -23,6 +23,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
   const [activeToS, setActiveTos] = useState(null)
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
+  const [isResetPassword, setIsResetPassword] = useState(false); 
   
   const fetchActiveTermsOfService = async () => {
     const { data, error } = await supabase
@@ -94,6 +95,11 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
     e.preventDefault();
     setLoading(true);
 
+    if (isResetPassword) {
+      await handlePasswordReset();
+      return;
+    }
+    
     try {
       if (isLogin) {
         await handleLogin();
@@ -229,7 +235,28 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
     navigate("/");
   };
 
-  
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast.error('Please enter your email to reset your password');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Check your email for password reset instructions');
+      setIsResetPassword(false); // After request, switch back to login view
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast.error(error.message || 'Password reset failed');
+    } finally {
+      setLoading(false);
+    }
+  };
   if (!isOpen) return null;
 
   return (
@@ -246,15 +273,16 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
         </button>
 
         <h2 className="text-2xl font-bold text-center">
-          {isLogin ? "Welcome Back" : "Create Your Account"}
+          {isResetPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create Your Account'}
         </h2>
         <p className="text-gray-600 p-4 mb-4 text-center">
-          {isLogin
-            ? "Log in to access your personal dashboard"
-            : "Sign up to get started with our services"}
+          {isResetPassword
+            ? 'Enter your email to receive password reset instructions'
+            : isLogin
+            ? 'Log in to access your personal dashboard'
+            : 'Sign up to get started with our services'}
         </p>
 
-        {/* Auth Form */}
         <form onSubmit={handleAuth} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -267,10 +295,11 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               required
-              autoComplete={isLogin ? "email" : "new-email"}
+              autoComplete="email"
             />
           </div>
 
+        {!isResetPassword && (
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
@@ -285,21 +314,27 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
               autoComplete={isLogin ? "current-password" : "new-password"}
               minLength={6}
             />
-            {!isLogin && (
-              <p className="mt-1 text-xs text-gray-500">
-                Password must be at least 6 characters
-              </p>
+            {isLogin && (
+              <button
+                type="button"
+                onClick={() => setIsResetPassword(true)}
+                className="text-sm text-primary-600 hover:text-primary-700 focus:outline-none mt-2"
+              >
+                Forgot your password?
+              </button>
             )}
           </div>
+        )}
 
-          {!isLogin && (
-            <div className="flex items-start">
+          {!isLogin && !isResetPassword && (
+            <div className="flex items-center">
               <input
                 type="checkbox"
                 id="terms"
                 checked={acceptedTerms}
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="h-4 w-4 mt-1 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                required
               />
               <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
                 I accept the{" "}
@@ -325,28 +360,32 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
           >
             {loading ? (
               <span className="inline-block animate-spin">↻</span>
+            ) : isResetPassword ? (
+              'Reset Password'
             ) : isLogin ? (
-              "Log In"
+              'Log In'
             ) : (
-              "Sign Up"
+              'Sign Up'
             )}
           </button>
         </form>
 
-        {/* Toggle between Login and Signup */}
         <div className="mt-4 text-center">
           <button
+            type="button"
             onClick={() => {
               setIsLogin(!isLogin);
-              setEmail("");
-              setPassword("");
-              setAcceptedTerms(false);
+              setIsResetPassword(false);
             }}
-            className="text-sm text-primary-600 hover:text-primary-700 focus:outline-none font-medium"
+            className="text-sm text-primary-600 hover:text-primary-700 focus:outline-none"
           >
-            {isLogin
-              ? "Don't have an account? Sign Up"
-              : "Already have an account? Log In"}
+            {isResetPassword ? (
+              'Back to login'
+            ) : isLogin ? (
+              "Don't have an account? Sign up"
+            ) : (
+              'Already have an account? Log in'
+            )}
           </button>
         </div>
       </div>
