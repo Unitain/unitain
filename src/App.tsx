@@ -345,7 +345,22 @@ function AppContent() {
   const [showContact, setShowContact] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [showAuthModal, setShowAuthModal] = useState(false); 
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalView, setAuthModalView] = useState<'login' | 'signup' | 'reset'>('login'); 
+  const params = new URLSearchParams(window.location.search);
+  const resetCode = params.get('code');
+  const resetType = params.get('type');
+
+  useEffect(() => {
+    
+    if (resetCode && resetType === 'recovery') {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      setShowAuthModal(true);
+      setAuthModalView('reset');
+    }
+  }, [params]);
+
 
   const handleShowContact = React.useCallback(() => {
     setShowContact(true);
@@ -369,26 +384,26 @@ function AppContent() {
     setShowContact(false);
     navigate("/");
   }, [navigate]);
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <AuthModal
+      {/* <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+      /> */}
+        <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => {
+          setShowAuthModal(false);
+          setAuthModalView('login');
+        }}
+        defaultView={authModalView === 'reset' ? 'login' : authModalView}
+        forceResetForm={authModalView === 'reset'}
       />
-      {/* <ErrorBoundary>
-        <Suspense fallback={<LoadingSpinner size="lg" />}> */}
+
           <Routes>
-            {/* <Route
-              path="/dashboard/*"
-              element={
-                // <ProtectedRoute>
-                  <DashboardChatGPT />
-                // </ProtectedRoute>
-              }
-            /> */}
             <Route path="/auth/callback" element={<AuthCallback />}/>
             <Route
               path="/privacy"
@@ -423,11 +438,8 @@ function AppContent() {
                 )
               }
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
-            {/* <Route path="*" element={<div>Page Not Found. Redirecting...</div>} /> */}
+            {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
           </Routes>
-        {/* </Suspense>
-      </ErrorBoundary> */}
 
       <ErrorBoundary>
         <Suspense fallback={null}>

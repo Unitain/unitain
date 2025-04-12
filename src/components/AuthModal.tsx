@@ -8,11 +8,12 @@ import { useNavigate } from 'react-router-dom';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultView?: 'login' | 'signup'; 
+  defaultView?: 'login' | 'signup';
+  forceResetForm?: boolean;  
   onSuccess?: (userId: string) => Promise<void>;
 }
 
-export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetForm = false, onSuccess }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,44 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
   const [isResetPassword, setIsResetPassword] = useState(false); 
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showResetForm, setShowResetForm] = useState(false);
+
+  useEffect(() => {
+  if (forceResetForm) {
+    setShowResetForm(true);
+  }
+}, [forceResetForm]);
+
+const handlePasswordReset = async (e: React.FormEvent) => {
+  e.preventDefault();
   
+  if (newPassword !== confirmPassword) {
+    toast.error("Passwords don't match");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) throw error;
+
+    toast.success('Password updated successfully!');
+    setShowResetForm(false);
+    setNewPassword('');
+    setConfirmPassword('');
+    onClose();
+  } catch (error) {
+    toast.error(error.message || 'Password update failed');
+  } finally {
+    setLoading(false);
+  }
+};
+
   const fetchActiveTermsOfService = async () => {
     const { data, error } = await supabase
       .from('terms_of_service')
@@ -90,29 +128,87 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
         console.log("✅ Cookie set for unitain.net:", document.cookie);
     }
   }
+// Add this to your AuthModal component
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handlePasswordResetRequest = async () => {
+  if (!email) {
+    toast.error('Please enter your email to reset your password');
+    return;
+  }
 
-    if (isResetPassword) {
-      await handlePasswordReset();
-      return;
-    }
+  setLoading(true);
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/?type=recovery`,
+    });
     
-    try {
-      if (isLogin) {
-        await handleLogin();
-      } else {
-        await handleSignup();
-      }
-    } catch (error) {
-      console.error(`${isLogin ? "Login" : "Signup"} error:`, error);
-      toast.error(error instanceof Error ? error.message : "Authentication failed");
-    } finally {
-      setLoading(false);
+    if (error) throw error;
+
+    toast.success('Password reset link sent to your email!');
+    setIsResetPassword(false);
+  } catch (error) {
+    toast.error(error.message || 'Failed to send reset email');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handlePasswordUpdate = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (newPassword !== confirmPassword) {
+    toast.error("Passwords don't match");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Verify the token first
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      throw new Error('Invalid or expired password reset link');
     }
-  };
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) throw error;
+
+    toast.success('Password updated successfully!');
+    setShowResetForm(false);
+    setNewPassword('');
+    setConfirmPassword('');
+    onClose();
+  } catch (error) {
+    toast.error(error.message || 'Password update failed');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleAuth = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    if (showResetForm) {
+      await handlePasswordUpdate(e);
+    } else if (isResetPassword) {
+      await handlePasswordResetRequest();
+    } else if (isLogin) {
+      await handleLogin();
+    } else {
+      await handleSignup();
+    }
+  } catch (error) {
+    console.error('Authentication error:', error);
+    toast.error(error instanceof Error ? error.message : "Authentication failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -235,33 +331,54 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
     navigate("/");
   };
 
-  const handlePasswordReset = async () => {
-    if (!email) {
-      toast.error('Please enter your email to reset your password');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Check your email for password reset instructions');
-      setIsResetPassword(false); // After request, switch back to login view
-    } catch (error) {
-      console.error('Password reset error:', error);
-      toast.error(error.message || 'Password reset failed');
-    } finally {
-      setLoading(false);
-    }
-  };
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      {showResetForm ? (
+          <div>
+            <h2 className="text-2xl font-bold text-center mb-4">Reset Your Password</h2>
+            <form onSubmit={handlePasswordUpdate} className="space-y-4">
+              <div>
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Updating...' : 'Update Password'}
+              </button>
+            </form>
+          </div>
+        ) : (
+        <>
         <button
         onClick={() => {
           onClose();
@@ -370,7 +487,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+         <div className="mt-4 text-center">
           <button
             type="button"
             onClick={() => {
@@ -387,7 +504,9 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', onSuccess }:
               'Already have an account? Log in'
             )}
           </button>
-        </div>
+         </div>
+        </>
+        )}
       </div>
     </div>
   );
