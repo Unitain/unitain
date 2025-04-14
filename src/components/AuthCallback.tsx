@@ -9,8 +9,11 @@ export function AuthCallback() {
   const { setUser } = useAuthStore();
   const navigate = useNavigate();
 
-  function setUserCookie(userData: any) {
-    if (!userData) return;
+  const setUserCookie = (userData: any) => {
+    if (!userData) {
+      console.error("🚨 No userData provided, cannot set cookie.");
+      return;
+    }
     const trimmedUserData = {
       id: userData.id,
       email: userData.email,
@@ -22,177 +25,105 @@ export function AuthCallback() {
 
     const value = JSON.stringify(trimmedUserData);
     let cookieBase = `userData=${value}; Path=/; Secure; SameSite=None; Expires=Fri, 31 Dec 9999 23:59:59 GMT;`;
-    
     if (window.location.hostname === "localhost") {
-        document.cookie = cookieBase;
+      document.cookie = cookieBase;
     } else {
-        document.cookie = cookieBase + " Domain=.unitain.net;";
+      document.cookie = cookieBase + " Domain=.unitain.net;";
     }
-  }
+  };
 
-  const completeRegistration = async (user: any) => {
+  const handleAuthCallback = async () => {
     try {
-      // Check if user already exists in the users table
-      const { data: existingUser, error: userCheckError } = await supabase
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('code');
+      const type = params.get('type');
+      const email = params.get('email'); 
+      const error = params.get('error');
+
+      console.log("params", params);
+      console.log("token", token);
+      console.log("type", type);
+      console.log("error", error);
+      console.log(token && type === 'signup');
+      
+      
+      if (error) throw new Error(error);
+
+      if (token && type === 'signup') {
+          if (!email) throw new Error("Email is required for verification");
+          const { data: tokenData, error: tokenError } = await supabase.auth.verifyOtp({ token, type: 'signup', email });
+        console.log("🚀 tokenData:", tokenData)
+        
+        if (tokenError) throw tokenError;
+        if (!tokenData.user?.email) throw new Error("Couldn't retrieve email from token");
+
+        // Completing Email Confirmation & User Data Insertion
+        const user = tokenData.user;
+
+        // Insert ToS acceptance record
+        const { data: ToSData, error: ToSError } = await supabase.from('user_tos_acceptance').insert({
+          user_id: user.id,
+          tos_version_id: user.tosData.tos_version_id,
+          ip_address: user.tosData.ip_address || window.location.hostname,
+          device_info: user.tosData.device_info || navigator.userAgent,
+        }).select().single();
+        
+        if (ToSError) throw ToSError;
+
+        const { error: userError } = await supabase.from("users").upsert({
+          id: user.id,
+          email: user.email,
+          created_at: new Date().toISOString(),
+          payment_status: "pending",
+          is_eligible: false,
+          ToS_checked: true,
+          tos_acceptance: ToSData.id
+        });
+
+        if (userError) throw userError;
+
+        // After user creation, fetch user data
+        const { data: userData, error: fetchError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        setUser(userData);
+        setUserCookie(userData);
+
+        toast.success('Email successfully confirmed!');
+        navigate("/");
+      }
+
+      // Standard session check
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        throw sessionError || new Error("No active session found");
+      }
+
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (userCheckError) {
-        console.error("Error checking existing user:", userCheckError);
-      }
-      
-      // If user already exists, just update the session
-      if (existingUser) {
-        console.log("User already exists in database, updating session");
-        setUser(existingUser);
-        setUserCookie(existingUser);
-        toast.success('Login successful!');
-        navigate("/");
-        return;
-      }
-      
-      // Get TOS data from user_metadata
-      const tosData = user.user_metadata?.tos_data;
-      
-      if (!tosData?.version) {
-        throw new Error("Terms of Service acceptance not found");
-      }
-
-      // 1. Record TOS acceptance
-      const { data: tosRecord, error: tosError } = await supabase
-        .from('user_tos_acceptance')
-        .insert({
-          user_id: user.id,
-          tos_version_id: tosData.version,
-          ip_address: tosData.ip || 'unknown',
-          device_info: tosData.device || navigator.userAgent.slice(0, 100)
-        })
-        .select()
+        .eq('id', sessionData.session.user.id)
         .single();
-
-      if (tosError) throw tosError;
-
-      // 2. Create user profile
-      const { error: userError } = await supabase.from("users").upsert({
-        id: user.id,
-        email: user.email,
-        created_at: new Date().toISOString(),
-        payment_status: "pending",
-        is_eligible: false,
-        ToS_checked: true,
-        tos_acceptance: tosRecord.id
-      });
 
       if (userError) throw userError;
 
-      // 3. Get complete user data
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      setUser(userData);
-      setUserCookie(userData);
-      toast.success('Registration complete!');
-      // navigate("/");
+      const mergedUser = { ...sessionData.session.user, ...(userData || {}) };
+      setUser(mergedUser);
+      setUserCookie(mergedUser);
 
     } catch (error) {
-      console.error("Registration completion error:", error);
-      toast.error("Registration failed. Please try signing in.");
-      // navigate("/");
+      console.error("Authentication error:", error);
+      toast.error(error instanceof Error ? error.message : "Authentication failed");
     }
   };
 
   useEffect(() => {
-    const handleAuth = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const type = params.get('type');
-        const email = params.get('email');
-
-        console.log("Auth callback params:", { code, type, email });
-
-        // 1. Handle email confirmation
-        if (code && type === 'signup') {
-          try {
-            // Try to get the session directly
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            
-            if (sessionError) {
-              console.error("Session error:", sessionError);
-              throw sessionError;
-            }
-            
-            if (session?.user) {
-              // We have a valid session, complete registration
-              await completeRegistration(session.user);
-              return;
-            }
-            
-            // If no session, try to verify the email
-            if (email) {
-              // Try to sign in with the email
-              const { data: signInData, error: signInError } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                  shouldCreateUser: false
-                }
-              });
-              
-              if (signInError) {
-                console.error("Sign in error:", signInError);
-                throw signInError;
-              }
-              
-              toast.success("Verification email sent. Please check your inbox.");
-              navigate("/");
-              return;
-            }
-            
-            // If we get here, we couldn't verify the email
-            toast.error("Verification failed. Please try signing up again.");
-            navigate("/");
-            return;
-          } catch (flowError) {
-            console.error("Flow error:", flowError);
-            toast.error("Verification failed. Please try signing up again.");
-            navigate("/");
-            return;
-          }
-        }
-
-        // 2. Handle regular session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          throw sessionError || new Error("Please sign in to continue");
-        }
-
-        // Get full user data
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        // Merge auth and profile data
-        const mergedUser = { ...session.user, ...(userData || {}) };
-        setUser(mergedUser);
-        setUserCookie(mergedUser);
-        navigate("/");
-
-      } catch (err) {
-        console.error("Authentication error:", err);
-        toast.error(err instanceof Error ? err.message : "Authentication failed");
-        navigate("/");
-      }
-    };
-
-    handleAuth();
+    handleAuthCallback();
   }, [navigate, setUser]);
 
   return (
