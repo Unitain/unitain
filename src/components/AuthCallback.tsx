@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -8,7 +8,32 @@ import { useNavigate } from 'react-router-dom';
 export function AuthCallback() {
   const { setUser } = useAuthStore();
   const navigate = useNavigate();
+  const [activeToS, setActiveToS] = useState(null);
+  const [ipAddress, setIpAddress] = useState('');
   
+  useEffect(() => {
+    async function fetchIP() {
+      try {
+        const res = await fetch('https://api64.ipify.org?format=json');
+        const data = await res.json();
+        setIpAddress(data.ip);
+      } catch (error) {
+        console.error('Error fetching IP:', error);
+      }
+    }
+    fetchIP();
+
+    async function fetchActiveTermsOfService() {
+      const { data, error } = await supabase
+        .from('terms_of_service')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+      if (!error) setActiveToS(data);
+    }
+    fetchActiveTermsOfService();
+  }, []);
+
   function setUserCookie(userData: any) {
     if (!userData) {
         console.error("🚨 No userData provided, cannot set cookie.");
@@ -38,27 +63,20 @@ export function AuthCallback() {
 
   const handleEmailConfirmation = async (user: any, pendingSignup: any) => {
     try {
-      console.log("Starting email confirmation for user:", user.email);
-      
-      if (!pendingSignup) {
-        throw new Error("No pending signup data found in localStorage");
-      }
-  
+      console.log("Completing signup for:", user.email);
+ 
       // Insert ToS acceptance record
       const { data: ToSData, error: ToSError } = await supabase
         .from('user_tos_acceptance')
         .insert({
           user_id: user.id,
           tos_version_id: pendingSignup.tosData.tos_version_id,
-          ip_address: pendingSignup.tosData.ip_address,
-          device_info: pendingSignup.tosData.device_info,
+          ip_address: pendingSignup.tosData.ip_address || ipAddress,
+          device_info: pendingSignup.tosData.device_info || navigator.userAgent,
         })
         .select()
         .single();
-  
       if (ToSError) throw ToSError;
-  
-      // Insert user record
       const { error: userError } = await supabase.from("users").upsert({
         id: user.id,
         email: user.email,
@@ -70,9 +88,9 @@ export function AuthCallback() {
       });
   
       if (userError) throw userError;
-  
+
       localStorage.removeItem('pendingSignup');
-  
+      sessionStorage.removeItem('pendingSignup');
       const { data: userData, error: fetchError } = await supabase
         .from("users")
         .select("*")
@@ -90,7 +108,8 @@ export function AuthCallback() {
     } catch (error) {
       console.error("Full confirmation error:", error);
       toast.error("Confirmation failed. Please try signing in.");
-      navigate("/auth/signin");
+      // navigate("/auth/signin");
+      console.log('handleEmailConfirmation wala error')
     }
   };
 
@@ -100,63 +119,77 @@ export function AuthCallback() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token') || params.get('code');
         const type = params.get('type');
-  
+        const error = params.get('error');
+
+        if (error) throw new Error(error);
+
         // Email confirmation flow
         if (token && type === 'signup') {
           const pendingSignup = JSON.parse(localStorage.getItem('pendingSignup') || 'null');
           if (!pendingSignup?.email) {
-            throw new Error("Couldn't find your signup data. Please sign up again.");
+            // Fallback: Verify token directly to get email
+            const { data: tokenData, error: tokenError } = await supabase.auth.verifyOtp({
+              token,
+              type: 'signup',
+            });
+
+            if (tokenError) throw tokenError;
+            if (!tokenData.user?.email) throw new Error("Couldn't retrieve email from token");
+
+            pendingSignup = {
+              email: tokenData.user.email,
+              tosData: {
+                tos_version_id: activeToS?.id || 'unknown',
+                ip_address: ipAddress || 'unknown',
+                device_info: navigator.userAgent,
+                timestamp: new Date().toISOString()
+              }
+            };
           }
-  
-          const { data, error } = await supabase.auth.verifyOtp({
+
+          const { data, error: verifyError } = await supabase.auth.verifyOtp({
             email: pendingSignup.email,
             token,
             type: 'signup',
           });
-  
-          if (error) throw error;
+          if (verifyError) throw verifyError;
           if (!data.session?.user) throw new Error("Session creation failed");
-  
+
           await handleEmailConfirmation(data.session.user, pendingSignup);
           return;
         }
-  
+
         // Standard session check
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
         if (sessionError || !sessionData.session) {
           throw sessionError || new Error("No active session found");
         }
-  
-        // Get full user data including custom fields
+
+        // Get full user data
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
           .eq('id', sessionData.session.user.id)
           .single();
-  
+          
         if (userError) throw userError;
-  
-        // Merge auth user with database user
-        const mergedUser = { ...sessionData.session.user, ...(userData || {}) };
-  
-        // Set user in state AND cookie
-        setUser(mergedUser);
-        setUserCookie(mergedUser); // Add this line
 
-        navigate("/");
-  
+        // Merge and set user
+        const mergedUser = { ...sessionData.session.user, ...(userData || {}) };
+        setUser(mergedUser);
+        setUserCookie(mergedUser);
+        // navigate("/");
+
       } catch (error) {
-        console.error("Authentication process failed:", error);
-        toast.error(
-          error instanceof Error ? error.message : "Authentication failed"
-        );
-        navigate("/auth/signin");
+        console.error("Authentication error:", error);
+        toast.error(error instanceof Error ? error.message : "Authentication failed");
+        console.log('useEffect wala error')
+        // navigate("/auth/signin");
       }
     };
-  
+
     handleAuthCallback();
-  }, [navigate, setUser]);
+  }, [navigate, setUser, activeToS, ipAddress]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

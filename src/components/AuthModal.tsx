@@ -25,36 +25,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
   const [isResetPassword, setIsResetPassword] = useState(false); 
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showResetForm, setShowResetForm] = useState(false);
 
-  useEffect(() => {
-    if (forceResetForm) {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('code');
-      const type = params.get('type');
-      
-      if (token && type === 'recovery') {
-        supabase.auth.getUser(token)
-          .then(({ data: { user }, error }) => {
-            if (error) {
-              console.error('Error getting user from token:', error);
-              toast.error('Invalid or expired password reset link');
-              onClose();
-              return;
-            }
-            
-            if (user?.email) {
-              setEmail(user.email);
-              setShowResetForm(true);
-              setIsLogin(false);
-              setIsResetPassword(false);
-            }
-          });
-      }
-    }
-  }, [forceResetForm, onClose]);
 
   const fetchActiveTermsOfService = async () => {
     const { data, error } = await supabase
@@ -122,90 +93,12 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
     }
   }
 // Add this to your AuthModal component
-
-const handlePasswordResetRequest = async () => {
-  if (!email) {
-    toast.error('Please enter your email to reset your password');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/?type=recovery`,
-    });
-    
-    if (error) throw error;
-
-    toast.success('Password reset link sent to your email!');
-    setIsResetPassword(false);
-  } catch (error) {
-    toast.error(error.message || 'Failed to send reset email');
-  } finally {
-    setLoading(false);
-  }
-};
-
-// In your AuthModal component
-const handlePasswordUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (newPassword !== confirmPassword) {
-    toast.error("Passwords don't match");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    // Get the token from URL
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('code');
-    
-    if (!token) {
-      throw new Error('Missing reset token');
-    }
-
-    // First verify the token by exchanging it for a session
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: email,
-      token: token,
-      type: 'recovery'
-    });
-
-    if (verifyError) {
-      throw new Error('Invalid or expired password reset link');
-    }
-
-    // Now update the password
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (updateError) throw updateError;
-
-    toast.success('Password updated successfully!');
-    setShowResetForm(false);
-    setNewPassword('');
-    setConfirmPassword('');
-    onClose();
-  } catch (error) {
-    console.error('Password reset error:', error);
-    toast.error(error instanceof Error ? error.message : 'Password update failed');
-  } finally {
-    setLoading(false);
-  }
-};
-
 const handleAuth = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
 
   try {
-    if (showResetForm) {
-      await handlePasswordUpdate(e);
-    } else if (isResetPassword) {
-      await handlePasswordResetRequest();
-    } else if (isLogin) {
+    if (isLogin) {
       await handleLogin();
     } else {
       await handleSignup();
@@ -248,22 +141,21 @@ const handleAuth = async (e: React.FormEvent) => {
           }
   };
   }
+
   // const handleSignup = async () => {
   //   if (!acceptedTerms) {
-  //     throw new Error("Please accept the Terms of Use before signing up.");
+  //     throw new Error("Please accept the Terms of Use");
   //   }
   
   //   if (!activeToS) {
-  //     throw new Error("Terms of Service information not loaded. Please try again.");
+  //     throw new Error("Terms of Service not loaded");
   //   }
   
   //   const { data, error } = await supabase.auth.signUp({ 
   //     email, 
   //     password,
   //     options: {
-  //       // Updated to point to your auth callback route
-  //       // emailRedirectTo: 'https://unitain.net/auth/callback',
-  //       emailRedirectTo: 'http://localhost:5176/auth/callback',
+  //       emailRedirectTo: `${window.location.origin}/auth/callback`,
   //       data: {
   //         tos_version_id: activeToS.id,
   //         ip_address: ipAddress,
@@ -274,64 +166,55 @@ const handleAuth = async (e: React.FormEvent) => {
     
   //   if (error) throw error;
     
-  //   // Store pending signup info with additional metadata
-  //   const pendingSignup = {
+  //   // Store pending signup info
+  //   localStorage.setItem('pendingSignup', JSON.stringify({
   //     email,
   //     tosData: {
   //       tos_version_id: activeToS.id,
   //       ip_address: ipAddress,
   //       device_info: navigator.userAgent,
-  //     },
-  //     timestamp: new Date().toISOString()
-  //   };
+  //     }
+  //   }));
     
-  //   localStorage.setItem('pendingSignup', JSON.stringify(pendingSignup));
-    
-  //   toast.success(
-  //     <div>
-  //       <p>Please check your email to confirm your account.</p>
-  //       <p>Your account will be fully created after confirmation.</p>
-  //     </div>,
-  //     { duration: 6000 }
-  //   );
-    
+  //   toast.success("Check your email for confirmation");
   //   onClose();
-  //   navigate("/", { replace: true });
+  //   navigate("/");
   // };
-  const handleSignup = async () => {
-    if (!acceptedTerms) {
-      throw new Error("Please accept the Terms of Use");
-    }
-  
-    if (!activeToS) {
-      throw new Error("Terms of Service not loaded");
-    }
-  
-    const { data, error } = await supabase.auth.signUp({ 
+
+
+const handleSignup = async () => {
+  if (!acceptedTerms) throw new Error("Please accept the Terms of Use");
+  if (!activeToS) throw new Error("Terms of Service not loaded");
+
+  // Check for existing user
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (existingUser) throw new Error("Email already registered");
+
+  const tosParams = new URLSearchParams({
+    tos_version: activeToS.id,
+    ip: ipAddress,
+    device: navigator.userAgent.slice(0, 100)
+  }).toString();
+
+
+  const { error } = await supabase.auth.signUp({
       email, 
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?${tosParams}`,
         data: {
-          tos_version_id: activeToS.id,
-          ip_address: ipAddress,
-          device_info: navigator.userAgent,
+          tos_data: {
+            version: activeToS.id,
+            accepted_at: new Date().toISOString()
+          }
         }
       },
-    });
-    
+  });
     if (error) throw error;
-    
-    // Store pending signup info
-    localStorage.setItem('pendingSignup', JSON.stringify({
-      email,
-      tosData: {
-        tos_version_id: activeToS.id,
-        ip_address: ipAddress,
-        device_info: navigator.userAgent,
-      }
-    }));
-    
     toast.success("Check your email for confirmation");
     onClose();
     navigate("/");
@@ -342,49 +225,6 @@ const handleAuth = async (e: React.FormEvent) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-      {showResetForm ? (
-          <div>
-            <h2 className="text-2xl font-bold text-center mb-4">Reset Your Password</h2>
-            <form onSubmit={handlePasswordUpdate} className="space-y-4">
-              <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
-            </form>
-          </div>
-        ) : (
-        <>
         <button
         onClick={() => {
           onClose();
@@ -511,8 +351,6 @@ const handleAuth = async (e: React.FormEvent) => {
             )}
           </button>
          </div>
-        </>
-        )}
       </div>
     </div>
   );
