@@ -92,7 +92,7 @@ export function DashboardChatGPT() {
       try {
         if (!user) {
           console.warn("No user found in dashboard, redirecting to login...");
-          navigate("/auth/signin");
+          // 
           return;
         }
 
@@ -104,7 +104,7 @@ export function DashboardChatGPT() {
         if (error || !session) {
           console.error("Session validation failed:", error);
           toast.error("Your session has expired. Please sign in again.");
-          navigate("/auth/signin");
+          // 
           return;
         }
 
@@ -114,7 +114,7 @@ export function DashboardChatGPT() {
       } catch (error) {
         console.error("Dashboard session check failed:", error);
         toast.error("Failed to load dashboard. Please try again.");
-        navigate("/auth/signin");
+        // 
       }
     };
 

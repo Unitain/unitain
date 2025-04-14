@@ -368,7 +368,6 @@ function AppContent() {
 
   const handleShowPayment = React.useCallback(() => {
     if (!user) {
-      // navigate("/auth/signin");
       setShowAuthModal(true);
       return;
     }
