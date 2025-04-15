@@ -24,26 +24,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
   const [activeToS, setActiveTos] = useState(null)
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
-  const [isResetPassword, setIsResetPassword] = useState(false); 
-
-
-  const fetchActiveTermsOfService = async () => {
-    const { data, error } = await supabase
-      .from('terms_of_service')
-      .select('*')
-      .eq('is_active', true)
-      .single();
-
-    if(error){
-      console.error("error", error);
-      return
-    }
-    setActiveTos(data)
-  };
-
-  useEffect(()=>{
-    fetchActiveTermsOfService()
-  }, [])
+  const [isResetPassword, setIsResetPassword] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return;
@@ -52,19 +33,6 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
     setAcceptedTerms(false);
     setIsLogin(defaultView === 'login');
   }, [isOpen, defaultView]);
-
-  useEffect(() => {
-    async function fetchIP() {
-      try {
-        const res = await fetch('https://api64.ipify.org?format=json');
-        const data = await res.json();
-        setIpAddress(data.ip);
-      } catch (error) {
-        console.error('Error fetching IP:', error);
-      }
-    }
-    fetchIP();
-  }, []);
 
   function setUserCookie(userData: any) {
     if (!userData) {
@@ -92,7 +60,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
         console.log("✅ Cookie set for unitain.net:", document.cookie);
     }
   }
-// Add this to your AuthModal component
+
 const handleAuth = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
@@ -147,21 +115,14 @@ const handleAuth = async (e: React.FormEvent) => {
       throw new Error('Please accept the Terms of Use');
     }
 
-    if (!activeToS) {
-      throw new Error('Terms of Service not loaded');
-    }
+    // if (!activeToS) {
+    //   throw new Error('Terms of Service not loaded');
+    // }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback?email=${encodeURIComponent(email)}`,
-        tos_data: {
-          version: activeToS?.id || '',
-          accepted_at: new Date().toISOString(),
-          ip: ipAddress,              
-          device: navigator.userAgent,
-          signup_origin: window.location.hostname
-        },
       },
     });
 
