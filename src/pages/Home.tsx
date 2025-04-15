@@ -1,7 +1,7 @@
 const Home = () => {
   return (
-    <div>
-      
+    <div className="flex justify-center h-screen items-center text-lg">
+      you are login successfully and home is under development...
     </div>
   )
 }
