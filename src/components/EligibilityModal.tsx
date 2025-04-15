@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useState } from 'react';
 import { useAuthStore } from "../lib/store";
 import toast from "react-hot-toast";
+import { log } from 'console';
 
 interface EligibilityModalProps {
   isOpen: boolean;
@@ -21,6 +22,11 @@ export function EligibilityModal({ isOpen, onClose, message, bgColor, onAuthRequ
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const handleNavigation = async () => {
+    const checkEligible = localStorage.getItem('is_eligible')
+    if(!checkEligible){
+      localStorage.setItem('is_eligible', 'true')
+    }
+
     if(user) {
       const { error } = await supabase
       .from('users')

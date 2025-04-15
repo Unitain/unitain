@@ -133,23 +133,39 @@ const handleAuth = async (e: React.FormEvent) => {
     if (!acceptedTerms) {
       throw new Error('Please accept the Terms of Use');
     }
-
-    // if (!activeToS) {
-    //   throw new Error('Terms of Service not loaded');
-    // }
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?email=${encodeURIComponent(email)}`,
-      },
-    });
-
-    if (error) throw error;
-
-    toast.success('Check your email for confirmation');
-    onClose();
-    navigate('/');
+    const is_eligible = localStorage.getItem('is eligible')
+    if(is_eligible){
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?email=${encodeURIComponent(email)}`,
+          data: {
+            is_eligible: !!is_eligible,
+          },
+        },
+      });
+  
+      if (error) throw error;
+  
+      toast.success('Check your email for confirmation');
+      onClose();
+      navigate('/');
+    }else{
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?email=${encodeURIComponent(email)}`,
+        },
+      });
+  
+      if (error) throw error;
+  
+      toast.success('Check your email for confirmation');
+      onClose();
+      navigate('/');
+    }
   };
 
   if (!isOpen) return null;

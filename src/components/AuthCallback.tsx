@@ -247,6 +247,8 @@ export function AuthCallback() {
       const token = params.get('code');
       const type = params.get('type');
       const email = params.get('email');
+      const is_eligible = params.get('is_eligible') === 'true';
+      console.log("🚀 ~ handleAuthCallback ~ is_eligible:", is_eligible)
       const error = params.get('error');
 
       if (error) throw new Error(error);
@@ -277,7 +279,7 @@ export function AuthCallback() {
           email: user.email,
           created_at: new Date().toISOString(),
           payment_status: "pending",
-          is_eligible: false,
+          is_eligible,
           ToS_checked: true,
           tos_acceptance: ToSData.id
         });
@@ -297,7 +299,11 @@ export function AuthCallback() {
         setUserCookie(userData);
 
         toast.success('Email successfully confirmed!');
+        if(is_eligible){
+          window.location.href = "https://app.unitain.net";
+        }else{
         navigate("/");
+        }
       }
 
       // Standard session check
