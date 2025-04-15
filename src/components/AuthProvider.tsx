@@ -56,29 +56,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser(null);
             }
             
-            switch (event) {
-              case 'SIGNED_IN':
-                if (!successMessageShownRef.current) {
-                  toast.success('Successfully signed in!');
-                  successMessageShownRef.current = true;
-                }
-                break;
-              case 'USER_UPDATED':
-                toast.success('Profile updated');
-                break;
-              case 'PASSWORD_RECOVERY':
-                toast.success('Password reset email sent');
-                break;
-              case 'USER_DELETED':
-                toast.success('Account deleted successfully');
-                break;
-              case 'SIGNED_OUT':
-                successMessageShownRef.current = false;
-                localStorage.removeItem('sb-auth-token');
-                localStorage.removeItem('auth-storage');
-                localStorage.removeItem('userData');
-                break;
-            }
+            // switch (event) {
+            //   case 'SIGNED_IN':
+            //     if (!successMessageShownRef.current) {
+            //       toast.success('Successfully signed in!');
+            //       successMessageShownRef.current = true;
+            //     }
+            //     break;
+            //   case 'USER_UPDATED':
+            //     toast.success('Profile updated');
+            //     break;
+            //   case 'PASSWORD_RECOVERY':
+            //     toast.success('Password reset email sent');
+            //     break;
+            //   case 'USER_DELETED':
+            //     toast.success('Account deleted successfully');
+            //     break;
+            //   case 'SIGNED_OUT':
+            //     successMessageShownRef.current = false;
+            //     localStorage.removeItem('sb-auth-token');
+            //     localStorage.removeItem('auth-storage');
+            //     localStorage.removeItem('userData');
+            //     break;
+            // }
           }
         });
 

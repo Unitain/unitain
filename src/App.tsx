@@ -17,6 +17,7 @@ import Failed from "./Failed";
 import {AuthModal} from "./components/AuthModal"; 
 import EligibilityChecker from "./components/EligibilityChecker"
 import {AuthCallback} from "./components/AuthCallback"
+import Reset from "../Reset"
 
 // Lazy load components
 const Testimonials = lazy(() => import("./components/Testimonials"));
@@ -347,18 +348,6 @@ function AppContent() {
   const { user } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalView, setAuthModalView] = useState<'login' | 'signup' | 'reset'>('login'); 
-  
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const resetCode = params.get('code');
-    const resetType = params.get('type');
-    
-    if (resetCode && resetType === 'recovery') {
-      setShowAuthModal(true);
-      setAuthModalView('reset');
-    }
-  }, []);
-
 
   const handleShowContact = React.useCallback(() => {
     setShowContact(true);
@@ -402,6 +391,7 @@ function AppContent() {
 
           <Routes>
             <Route path="/auth/callback" element={<AuthCallback />}/>
+            <Route path="/reset-password" element={<Reset />} />
             <Route
               path="/privacy"
               element={<PrivacyPolicy onBack={handleBack} />}

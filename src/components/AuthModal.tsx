@@ -19,9 +19,6 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true); 
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState<string>('1.8.9'); 
-  const [ipAddress, setIpAddress] = useState('');
-  const [activeToS, setActiveTos] = useState(null)
   const { setUser } = useAuthStore();
   const navigate = useNavigate()
   const [isResetPassword, setIsResetPassword] = useState(false)
@@ -61,12 +58,34 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login', forceResetFo
     }
   }
 
+  const handlePasswordReset = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password?type=recovery?email=${encodeURIComponent(email)}`,
+      });
+  
+      if (error) throw error;
+  
+      toast.success('Password reset email sent! Check your inbox.');
+      setIsResetPassword(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Password reset failed");
+      console.error("Password reset error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 const handleAuth = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
 
   try {
-    if (isLogin) {
+    if (isResetPassword) {
+      await handlePasswordReset();
+    } else if (isLogin) {
       await handleLogin();
     } else {
       await handleSignup();
