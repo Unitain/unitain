@@ -14,28 +14,11 @@
     "populate-changelog": "node scripts/populateChangelog.js"
   },
   "dependencies": {
-    "@paypal/paypal-js": "^8.0.0",
-    "@supabase/auth-ui-react": "^0.4.7",
-    "@supabase/auth-ui-shared": "^0.1.8",
-    "@supabase/supabase-js": "^2.39.7",
-    "axios": "^1.6.7",
-    "clsx": "^2.1.0",
-    "dotenv": "^16.4.4",
-    "i18next": "^23.10.0",
-    "i18next-browser-languagedetector": "^7.2.0",
-    "i18next-http-backend": "^2.4.3",
     "lucide-react": "^0.344.0",
-    "nanoid": "^5.0.6",
-    "openai": "^4.28.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
-    "react-i18next": "^14.0.5",
-    "react-router-dom": "^6.22.1",
-    "semver": "^7.7.1",
-    "sweetalert2": "^11.17.2",
-    "tailwind-merge": "^2.2.1",
-    "zustand": "^4.5.1"
+    "react-router-dom": "^6.22.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
