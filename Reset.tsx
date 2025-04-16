@@ -4,7 +4,6 @@ import { supabase } from "./src/lib/supabase";
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-
 function Reset() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -13,38 +12,31 @@ function Reset() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
- useEffect(() => {
+  useEffect(() => {
     const verifyResetToken = async () => {
       const token = searchParams.get('token');
       const type = searchParams.get('type');
       const email = searchParams.get('email');
       
-      console.log("🚀 ~ type:", type)
-      console.log("🚀 ~ token:", token)
-      console.log("🚀 ~ email:", email)
-
       if (!(type === 'recovery' && token && email)) {
         toast.error('Invalid password reset link');
+        navigate('/');
         return;
       }
 
       try {
-        console.log('Verifying OTP with:', { token, email });
         const { error } = await supabase.auth.verifyOtp({
           type: 'recovery',
           token,
           email,
         });
 
-        if (error) {
-          console.error('OTP verification error:', error);
-          throw error;
-        }
-        console.log('OTP verified successfully');
+        if (error) throw error;
         setIsValidLink(true);
       } catch (error) {
         console.error('Error verifying token:', error);
         toast.error(error.message || 'Invalid or expired reset link');
+        navigate('/');
       }
     };
 
@@ -52,29 +44,32 @@ function Reset() {
   }, [searchParams, navigate]);
 
   const handleSubmit = async (e) => {
-      e.preventDefault();
+    e.preventDefault();
 
       if (password !== confirmPassword) {
-          toast.error('Passwords do not match');
-          return;
+        toast.error('Passwords do not match');
+        return;
       }
 
     setLoading(true);
 
       try {
-          const { error } = await supabase.auth.updateUser({ password });
+        const { error: updateError } = await supabase.auth.updateUser({ password });
+        if (updateError) throw updateError;
 
-          if (error) throw error;
-          await supabase.auth.signOut();
-          console.log("🟢 successfully updated");
-          toast.success('🟢 Password updated successfully!');
-            navigate('/');
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) throw signOutError;
+
+        toast.success('🟢 Password updated successfully!');
+
+        navigate('/');
       } catch (error) {
-          toast.error(error.message);
+        console.error('Password reset error:', error);
+        toast.error(error.message || 'Failed to update password');
       } finally {
-          setLoading(false);
+        setLoading(false);
       }
-  };
+    };
 
   if (!isValidLink) {
       return null;
