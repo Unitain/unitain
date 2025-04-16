@@ -25,7 +25,6 @@ function Reset() {
 
       if (!(type === 'recovery' && token && email)) {
         toast.error('Invalid password reset link');
-        // navigate('/auth');
         return;
       }
 
@@ -41,13 +40,11 @@ function Reset() {
           console.error('OTP verification error:', error);
           throw error;
         }
-
         console.log('OTP verified successfully');
         setIsValidLink(true);
       } catch (error) {
         console.error('Error verifying token:', error);
         toast.error(error.message || 'Invalid or expired reset link');
-        // navigate('/auth');
       }
     };
 
@@ -62,25 +59,18 @@ function Reset() {
           return;
       }
 
-      setLoading(true);
+    setLoading(true);
 
       try {
-          const { error } = await supabase.auth.updateUser({
-              password: password
-          });
+          const { error } = await supabase.auth.updateUser({ password });
 
           if (error) throw error;
           await supabase.auth.signOut();
-
           console.log("🟢 successfully updated");
           toast.success('🟢 Password updated successfully!');
-          setTimeout(() => {
             navigate('/');
-        }, 1500);
-
       } catch (error) {
           toast.error(error.message);
-          console.error("Error resetting password:", error);
       } finally {
           setLoading(false);
       }
