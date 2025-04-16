@@ -60,9 +60,18 @@ function Reset() {
         const { error: signOutError } = await supabase.auth.signOut();
         if (signOutError) throw signOutError;
 
-        toast.success('🟢 Password updated successfully!');
+        await supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            console.warn('Session still exists after sign out');
+          }
+        });
 
-        navigate('/');
+        toast.success('🟢 Password updated successfully! You have been logged out.');
+
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 500);
+        
       } catch (error) {
         console.error('Password reset error:', error);
         toast.error(error.message || 'Failed to update password');
