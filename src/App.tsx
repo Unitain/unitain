@@ -30,13 +30,13 @@ const App = () => {
           setLoading(false);
           return;
         }
-
+        
         // Fetch user data from your users table
         const { data: userData, error } = await supabase
-          .from('users')
-          .select()
-          .eq('id', authUser.id)
-          .single();
+        .from('users')
+        .select()
+        .eq('id', authUser.id)
+        .single();
 
         if (error) throw error;
         
@@ -90,8 +90,7 @@ const App = () => {
     <BrowserRouter>
       <Header handleLogout={handleLogout} user={user} />
       <Routes>
-        <Route path="/" element={user ? <UsersPage /> : <Navigate to="/login" replace />} />
-        <Route path="/users" element={<UsersPage />} />
+        <Route path="/" element={user ? <UsersPage user={user}/> : <Navigate to="/login" replace />} />
         {/* <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/messages" element={<MessagesPage />} /> */}
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />} />
