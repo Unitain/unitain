@@ -1,4 +1,4 @@
-const Home = () => {
+const UsersPage = () => {
   return (
     <div className="flex justify-center h-screen items-center text-lg">
       you are login successfully and home is under development...
@@ -6,4 +6,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default UsersPage
