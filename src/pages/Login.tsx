@@ -5,7 +5,6 @@ import { supabase } from "../../src/supabase"
 const Login = () => {
     const [formData, setFormData] = useState({ email: "", password: "" })
     const [error, setError] = useState("")
-    const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()

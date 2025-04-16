@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import ErrorPage from './pages/ErrorPage';
-import Home from './pages/Home';
+import UsersPage from './pages/UsersPage';
 import Login from "./pages/Login";
 import { useEffect, useState } from 'react';
 import { supabase } from "../src/supabase";
@@ -74,15 +74,26 @@ const App = () => {
     return () => subscription?.unsubscribe();
   }, []);
 
+  const handleLogout = async () =>{
+    localStorage.clear();
+    const { error } = await supabase.auth.signOut()
+    if(error){
+      alert("Error in logout", error)
+    }
+  }
+
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
     <BrowserRouter>
-      <Header user={user} setUser={setUser} />
+      <Header handleLogout={handleLogout} user={user} />
       <Routes>
-        <Route path="/" element={user ? <Home /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={user ? <UsersPage /> : <Navigate to="/login" replace />} />
+        <Route path="/users" element={<UsersPage />} />
+        {/* <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/messages" element={<MessagesPage />} /> */}
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
