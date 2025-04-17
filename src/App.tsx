@@ -5,6 +5,7 @@ import UsersPage from './pages/UsersPage';
 import Login from "./pages/Login";
 import { useEffect, useState } from 'react';
 import { supabase } from "../src/supabase";
+import Documents from './pages/Documents';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -90,9 +91,9 @@ const App = () => {
     <BrowserRouter>
       <Header handleLogout={handleLogout} user={user} />
       <Routes>
-        <Route path="/" element={user ? <UsersPage user={user}/> : <Navigate to="/login" replace />} />
-        {/* <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/messages" element={<MessagesPage />} /> */}
+        <Route path="/" element={<UsersPage />}/>
+        <Route path="/documents" element={<Documents />}/>
+        {/* // <Route path="/messages" element={<MessagesPage />} />  */}
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>

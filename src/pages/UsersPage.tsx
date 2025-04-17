@@ -11,72 +11,54 @@ interface Submission {
   status: "pending" | "approved" | "rejected" | "missing";
 }
 
-const UsersPage = ({user}) => {
+const UsersPage = () => {
   const [filter, setFilter] = useState<"all" | "approved" | "missing" | "pending">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  console.log("🚀 ~ UsersPage ~ submissions:", submissions)
   const [users, setUsers] = useState([])
 
-  // useEffect(()=>{
-  //   if(user) {
-  //     const fetchSubmissions = async () =>{
-  //     const { data, error } = await supabase
-  //     .from('submission')
-  //     .select('');
-
-  //     console.log("🚀 ~ check ~ data:", data)
-  //     }
-
-  //   }else{
-  //     console.log("user ni mil raha");
-  //   }
-  // },[])
-
   useEffect(() => {
-    const fetchSubmissions = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-
-        console.log("before await");
-        const { data, error } = await supabase
-        .from('submission')
-        .select()
-        .filter('images', 'neq', null);
-        console.log(data);
-
-          const userIds = submissions.map(submission => submission.user_id);
-
-          const {data: userData, error:userError} = await supabase
+        
+        // 1. Get all submissions
+        const { data: submissions } = await supabase
+          .from('submission')
+          .select('*');
+  
+        // 2. Get all user IDs from submissions
+        const userIds = submissions.map(sub => sub.user_id);
+        
+        // 3. Get matching users
+        const { data: users } = await supabase
           .from('users')
-          .select('')
-          .in('id', userIds)
-
-          console.log("🚀 ~ fetchSubmissions ~ userData:", userData)
-
-      if (userError) {
-        console.error("Error fetching user data:", userError);
-        return
-      }
-      if (error) {
-        console.error("Error fetching submissions:", error);
-        return;
-      }
-        setUsers(userData || []);
-        setSubmissions(data || []);
+          .select('*')
+          .in('id', userIds);
+  
+        // 4. Combine data
+        const combined = submissions.map(sub => ({
+          ...sub,
+          user: users.find(user => user.id === sub.user_id)
+        }));
+  
+        setSubmissions(combined);
+        
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error("Error:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchSubmissions();
+  
+    fetchData();
   }, []);
 
   // Filter submissions based on search and filter
   const filteredSubmissions = submissions.filter(submission => {
-    const matchesSearch = submission.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = submission.user?.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filter === "all" || submission.status === filter;
     return matchesSearch && matchesFilter;
   });
@@ -95,12 +77,16 @@ const UsersPage = ({user}) => {
     });
   };
 
+  const totalImages = submissions.reduce((sum, submission) => sum + (submission.images?.length || 0),0);
+
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 container mx-auto">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-primary-600">
-          Documents Review
-        </h1>
+
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-primary-600">Users cases</h1>
+          <p className="text-gray-500 mt-1">Manage users uploaded document</p>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
           {/* Search Bar */}
@@ -141,44 +127,59 @@ const UsersPage = ({user}) => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Header */}
-          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center">
-            <div className="w-8 flex justify-center">
-              <span className="text-gray-400">#</span>
-            </div>
-            <div className="flex-1 font-medium text-gray-600">Email</div>
-            <div className="hidden md:block md:w-1/5 font-medium text-gray-600">
-              First Upload
-            </div>
-            <div className="hidden md:block md:w-1/6 font-medium text-gray-600">
-              Documents
-            </div>
-            <div className="w-1/4 md:w-1/6 font-medium text-gray-600">Status</div>
-            <div className="w-1/5 md:w-1/6"></div>
-          </div>
-
-          {/* User List */}
-          {filteredSubmissions.length > 0 ? (
-            filteredSubmissions.map((submission, index) => (
-              <div
-                key={submission.id}
-                className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors"
-              >
-                <div className="px-4 py-3 flex items-center">
-                  <div className="w-8 flex justify-center">
-                    <span className="text-gray-500">{index + 1}</span>
-                  </div>
-                  <div className="flex-1 text-primary-600 font-medium">
-                    {users.find(user => user.id === submission.userId)?.email || ''}
-                  </div>
-                  <div className="hidden md:block md:w-1/5 text-gray-600">
-                    {formatDate(submission.created_at)}
-                  </div>
-                  <div className="hidden md:block md:w-1/6 text-gray-600">
-                    {submission.documents?.length || 0} documents
-                  </div>
-                  <div className="w-1/4 md:w-1/6">
+        <div className="bg-white rounded-lg shadow-md overflow-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          {/* Table Header */}
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8 text-center">
+                #
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider flex-1 min-w-[150px]">
+                Email
+              </th>
+              <th scope="col" className="table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                First Upload
+              </th>
+              <th scope="col" className="table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Documents
+              </th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4 md:w-1/6">
+                Status
+              </th>
+              <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5 md:w-1/6">
+                Action
+              </th>
+            </tr>
+          </thead>
+      
+          {/* Table Body */}
+          <tbody className="bg-white divide-y divide-gray-200">
+            {submissions.length > 0 ? (
+              submissions.map((submission, index) => (
+                <tr key={submission.id} className="hover:bg-gray-50">
+                  {/* Index */}
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-center w-8">
+                    {index + 1}
+                  </td>
+      
+                  {/* Email (always visible) */}
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary-600 min-w-[150px]">
+                    {submission.user?.email}
+                  </td>
+      
+                  {/* First Upload (hidden on mobile) */}
+                  <td className="table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 w-1/5">
+                    {formatDate(submission?.created_at)}
+                  </td>
+      
+                  {/* Documents (hidden on mobile) */}
+                  <td className="table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 w-1/6">
+                    {submission?.images?.length || 0} documents
+                  </td>
+      
+                  {/* Status (always visible) */}
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 w-1/4 md:w-1/6">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         submission.status === "pending"
@@ -212,22 +213,27 @@ const UsersPage = ({user}) => {
                         </>
                       )}
                     </span>
-                  </div>
-                  <div className="w-1/5 md:w-1/6 flex justify-end">
-                    <button className="text-primary-600 hover:text-primary-800 flex items-center text-sm">
+                  </td>
+      
+                  {/* Action (always visible) */}
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-right w-1/5 md:w-1/6">
+                    <button className="text-primary-600 hover:text-primary-800 flex items-center justify-end text-sm w-full">
                       View Details
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              No submissions found
-            </div>
-          )}
-        </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="px-4 py-8 text-center text-sm text-gray-500">
+                  No submissions found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
       )}
 
       {/* Status Summary */}
@@ -242,7 +248,7 @@ const UsersPage = ({user}) => {
               <h3 className="font-medium text-gray-800">Total Documents</h3>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-2">
-              {submissions.length}
+              {totalImages}
             </div>
             <p className="text-sm text-gray-500">Total documents submitted</p>
           </div>
