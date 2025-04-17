@@ -217,7 +217,7 @@ export const Upload = () => {
 
     const { error: updateError } = await supabase
       .from("submission")
-      .update({ images: updatedImages })
+      .update({ documents: updatedImages })
       .eq("id", submission.id);
 
     if (updateError) {
@@ -308,7 +308,7 @@ export const Upload = () => {
       if (submission) {
         const { error: updateError } = await supabase
           .from("submission")
-          .update({ images: updatedImages })
+          .update({ documents: updatedImages })
           .eq("id", submission.id);
 
         if (updateError) {
@@ -324,7 +324,7 @@ export const Upload = () => {
               user_id: user?.id,
               payment_status: "pending",
               submission_complete: false,
-              images: updatedImages,
+              documents: updatedImages,
             },
           ])
           .select();
