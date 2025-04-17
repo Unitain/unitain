@@ -26,66 +26,111 @@ function Reset() {
         return;
       }
 
-      setIsValidLink(true);
+      try {
+        // Verify the token first
+        const { error } = await supabase.auth.verifyOtp({
+          email,
+          token,
+          type: 'recovery'
+        });
+
+        if (error) throw error;
+        setIsValidLink(true);
+
+        console.log('opt verifi hogayi');
+        
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        toast.error(error.message || 'Invalid or expired reset link');
+        await supabase.auth.signOut();
+        navigate('/');
+      }
     };
 
     verifyResetToken();
   }, [searchParams, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-      if (password !== confirmPassword) {
-        toast.error('Passwords do not match');
-        return;
-      }
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
 
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    console.log('condition tw sahi hai');
+    
     setLoading(true);
 
     try {
-      console.log('Updating password...');
-      const token = searchParams.get('token');
-      const email = searchParams.get('email');
+      console.log('under try');
+      
+      // First try the direct password update method
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password
+      });
+      console.log('password update');
 
-      if (!token || !email) {
-        throw new Error('Invalid reset link - missing parameters');
+      if (updateError) throw updateError;
+
+      // If successful, sign out the user
+      await supabase.auth.signOut();
+      console.log('user signout');
+      localStorage.clear();
+
+      toast.success('🟢 Password updated successfully! Please login with your new password.');
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 1000);
+
+    } catch (error) {
+      console.error('Password update error:', error);
+      console.log('error in catch');
+    
+      // If direct update fails, try the recovery method
+      try {
+        const token = searchParams.get('token');
+        const email = searchParams.get('email');
+
+      if (!email || !token) {
+        throw new Error('Email or token is missing');
       }
 
-      // First verify the token and update password in one step
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { error: recoveryError } = await supabase.auth.verifyOtp({
         email,
         token,
         type: 'recovery',
         new_password: password
       });
-      console.log('await kay bad wali line');
-      
-      
-      console.log('Update response:', { data, error });
-      
-      if (error) {
-        throw error;
-      }
+      console.log('again try ');
 
-      console.log('Password updated successfully');
-      toast.success('🟢 Password updated successfully!');
+        if (recoveryError) throw recoveryError;
 
-      // Clear any stored data and redirect
-      localStorage.clear();
-      window.location.replace('/');
-        
-      } catch (error) {
-        console.error('Password reset error:', error);
-        toast.error(error instanceof Error ? error.message : 'Failed to update password');
-        setLoading(false);
+        toast.success('🟢 Password updated successfully!');
+        setTimeout(() => {
+          navigate('/login', { replace: true });
+        }, 1000);
+      console.log('update again try ');
+      
+      } catch (recoveryError) {
+        console.error('Recovery method error:', recoveryError);
+        toast.error(recoveryError.message || 'Failed to update password. Please try again.');
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isValidLink) {
-      return null;
-    }
+    return null;
+  }
 
-    return (
+      return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
                 <button
