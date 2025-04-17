@@ -91,7 +91,7 @@ const App = () => {
     <BrowserRouter>
       <Header handleLogout={handleLogout} user={user} />
       <Routes>
-        <Route path="/" element={<UsersPage />}/>
+        <Route path="/" element={user ? <UsersPage user={user}/> : <Navigate to="/login" replace />} />
         <Route path="/documents" element={<Documents />}/>
         {/* // <Route path="/messages" element={<MessagesPage />} />  */}
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />} />
