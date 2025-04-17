@@ -9,6 +9,7 @@ export const Upload = () => {
   const [images, setImages] = useState<File[]>([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [user, setUser] = useState(null);
+  console.log("🚀 ~ Upload ~ user:", user)
   const [verifiedFiles, setVerifiedFiles] = useState<boolean[]>(Array(images.length).fill(false));
   const [paymentModal, setPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,28 +62,28 @@ export const Upload = () => {
   const fetchSubmission = async (userData) => {
     const { data, error } = await supabase
       .from("submission")
-      .select("id, images")
+      .select("id, documents")
       .eq("user_id", userData?.id);
 
     if (data.length > 0) {
       const latestSubmission = data.at(-1);
-      console.log("latestSubmission", latestSubmission?.images);
+      console.log("latestSubmission", latestSubmission?.documents);
 
-      setImages(latestSubmission.images);
-      setVerifiedFiles(latestSubmission.images.map((img) => img.verified));
+      setImages(latestSubmission?.documents);
+      setVerifiedFiles(latestSubmission?.documents.map((img) => img.verified));
 
       localStorage.setItem(
         "savedImages",
-        JSON.stringify(latestSubmission.images)
+        JSON.stringify(latestSubmission?.documents)
       );
       console.log(
         "🙌🙌 this is a latest Submission images",
-        latestSubmission?.images
+        latestSubmission?.documents
       );
 
       sessionStorage.setItem(
         "allImages",
-        JSON.stringify(latestSubmission.images)
+        JSON.stringify(latestSubmission.documents)
       );
     }
 
@@ -174,24 +175,24 @@ export const Upload = () => {
 
     let { data: submission, error: fetchError } = await supabase
       .from("submission")
-      .select("id, images")
+      .select("id, documents")
       .eq("user_id", user?.id)
       .maybeSingle();
 
-    console.log("submission", submission?.images);
+    console.log("submission", submission?.documents);
 
     if (fetchError) {
       console.error("Error fetching submission:", fetchError);
       return;
     }
 
-    if (!submission || !submission?.images || submission?.images.length === 0) {
+    if (!submission || !submission?.documents || submission?.documents.length === 0) {
       console.warn("No submission or images found!");
       return;
     }
-    console.log("submission.images[index]", submission.images[index]);
+    console.log("submission.documents[index]", submission.documents[index]);
 
-    const fileToDelete = submission.images[index]?.url;
+    const fileToDelete = submission.documents[index]?.url;
     console.log("🚀 ~ handleDelete ~ fileToDelete:", fileToDelete);
 
     if (!fileToDelete) {
@@ -211,8 +212,8 @@ export const Upload = () => {
     }
 
     console.log("✅ File deleted from storage successfully!");
-    // let updatedImages = submission.images.filter(img => img.url !== fileToDelete);
-    const updatedImages = submission.images.filter((_, i) => i !== index);
+    // let updatedImages = submission.documents.filter(img => img.url !== fileToDelete);
+    const updatedImages = submission.documents.filter((_, i) => i !== index);
     console.log("🚀 ~ handleDelete ~ updatedImages:", updatedImages);
 
     const { error: updateError } = await supabase
@@ -245,6 +246,7 @@ export const Upload = () => {
   };
 
   const handleVerify = async (index: number) => {
+    const createdBy = `${user?.payment_status, user?.email}`
     try {
       const imageToVerify = images[index];
       console.log("🚀 ~imageToVerify :", imageToVerify);
@@ -295,7 +297,7 @@ export const Upload = () => {
 
       let { data: submission, error: fetchError } = await supabase
         .from("submission")
-        .select("images, id")
+        .select("documents, id")
         .eq("user_id", user?.id)
         .maybeSingle();
 
@@ -325,6 +327,7 @@ export const Upload = () => {
               payment_status: "pending",
               submission_complete: false,
               documents: updatedImages,
+              createdBy: createdBy
             },
           ])
           .select();
