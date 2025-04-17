@@ -80,9 +80,69 @@ const UsersPage = () => {
   const totalDocuments = submissions.reduce((sum, submission) => sum + (submission.documents?.length || 0),0);
 
   return (
-    <div className="p-4 md:p-8 container mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div className="p-4 md:p-8 container mx-auto min-h-screen">
+      <div className="mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Total Documents Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-full bg-gray-50">
+                <Eye className="w-5 h-5 text-gray-600" />
+              </div>
+              <h3 className="font-medium text-gray-800">Total Documents</h3>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {totalDocuments}
+            </div>
+            <p className="text-sm text-gray-500">Total documents submitted</p>
+          </div>
 
+          {/* Pending Reviews Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-full bg-yellow-50">
+                <Clock className="w-5 h-5 text-yellow-600" />
+              </div>
+              <h3 className="font-medium text-gray-800">Pending Review</h3>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {statusCounts.pending}
+            </div>
+            <p className="text-sm text-gray-500">Documents awaiting review</p>
+          </div>
+
+          {/* Fully Reviewed Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-full bg-green-50">
+                <Check className="w-5 h-5 text-green-600" />
+              </div>
+              <h3 className="font-medium text-gray-800">Fully Reviewed</h3>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {statusCounts.approved}
+            </div>
+            <p className="text-sm text-gray-500">Documents approved</p>
+          </div>
+
+          {/* Rejected Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-full bg-red-50">
+                <X className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="font-medium text-gray-800">Rejected</h3>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {statusCounts.rejected}
+            </div>
+            <p className="text-sm text-gray-500">Documents rejected</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white py-4 px-6 rounded-xl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-primary-600">Users cases</h1>
           <p className="text-gray-500 mt-1">Manage users uploaded document</p>
@@ -235,68 +295,8 @@ const UsersPage = () => {
         </table>
       </div>
       )}
-
-      {/* Status Summary */}
-      <div className="mt-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Total Documents Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-full bg-gray-50">
-                <Eye className="w-5 h-5 text-gray-600" />
-              </div>
-              <h3 className="font-medium text-gray-800">Total Documents</h3>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {totalDocuments}
-            </div>
-            <p className="text-sm text-gray-500">Total documents submitted</p>
-          </div>
-
-          {/* Pending Reviews Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-full bg-yellow-50">
-                <Clock className="w-5 h-5 text-yellow-600" />
-              </div>
-              <h3 className="font-medium text-gray-800">Pending Review</h3>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {statusCounts.pending}
-            </div>
-            <p className="text-sm text-gray-500">Documents awaiting review</p>
-          </div>
-
-          {/* Fully Reviewed Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-full bg-green-50">
-                <Check className="w-5 h-5 text-green-600" />
-              </div>
-              <h3 className="font-medium text-gray-800">Fully Reviewed</h3>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {statusCounts.approved}
-            </div>
-            <p className="text-sm text-gray-500">Documents approved</p>
-          </div>
-
-          {/* Rejected Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-full bg-red-50">
-                <X className="w-5 h-5 text-red-600" />
-              </div>
-              <h3 className="font-medium text-gray-800">Rejected</h3>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {statusCounts.rejected}
-            </div>
-            <p className="text-sm text-gray-500">Documents rejected</p>
-          </div>
-        </div>
-      </div>
     </div>
+  </div>
   );
 };
 
