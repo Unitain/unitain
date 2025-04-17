@@ -246,11 +246,16 @@ export const Upload = () => {
   };
 
   const handleVerify = async (index: number) => {
-    const createdBy = {paymentStatus: user?.payment_status, email: user?.email}
     try {
       const imageToVerify = images[index];
       console.log("🚀 ~imageToVerify :", imageToVerify);
 
+      const createdBy = {
+        paymentStatus: user.payment_status || "unknown",
+        email: user.email
+      };
+
+      
       if (imageToVerify.verified) {
         alert("This image is already verified");
         return;
@@ -327,7 +332,7 @@ export const Upload = () => {
               payment_status: "pending",
               submission_complete: false,
               documents: updatedImages,
-              createdBy: createdBy
+              createdBy: createdBy,
             },
           ])
           .select();
