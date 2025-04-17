@@ -24,26 +24,13 @@ function Reset() {
         return;
       }
 
-      try {
-        const { error } = await supabase.auth.verifyOtp({
-          type: 'recovery',
-          token,
-          email,
-        });
-
-        if (error) throw error;
-        setIsValidLink(true);
-      } catch (error) {
-        console.error('Error verifying token:', error);
-        toast.error(error.message || 'Invalid or expired reset link');
-        navigate('/');
-      }
+      setIsValidLink(true);
     };
 
     verifyResetToken();
   }, [searchParams, navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
       if (password !== confirmPassword) {
@@ -53,29 +40,41 @@ function Reset() {
 
     setLoading(true);
 
-      try {
-        const { error: updateError } = await supabase.auth.updateUser({ password });
-        if (updateError) throw updateError;
+    try {
+      console.log('Updating password...');
+      const token = searchParams.get('token');
+      const email = searchParams.get('email');
 
-        const { error: signOutError } = await supabase.auth.signOut();
-        if (signOutError) throw signOutError;
+      if (!token || !email) {
+        throw new Error('Invalid reset link - missing parameters');
+      }
 
-        await supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session) {
-            console.warn('Session still exists after sign out');
-          }
-        });
+      // First verify the token and update password in one step
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'recovery',
+        new_password: password
+      });
+      console.log('await kay bad wali line');
+      
+      
+      console.log('Update response:', { data, error });
+      
+      if (error) {
+        throw error;
+      }
 
-        toast.success('🟢 Password updated successfully! You have been logged out.');
+      console.log('Password updated successfully');
+      toast.success('🟢 Password updated successfully!');
 
-        setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 500);
+      // Clear any stored data and redirect
+      localStorage.clear();
+      window.location.replace('/');
         
       } catch (error) {
         console.error('Password reset error:', error);
-        toast.error(error.message || 'Failed to update password');
-      } finally {
+        toast.error(error instanceof Error ? error.message : 'Failed to update password');
         setLoading(false);
       }
     };
