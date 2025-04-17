@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "./src/lib/supabase";
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -9,6 +9,8 @@ function Reset() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isValidLink, setIsValidLink] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -100,30 +102,56 @@ function Reset() {
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                             New Password
                         </label>
+                    <div className="relative">
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
                             required
                             minLength={6}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center mt-1"
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                            ) : (
+                                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                            )}
+                        </button>
+                    </div>
                     </div>
 
                     <div>
                         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                             Confirm Password
                         </label>
+                    <div className="relative">
                         <input
-                            type="password"
+                            type={showConfirmPassword ? "text" : "password"}
                             id="confirmPassword"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10"
                             required
                             minLength={6}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center mt-1"
+                        >
+                            {showConfirmPassword ? (
+                                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                            ) : (
+                                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                            )}
+                        </button>
+                    </div>
                     </div>
 
                     <button
