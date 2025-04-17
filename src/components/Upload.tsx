@@ -246,7 +246,7 @@ export const Upload = () => {
   };
 
   const handleVerify = async (index: number) => {
-    const createdBy = `${user?.payment_status, user?.email}`
+    const createdBy = {paymentStatus: user?.payment_status, email: user?.email}
     try {
       const imageToVerify = images[index];
       console.log("🚀 ~imageToVerify :", imageToVerify);
