@@ -77,7 +77,7 @@ const UsersPage = () => {
     });
   };
 
-  const totalImages = submissions.reduce((sum, submission) => sum + (submission.images?.length || 0),0);
+  const totalDocuments = submissions.reduce((sum, submission) => sum + (submission.documents?.length || 0),0);
 
   return (
     <div className="p-4 md:p-8 container mx-auto">
@@ -175,7 +175,7 @@ const UsersPage = () => {
       
                   {/* Documents (hidden on mobile) */}
                   <td className="table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 w-1/6">
-                    {submission?.images?.length || 0} documents
+                    {submission?.documents?.length || 0} documents
                   </td>
       
                   {/* Status (always visible) */}
@@ -248,7 +248,7 @@ const UsersPage = () => {
               <h3 className="font-medium text-gray-800">Total Documents</h3>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-2">
-              {totalImages}
+              {totalDocuments}
             </div>
             <p className="text-sm text-gray-500">Total documents submitted</p>
           </div>
