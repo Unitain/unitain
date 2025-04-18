@@ -218,28 +218,19 @@ const Documents = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {submission?.map((doc, index) => (
+              doc?.documents?.map((sub) =>  (
               <tr key={index} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg mr-3">
-                    {doc.documents[0].name.split('.').pop().toUpperCase()}
+                    {sub?.name.split('.').pop().toUpperCase()}
                     </div>
-                    <div>
-                      {/* <div className="text-sm text-gray-500">{doc.category}</div> */}
-                    </div>
+                    <div><div className="text-sm text-gray-500">{sub.name}</div></div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {/* <div className="font-medium">{doc?.createdBy.name}</div> */}
-                  <div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.createdBy?.email}</div>
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.createdBy?.email}</div></td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                  {new Date(doc.created_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </td>
+                  {new Date(doc.created_at).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric',})}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(doc.status)}`}>
                     <span className="mr-1">{getStatusIcon(doc.status)}</span>
@@ -261,6 +252,7 @@ const Documents = () => {
                   </div>
                 </td>
               </tr>
+              ))
             ))}
           </tbody>
         </table>
