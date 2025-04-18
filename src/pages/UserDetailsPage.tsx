@@ -9,7 +9,6 @@ const UserDetailsPage = () => {
   const { id } = useParams(); 
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
 
   const fetchSubmission = async () => {
     const { data, error } = await supabase
@@ -31,31 +30,30 @@ const UserDetailsPage = () => {
     if (id) fetchSubmission();
   }, [id]);
 
+
   const handleDocumentStatusChange = async (docId, newStatus) => {
-    const updatedDocs = submission.documents.map((doc) =>
-      doc.id === docId ? { ...doc, status: newStatus } : doc
+    console.log("🚀 ~ handleDocumentStatusChange ~ newStatus:", newStatus);
+    console.log("🚀 ~ handleDocumentStatusChange ~ docId:", docId);
+    
+    const updatedDocuments = submission.documents.map((doc) =>
+      doc.id === docId ? { ...doc, review_status: newStatus } : doc
     );
-    setSubmission({ ...submission, documents: updatedDocs });
-  
     const { error } = await supabase
-      .from('documents')
-      .update({ status: newStatus })
-      .eq('id', docId);
+      .from('submission')
+      .update({ documents: updatedDocuments })
+      .eq('id', submission.id);
   
     if (error) {
-      console.error('Error updating document status:', error);
-      // Optionally: show toast error
+      console.error("Supabase update error:", error);
+      alert("Failed to update document status");
+      return;
     }
+  
+    console.log("✅ Document status updated!");
+    setSubmission((prev) => ({  ...prev,documents: prev.documents.map((doc) =>doc.id === docId? { ...doc, review_status: newStatus }: doc)}));
+
   };
   
-  const getReviewStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'valid': return <Check className="w-4 h-4 text-emerald-500" />;
-      case 'unclear': return <HelpCircle className="w-4 h-4 text-amber-500" />;
-      case 'missing': return <X className="w-4 h-4 text-rose-500" />;
-      default: return null;
-    }
-  };
 
   if (loading) {
     return (
@@ -145,33 +143,54 @@ const UserDetailsPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{doc.category || 'N/A'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{doc.created_at || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric'}) : 'N/A'}</td>
+
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                          {getReviewStatusIcon(doc.status)}
-                          <select
-                            className="border text-sm rounded px-2 py-1 focus:outline-none"
-                            value={doc.status}
-                            onChange={(e) => handleDocumentStatusChange(doc.id, e.target.value)}
-                          >
-                            <option value="valid">Pending</option>
-                            <option value="valid">Verified</option>
-                            <option value="valid">Valid</option>
-                            <option value="unclear">Unclear</option>
-                            <option value="missing">Missing</option>
-                          </select>
-                        </div>
-                       </td>
+                        <div className="flex items-center gap-2">
+                        <select
+                          className={`
+                            text-sm rounded px-2 py-1 border 
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 
+                            ${
+                              doc.review_status === 'pending' ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : doc.review_status === 'verified' ? 'bg-green-50 text-green-700 border-green-200'
+                              : doc.review_status === 'unclear' ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : doc.review_status === 'missing' ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-slate-50 text-slate-700 border-slate-200'
+                            }
+                          `}
+                          value={doc.review_status}
+                          onChange={(e) => handleDocumentStatusChange(doc.id, e.target.value)}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="missing">Missing</option>
+                          <option value="unclear">Unclear</option>
+                          <option value="verified">Verified</option>
+                        </select>
+                      </div>
+                      </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="flex justify-end space-x-2">
-                            <button className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors" title="View Document">
-                              <Eye/>
-                            </button>
-                            <button className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Download Document">
-                              <Download/>
-                            </button>
-                          </div>
+                            <div className="flex justify-end space-x-2">
+                                <a
+                                  href={doc.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="View Document"
+                                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+                                >
+                                  <Eye />
+                                </a>
+                                <a
+                                  href={doc.url} 
+                                  download={doc.name || 'document'}
+                                  rel="noopener noreferrer"
+                                  title="Download Document"
+                                  className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                >
+                                  <Download />
+                                </a>
+                              </div>
                         </td>
                       </tr>
                     ))}
