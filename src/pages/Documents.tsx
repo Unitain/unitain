@@ -1,11 +1,14 @@
 import {useState, useEffect} from 'react';
 import {Search, Filter} from "lucide-react"
 import { supabase } from "../supabase";
+import { log } from 'console';
 
 const Documents = () => {
     const [filter, setFilter] = useState<"all" | "approved" | "missing" | "pending">("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(0)
+    const [submission ,setSubmissions] = useState(null)
+    console.log("🚀 ~ Documents ~ submission:", submission)
 
     const getPagination = (page, size) => {
       const limit = size ? +size : 3;
@@ -19,14 +22,16 @@ const Documents = () => {
           const { from, to } = getPagination(page, 10);
 
             const { data, error } = await supabase
-            .from('users')
+            .from('submission')
             .select('*')
             .range(from, to)
             .order('created_at', { ascending: false });
 
+            if(error){
+              console.log("error while fetching submissions");
+            }
+            setSubmissions(data);
             console.log("🚀 ~ fetchSubmissions ~ data:", data)
-            
-            console.log("Submission query result:", { data, error });
         };
 
     useEffect(() => {
@@ -135,8 +140,8 @@ const Documents = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 container mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-5">
+    <div className="p-4 md:p-8 container mx-auto min-h-screen overflow-y-hidden">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-5">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-primary-600">Documents</h1>
           <p className="text-gray-500 mt-1">Manage and review uploaded documents</p>
@@ -212,25 +217,28 @@ const Documents = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {documents.map((doc, index) => (
+            {submission?.map((doc, index) => (
               <tr key={index} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg mr-3">
-                      {doc.name.split('.').pop().toUpperCase()}
+                    {doc.documents[0].name.split('.').pop().toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{doc.name}</div>
-                      <div className="text-sm text-gray-500">{doc.category}</div>
+                      {/* <div className="text-sm text-gray-500">{doc.category}</div> */}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium">{doc.uploadedBy}</div>
-                  <div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.email}</div>
+                  {/* <div className="font-medium">{doc?.createdBy.name}</div> */}
+                  <div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.createdBy?.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                  {doc.uploadDate}
+                  {new Date(doc.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(doc.status)}`}>
