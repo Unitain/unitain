@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { CarIcon, Check, EyeIcon, DownloadIcon, UserIcon, Upload as UploadIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon, CheckCheck } from "lucide-react"
+import { CarIcon, Check, EyeIcon, DownloadIcon, FolderCheck, CircleDot,  CircleAlert, ShieldBan, CircleOff ,UserIcon, Upload as UploadIcon, ReceiptIcon, FileSpreadsheetIcon, CircleIcon,  TrashIcon, CheckCheck, LogOut } from "lucide-react"
 import { supabase } from "../lib/supabase";
 import axios from "axios";
 import { useTranslation } from "react-i18next"
+import { log } from "console";
 
 
 export const Upload = () => {
   const [images, setImages] = useState<File[]>([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [user, setUser] = useState(null);
-  console.log("🚀 ~ Upload ~ user:", user)
   const [verifiedFiles, setVerifiedFiles] = useState<boolean[]>(Array(images.length).fill(false));
   const [paymentModal, setPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export const Upload = () => {
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const hasUnverified = images.some((img) => !img.verified);
+      const hasUnverified = images.some((img) => img.review_status !== "verified");
       if (hasUnverified) {
         e.preventDefault();
         e.returnValue =
@@ -58,6 +58,19 @@ export const Upload = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [images]);
+
+  const [documents, setDocuments] = useState([
+    { id: 1, name: "Vehicle Documents", icon: <CarIcon />, status: "missing" },
+    { id: 2, name: "Owner's Documents", icon: <UserIcon />, status: "missing" },
+    { id: 3, name: "Tax Proof Documents", icon: <ReceiptIcon />, status: "missing" },
+    { id: 4, name: "NIF Document", icon: <FileSpreadsheetIcon />, status: "missing" },
+  ]);
+
+  const updateDocumentStatuses = (files) =>{
+    console.log("🚀 in updateDocumentStatuses ~ files:", files)
+    setDocuments(prevDocs => prevDocs.map((doc, index) => ({...doc, status: files[index]?.review_status || "missing"}))
+    );
+  }
 
   const fetchSubmission = async (userData) => {
     const { data, error } = await supabase
@@ -98,10 +111,11 @@ export const Upload = () => {
     setUser(userData);
 
     // Load saved images from localStorage
-    const savedImages = JSON.parse(localStorage.getItem("savedImages" || []));
+    const savedImages = JSON.parse(localStorage.getItem("savedImages") || "[]");
     if (savedImages) {
       setImages(savedImages);
       setVerifiedFiles(savedImages.map((img) => img.verified));
+      updateDocumentStatuses(savedImages)
     } else {
       fetchSubmission(userData);
     }
@@ -145,13 +159,14 @@ export const Upload = () => {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("🚀 ~ handleFileChange ~ event:", event)
     const files = event.target.files;
     if (files && files.length > 0) {
       const newImages = Array.from(files).map((file) => ({
         id: `temp-${Date.now()}-${file.name}`,
         url: URL.createObjectURL(file),
         name: file.name,
-        verified: false,
+        review_status: 'unSubmitted',
         file: file,
       }));
       const updatedImages = [...images, ...newImages];
@@ -165,10 +180,10 @@ export const Upload = () => {
   const handleDelete = async (index: number) => {
     if (!user?.id || !images[index]) return;
 
-    if (!images[index].verified) {
+    if (images[index].review_status === 'unSubmitted') {
       const updatedImages = images.filter((_, i) => i !== index);
       setImages(updatedImages);
-      setVerifiedFiles(updatedImages.map((img) => img.verified));
+      setVerifiedFiles(updatedImages.map((img) => img?.review_status == 'pending'));
       sessionStorage.setItem("allImages", JSON.stringify(updatedImages));
       return;
     }
@@ -225,17 +240,16 @@ export const Upload = () => {
       console.error("Error updating submission:", updateError);
     } else {
       const updatedImages = images.filter((_, i) => i !== index);
-      const updatedVerifiedFiles = updatedImages.map((img) => img.verified);
+      const updatedVerifiedFiles = updatedImages.map((img) => img.review_status == 'verified');
       console.log(
         "🚀 ~ handleDelete ~ updatedVerifiedFiles:",
         updatedVerifiedFiles
       );
       setImages(updatedImages);
+      console.log("updatedImages", updatedImages);
+      updateDocumentStatuses(updatedImages);
       setVerifiedFiles(updatedVerifiedFiles);
-      localStorage.setItem(
-        "savedImages",
-        JSON.stringify(updatedImages.filter((img) => img.verified))
-      );
+      localStorage.setItem("savedImages",JSON.stringify(updatedImages.filter((img) => img.review_status !== 'verified')));
       sessionStorage.setItem("allImages", JSON.stringify(updatedImages));
       console.log("✅ Image removed from submission successfully!");
     }
@@ -248,7 +262,6 @@ export const Upload = () => {
   const handleVerify = async (index: number) => {
     try {
       const imageToVerify = images[index];
-      console.log("🚀 ~imageToVerify :", imageToVerify);
 
       const createdBy = {
         paymentStatus: user.payment_status || "unknown",
@@ -284,19 +297,19 @@ export const Upload = () => {
       updatedImages[index] = {
         ...updatedImages[index],
         url: urlData.publicUrl,
-        verified: true,
+        review_status: 'pending',
         file: undefined,
+        uploaded_at: ((new Date()).toISOString()).toLocaleString('zh-TW')
       };
 
       setImages(updatedImages);
-      setVerifiedFiles(updatedImages.map((img) => img.verified));
-      localStorage.setItem(
-        "savedImages",
-        JSON.stringify(updatedImages.filter((img) => img.verified))
-      );
-      const sessionImages = JSON.parse(
-        sessionStorage.getItem("allImages") || []
-      );
+      console.log("verify updatedImages", updatedImages);
+
+      updateDocumentStatuses(updatedImages);
+
+      setVerifiedFiles(updatedImages.map((img) => img.review_status === 'pending'));
+      localStorage.setItem("savedImages",  JSON.stringify(updatedImages.filter((img) => img.review_status === 'pending')));
+      const sessionImages = JSON.parse(sessionStorage.getItem("allImages") || []);
       const updatedSessionImages = sessionImages.filter((_, i) => i !== index);
       sessionStorage.setItem("allImages", JSON.stringify(updatedSessionImages));
 
@@ -349,13 +362,6 @@ export const Upload = () => {
     }
   };
 
-  const documents = [
-    { id: 1, name: "Vehicle Documents", icon: <CarIcon /> },
-    { id: 2, name: "Owner's Documents", icon: <UserIcon /> },
-    { id: 3, name: "Tax Proof Documents", icon: <ReceiptIcon /> },
-    { id: 4, name: "NIF Document", icon: <FileSpreadsheetIcon /> },
-  ];
-
   const handleSubmit = (e: { preventDefault: () => void }) => {
     if (!user?.id) {
       throw new Error("User ID not found");
@@ -403,7 +409,38 @@ export const Upload = () => {
     }
   };
 
-  const verifiedCount = images.filter((img) => img.verified).length;
+  const verifiedCount = images.filter((img) => img.review_status === "verified")
+  const pendingCount = images.filter((img) => img.review_status === "pending")
+  console.log("verifiedCount", verifiedCount, pendingCount);
+
+  const ProgressBar = () => (
+    <div className="space-y-3 mt-6">
+      {documents.map((doc) => (
+        <div key={doc.id} className={`flex items-center p-3 rounded-lg border ${
+          doc.status === 'pending' ? 'bg-blue-50 border-blue-200 text-blue-700' : 
+          doc.status === 'verified' ? 'bg-green-50 border-green-200 text-green-700' :
+          doc.status === 'unclear' ? 'bg-amber-50 text-amber-700 border-green-200' :
+          'bg-gray-50 border-gray-200'
+        }`}>
+          <div className="mr-3">
+            {doc.status === 'pending' ? (
+              <CircleDot className="h-5 w-5 text-blue-500" />
+            ) : doc.status === 'verified' ? (
+              <Check className="h-5 w-5 text-green-500" />
+            ) : (
+              <CircleIcon className="h-5 w-5 text-gray-400" />
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {doc.icon}
+            <span>{doc.name}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+
   return (
     <div className="grid grid-cols-1 items-baseline lg:grid-cols-12 gap-6 sm:gap-8">
       <div className="lg:col-span-8 space-y-6 sm:space-y-8">
@@ -485,41 +522,45 @@ export const Upload = () => {
             ) : (
               <ul className="space-y-4 w-full">
                 {images.map((file, index) => (
-                  console.log("file.verified", file.verified),
+                  console.log("file", file),
                   <li
                     key={file.id}
                     className="flex relative items-center justify-between no-scrollbar px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overscroll-contain"
                   >
-                    <div className="flex md:w-auto gap-4 items-center mt-4">
+                    <div className="flex gap-6 md:w-auto items-center mt-4 text-left">
                       <img
                         src={file.url}
                         alt="uploaded"
                         className="md:w-16 md:h-16 w-11 h-11 object-contain rounded-lg"
                         />
                       <div>
-                      <span className="md:text-sm text-xs text-left text-gray-800">
+                      <span className="md:text-sm text-xs text-gray-800 mb-5">
                         {file.name}
                       </span>
-                      {file.verified && (
-                      <div className="text-green-700 flex text-xs gap-2 font-medium">
-                         <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          width="16" 
-                          height="16" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                          className="w-4 h-4"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M8 12l3 3 5-5" />
-                        </svg>
-                        verified
+                      
+                      <div className="mt-1">
+                      {file?.review_status === "verified" ? (
+                        <div className="text-green-700 flex text-xs gap-2 font-medium">
+                          <FolderCheck className="h-4 w-4"/> Verified
+                        </div>
+                      ) : file?.review_status === "unclear" ? (
+                        <div className="text-amber-700 flex text-xs gap-2 font-medium">
+                          <ShieldBan className="h-4 w-4"/> Unclear
+                        </div>
+                      ) : file?.review_status === "missing" ? (
+                        <div className="text-rose-700 flex text-xs gap-2 font-medium">
+                          <CircleOff className="h-4 w-4"/> Missing
+                        </div>
+                      ) : file?.review_status === "pending" ? (
+                        <div className="text-blue-700 flex text-xs gap-2 font-medium">
+                          <CircleDot className="h-4 w-4"/> Pending
+                        </div>
+                      ) : (
+                        <div className="text-slate-600 flex text-xs gap-2 font-medium">
+                          <CircleDot className="h-4 w-4"/> Unsubmitted
+                        </div>
+                      )}
                       </div>
-                    )}
                       </div>
                     </div>
                     <div className="flex gap-4 flex-col items-end">
@@ -537,15 +578,15 @@ export const Upload = () => {
                           onClick={() => {
                               if (!file.verified) handleVerify(index);
                             }}
-                            disabled={file.verified}
+                            disabled={file.review_status === 'pending'}
                             className={`p-2 rounded-md ${
-                              file.verified? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 transition-colors"
+                              file.review_status === 'pending' ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 transition-colors"
                             }`}
-                            title={file.verified ? "Already uploaded" : "Upload"}
+                            title={file.review_status === 'pending' ? "Already uploaded" : "Upload"}
                           >
                             <UploadIcon className="h-5 w-5" />
                           </button>
-                        {file.verified ? (
+                        {file.review_status === 'pending' ? (
                           <button
                             onClick={() =>
                               setDeleteIndex(index) || setWarning(true)
@@ -579,53 +620,8 @@ export const Upload = () => {
 
       {/* progres */}
       <div className="lg:col-span-4 space-y-6 sm:space-y-8 bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up">
-        <div className="border-b border-gray-100">
-          <div className="flex gap-5 items-center justify-between mb-7">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {t("upload.progressTitle")}
-            </h2>
-            <div className="text-sm font-medium text-gray-600">
-            </div>
-          </div>
-            {/* Horizontal traffic light indicator */}
-            <div className="flex justify-center mb-4"> 
-              <div className="flex gap-2">
-                {[1, 2, 3, 4].map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-2 w-8 rounded-full ${
-                      index < verifiedCount 
-                        ? "bg-green-500" 
-                        : index === verifiedCount
-                          ? "bg-blue-500 animate-pulse" 
-                          : "bg-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-        </div>
-
-        <div className="space-y-3">
-          {documents.map((doc, index) => {
-            const isVerified = verifiedFiles[index];
-            const isNextToProcess =  !isVerified && (index === 0 || verifiedFiles[index - 1]) && verifiedFiles.filter(Boolean).length < 4;            
-            return (
-              <div key={index} className={`flex items-center p-3 rounded-lg transition-all duration-300 ${isVerified? "bg-green-50 border-green-100": isNextToProcess? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-100"} border`}>
-                 <div className={`mr-3 ${isVerified ? "text-green-600"  : isNextToProcess ? "text-blue-500" : "text-gray-400"}`}>
-                  {isVerified ? (<Check className="h-6 w-6" />) : (<CircleIcon className="h-6 w-6" />)}
-                </div>
-                <div className="flex items-center flex-1">
-                  <div className={`mr-3 ${isVerified ? "text-green-600" : isNextToProcess ? "text-blue-500" : "text-gray-400" }`}>
-                    {doc.icon}
-                  </div>
-                  <span className={`font-medium ${isVerified? "text-green-600" : isNextToProcess ? "text-blue-600" : "text-gray-500"}`}>{doc.name}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
+      <h2 className="text-xl font-semibold text-gray-900">{t("upload.progressTitle")}</h2>
+        <ProgressBar/>
         <div className="p-6 bg-gray-50 rounded-b-lg">
           {verifiedFiles.filter(Boolean).length >= 4 ? (
             <div className="text-center text-sm text-green-500 font-semibold mb-4">
