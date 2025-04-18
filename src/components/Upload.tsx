@@ -59,6 +59,33 @@ export const Upload = () => {
     };
   }, [images]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const subscription = supabase
+      .channel(`submission:user_id=eq.${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'submission',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        setImages(payload.new.documents || []);
+        updateDocumentStatuses(payload.new.documents || []);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData") || "null");
+    setUser(userData);
+    fetchSubmission(userData); 
+  }, []);
+
   const [documents, setDocuments] = useState([
     { id: 1, name: "Vehicle Documents", icon: <CarIcon />, status: "missing" },
     { id: 2, name: "Owner's Documents", icon: <UserIcon />, status: "missing" },
@@ -73,53 +100,32 @@ export const Upload = () => {
   }
 
   const fetchSubmission = async (userData) => {
-    const { data, error } = await supabase
-      .from("submission")
-      .select("id, documents")
-      .eq("user_id", userData?.id);
+    try {
+      const { data, error } = await supabase
+        .from("submission")
+        .select("id, documents")
+        .eq("user_id", userData?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
-    if (data.length > 0) {
-      const latestSubmission = data.at(-1);
-      console.log("latestSubmission", latestSubmission?.documents);
-
-      setImages(latestSubmission?.documents);
-      setVerifiedFiles(latestSubmission?.documents.map((img) => img.verified));
-
-      localStorage.setItem(
-        "savedImages",
-        JSON.stringify(latestSubmission?.documents)
-      );
-      console.log(
-        "🙌🙌 this is a latest Submission images",
-        latestSubmission?.documents
-      );
-
-      sessionStorage.setItem(
-        "allImages",
-        JSON.stringify(latestSubmission.documents)
-      );
-    }
-
-    if (error) {
-      console.log("error", error);
+      if (data) {
+        setImages(data.documents || []);
+        updateDocumentStatuses(data.documents || []);
+        // Store in localStorage only as fallback
+        localStorage.setItem("savedImages", JSON.stringify(data.documents));
+      } else if (error) {
+        console.error("Error fetching submission:", error);
+        const savedImages = JSON.parse(localStorage.getItem("savedImages") || "[]");
+        if (savedImages.length > 0) {
+          setImages(savedImages);
+          updateDocumentStatuses(savedImages);
+        }
+      }
+    } catch (error) {
+      console.error("Error in fetchSubmission:", error);
     }
   };
-
-  useEffect(() => {
-    console.log("not working");
-    const userData = JSON.parse(localStorage.getItem("userData") || "null");
-    setUser(userData);
-
-    // Load saved images from localStorage
-    const savedImages = JSON.parse(localStorage.getItem("savedImages") || "[]");
-    if (savedImages) {
-      setImages(savedImages);
-      setVerifiedFiles(savedImages.map((img) => img.verified));
-      updateDocumentStatuses(savedImages)
-    } else {
-      fetchSubmission(userData);
-    }
-  }, []);
 
   const fetchPaymentStatus = async () => {
     try {
@@ -522,7 +528,6 @@ export const Upload = () => {
             ) : (
               <ul className="space-y-4 w-full">
                 {images.map((file, index) => (
-                  console.log("file", file),
                   <li
                     key={file.id}
                     className="flex relative items-center justify-between no-scrollbar px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overscroll-contain"
