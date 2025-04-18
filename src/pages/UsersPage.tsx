@@ -16,19 +16,28 @@ const UsersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  console.log("🚀 ~ UsersPage ~ submissions:", submissions)
-  const [users, setUsers] = useState([])
+  const [page, setPage] = useState(0)
 
-  useEffect(() => {
+  const getPagination = (page, size) => {
+    const limit = size ? +size : 3;
+    const from = page * limit;
+    const to = from + limit - 1;      
+  
+    return { from, to };
+  };
+  
     const fetchData = async () => {
+      const { from, to } = getPagination(page, 10);
       try {
         setLoading(true);
         
         // 1. Get all submissions
         const { data: submissions } = await supabase
           .from('submission')
-          .select('*');
-  
+          .select('*')
+          .range(from, to)
+          .order('created_at', { ascending: false });
+
         // 2. Get all user IDs from submissions
         const userIds = submissions.map(sub => sub.user_id);
         
@@ -37,13 +46,13 @@ const UsersPage = () => {
           .from('users')
           .select('*')
           .in('id', userIds);
-  
+
         // 4. Combine data
         const combined = submissions.map(sub => ({
           ...sub,
           user: users.find(user => user.id === sub.user_id)
         }));
-  
+
         setSubmissions(combined);
         
       } catch (error) {
@@ -52,9 +61,10 @@ const UsersPage = () => {
         setLoading(false);
       }
     };
-  
+
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [page]);
 
   // Filter submissions based on search and filter
   const filteredSubmissions = submissions.filter(submission => {
@@ -295,6 +305,11 @@ const UsersPage = () => {
         </table>
       </div>
       )}
+      <div className="flex justify-end gap-4 mt-10">
+         <button className={`${page === 0 ? 'text-gray-400 disabled:opacity-50' : 'text-black'} px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50`} onClick={() => {setPage(prev => Math.max(prev - 1, 0));}}disabled={page === 0}>Previous</button>
+         <button  className="px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"  onClick={() => {setPage(prev => prev + 1);}}>Next</button>
+      </div>
+
     </div>
   </div>
   );
