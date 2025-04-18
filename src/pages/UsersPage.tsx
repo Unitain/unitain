@@ -1,7 +1,7 @@
-import { Check, X, ChevronRight, Clock, Eye, Search, Filter, AArrowUp } from "lucide-react";
+import { Check, X, ChevronRight, Clock, Eye, Search, Filter, AArrowUp} from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
-import { log } from "console";
+import { Link } from "react-router-dom";
 
 interface Submission {
   id: string;
@@ -288,8 +288,10 @@ const UsersPage = () => {
                   {/* Action (always visible) */}
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-right w-1/5 md:w-1/6">
                     <button className="text-primary-600 hover:text-primary-800 flex items-center justify-end text-sm w-full">
-                      View Details
-                      <ChevronRight className="w-4 h-4 ml-1" />
+                      <Link className="flex" to={`user/${submission.id}`}>
+                        View Details
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Link>
                     </button>
                   </td>
                 </tr>
