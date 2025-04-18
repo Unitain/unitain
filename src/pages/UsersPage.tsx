@@ -1,4 +1,4 @@
-import { Check, X, ChevronRight, Clock, Eye, Search, Filter, AArrowUp} from "lucide-react";
+import { Check, X, ChevronRight, Clock, Eye, Search,CircleIcon, CircleDot, Filter, AArrowUp} from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { Link } from "react-router-dom";
@@ -250,39 +250,23 @@ const UsersPage = () => {
       
                   {/* Status (always visible) */}
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 w-1/4 md:w-1/6">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        submission.status === "pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : submission.status === "approved"
-                          ? "bg-green-100 text-green-800"
-                          : submission.status === "missing"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {submission.status === "pending" ? (
-                        <>
-                          <Clock className="w-3 h-3 mr-1" />
-                          Pending
-                        </>
-                      ) : submission.status === "approved" ? (
-                        <>
-                          <Check className="w-3 h-3 mr-1" />
-                          Approved
-                        </>
-                      ) : submission.status === "missing" ? (
-                        <>
-                          <Eye className="w-3 h-3 mr-1" />
-                          Missing
-                        </>
+                  <div className={`flex items-center p-3 rounded-lg border ${
+                    submission.status === 'pending' ? 'bg-blue-50 border-blue-200 text-blue-700' : 
+                    submission.status === 'verified' ? 'bg-green-50 border-green-200 text-green-700' :
+                    submission.status === 'unclear' ? 'bg-amber-50 text-amber-700 border-green-200' :
+                    'bg-gray-50 border-gray-200'
+                  }`}>
+                    <div className="mr-3">
+                      {submission.status === 'pending' ? (
+                        <CircleDot className="h-5 w-5 text-blue-500" />
+                      ) : submission.status === 'verified' ? (
+                        <Check className="h-5 w-5 text-green-500" />
                       ) : (
-                        <>
-                          <X className="w-3 h-3 mr-1" />
-                          Rejected
-                        </>
+                        <CircleIcon className="h-5 w-5 text-gray-400" />
                       )}
-                    </span>
+                    </div>
+                    {submission.status}
+                  </div>
                   </td>
       
                   {/* Action (always visible) */}
