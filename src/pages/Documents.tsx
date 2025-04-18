@@ -129,7 +129,9 @@ const Documents = () => {
                     <div><div className="text-sm text-gray-500">{sub.name}</div></div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.createdBy?.email}</div></td>
+                <div className="flex">
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.createdBy?.email}</div></td>
+                </div>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                   {new Date(doc.uploaded_at).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric',})}</td>
                 <td className="px-6 py-4 whitespace-nowrap">

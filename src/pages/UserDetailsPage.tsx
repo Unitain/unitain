@@ -30,7 +30,32 @@ const UserDetailsPage = () => {
     if (id) fetchSubmission();
   }, [id]);
 
+  const handleBulkStatusChange = async (newStatus) => {
+    if (!submission) return;
+  
+    const updatedDocuments = submission.documents.map((doc) => ({
+      ...doc,
+      review_status: newStatus
+    }));
+  
+    const { error } = await supabase
+      .from('submission')
+      .update({ documents: updatedDocuments, status: newStatus })
+      .eq('id', submission.id);
+  
+    if (error) {
+      console.error("Error updating all document statuses:", error);
+      alert("Failed to update all document statuses");
+      return;
+    }
+  
+    setSubmission((prev) => ({
+      ...prev,
+      documents: updatedDocuments
+    }));
+  };
 
+  
   const handleDocumentStatusChange = async (docId, newStatus) => {
     console.log("🚀 ~ handleDocumentStatusChange ~ newStatus:", newStatus);
     console.log("🚀 ~ handleDocumentStatusChange ~ docId:", docId);
@@ -76,13 +101,43 @@ const UserDetailsPage = () => {
               <button 
                 className="p-2 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 onClick={() => window.history.back()}
-              >
+               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <div>
                 <h1 className="text-lg font-semibold text-slate-800">{submission?.createdBy?.email || 'User Submission'}</h1>
                 <p className="text-sm text-slate-500">ID: {id}</p>
               </div>
+            </div>
+            <div>
+            <div>
+            <select
+                className={`border rounded px-2 py-1 text-sm font-medium transition-colors
+                  ${
+                    submission?.documents?.[0]?.review_status === 'pending'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : submission?.documents?.[0]?.review_status === 'verified'
+                      ? 'bg-green-50 text-green-700 border-green-200'
+                      : submission?.documents?.[0]?.review_status === 'unclear'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : submission?.documents?.[0]?.review_status === 'missing'
+                      ? 'bg-rose-50 text-rose-700 border-rose-200'
+                      : 'bg-slate-50 text-slate-700 border-slate-200'
+                  }
+                `}
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleBulkStatusChange(e.target.value);
+                  }
+                }}
+              >
+                <option value="" disabled>Select status for all</option>
+                <option value="verified">Mark all as Verified</option>
+                <option value="unclear">Mark all as Unclear</option>
+                <option value="missing">Mark all as Missing</option>
+              </select>
+          </div>
             </div>
           </div>
         </div>
