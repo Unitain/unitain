@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import {Search,Download, Eye, Filter, Clock, X, Check} from "lucide-react"
 import { supabase } from "../supabase";
+import { log } from 'node:console';
 
 const Documents = () => {
     const [filter, setFilter] = useState<"all" | "approved" | "missing" | "pending">("all");
@@ -36,91 +37,6 @@ const Documents = () => {
     useEffect(() => {
         fetchSubmissions();
       }, [page]);
-
-  const documents = [
-    {
-      name: "driver_license_641.png",
-      category: "Identity",
-      uploadedBy: "David Miller",
-      email: "david.miller@example.com",
-      uploadDate: "Jan 21, 2025",
-      status: "Unclear"
-    },
-    {
-      name: "income_statement_657.docx",
-      category: "Tax",
-      uploadedBy: "Olivia Moore",
-      email: "olivia.moore@example.com",
-      uploadDate: "Jul 10, 2024",
-      status: "Valid"
-    },
-    {
-      name: "birth_certificate_789.pdf",
-      category: "Identity",
-      uploadedBy: "Sarah Davis",
-      email: "sarah.davis@example.com",
-      uploadDate: "Jan 25, 2024",
-      status: "Not Reviewed"
-    },
-    {
-      name: "property_tax_299.jpg",
-      category: "Tax",
-      uploadedBy: "Bob Wilson",
-      email: "bob.wilson@example.com",
-      uploadDate: "Aug 8, 2024",
-      status: "Not Reviewed"
-    },
-    {
-      name: "purchase_invoice_138.png",
-      category: "Vehicle",
-      uploadedBy: "Jane Smith",
-      email: "jane.smith@example.com",
-      uploadDate: "Jan 15, 2025",
-      status: "Not Reviewed"
-    },
-    {
-      name: "profile_photo_833.pdf",
-      category: "Photo",
-      uploadedBy: "Emma Wilson",
-      email: "emma.wilson@example.com",
-      uploadDate: "Dec 17, 2024",
-      status: "Unclear"
-    },
-    {
-      name: "insurance_policy_70.jpg",
-      category: "Residence",
-      uploadedBy: "Emma Wilson",
-      email: "emma.wilson@example.com",
-      uploadDate: "Jan 20, 2024",
-      status: "Unclear"
-    },
-    {
-      name: "utility_bill_195.doc",
-      category: "Residence",
-      uploadedBy: "John Doe",
-      email: "john.doe@example.com",
-      uploadDate: "Aug 2, 2024",
-      status: "Valid"
-    },
-    {
-      name: "driver_license_491.jpg",
-      category: "Identity",
-      uploadedBy: "Jane Smith",
-      email: "jane.smith@example.com",
-      uploadDate: "Nov 2, 2024",
-      status: "Not Reviewed"
-    },
-    {
-      name: "property_tax_340.png",
-      category: "Tax",
-      uploadedBy: "Olivia Moore",
-      email: "olivia.moore@example.com",
-      uploadDate: "Sep 2, 2024",
-      status: "Valid"
-    }
-  ];
-
-
 
   return (
     <div className="p-4 md:p-8 container mx-auto min-h-screen overflow-y-hidden">
@@ -159,14 +75,14 @@ const Documents = () => {
             </select>
           </div>
 
-          {/* Status Filter */}
+          {/* review_status Filter */}
           <div className="relative min-w-[180px]">
             <select
               className="appearance-none bg-white pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 w-full"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="all">All Statuses</option>
+              <option value="all">All Status</option>
               <option value="approved">Fully Reviewed</option>
               <option value="missing">Missing Docs</option>
               <option value="pending">Pending Review</option>
@@ -202,6 +118,8 @@ const Documents = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {submission?.map((doc, index) => (
               doc?.documents?.map((sub) =>  (
+                console.log("sub", sub),
+                
               <tr key={index} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -213,44 +131,34 @@ const Documents = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-500 truncate max-w-[180px]">{doc.createdBy?.email}</div></td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                  {new Date(doc.created_at).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric',})}</td>
+                  {new Date(doc.uploaded_at).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric',})}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        doc.status === "pending" ? "bg-yellow-100 text-yellow-800" : doc.status === "approved" ? "bg-green-100 text-green-800" : doc.status === "missing" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {doc.status === "pending" ? (
-                        <>
-                          <Clock className="w-3 h-3 mr-1" />
-                          Pending
-                        </>
-                      ) : doc.status === "approved" ? (
-                        <>
-                          <Check className="w-3 h-3 mr-1" />
-                          Approved
-                        </>
-                      ) : doc.status === "missing" ? (
-                        <>
-                          <Eye className="w-3 h-3 mr-1" />
-                          Missing
-                        </>
-                      ) : (
-                        <>
-                          <X className="w-3 h-3 mr-1" />
-                          Rejected
-                        </>
-                      )}
-                  </span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${sub.review_status === "pending" ? "bg-blue-100 text-blue-800" : sub.review_status === "verified" ? "bg-green-100 text-green-800" : sub.review_status === "missing" ? "bg-rose-100 text-rose-800" : sub.review_status === "unclear" ? "text-amber-700 bg-amber-50" : "bg-gray-100 text-gray-800"}`}>
+                {sub.review_status === "pending" ? (<><Clock className="w-3 h-3 mr-1" />Pending</>) : sub.review_status === "verified" ? (<><Check className="w-3 h-3 mr-1" />Approved</>) : sub.review_status === "missing" ? (<><Eye className="w-3 h-3 mr-1" />Missing</>) : (<><X className="w-3 h-3 mr-1" />Rejected</>)}</span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end space-x-2">
-                    <button className="p-1 text-blue-600 transition-colors">
-                      <Eye />
-                    </button>
-                    <button className="p-1 text-gray-400 hover:text-yellow-500 transition-colors">
-                      <Download />
-                    </button>
+                  <div className="flex justify-end space-x-2">
+                      <button
+                        className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                        onClick={() => {
+                          window.open(sub.url, "_blank");
+                        }}
+                      >
+                        <Eye />
+                      </button>
+                      <button
+                        className="p-1 text-gray-600 hover:text-yellow-500 transition-colors"
+                        onClick={() => {
+                          const link = document.createElement("a");
+                          link.href = sub.url;
+                          link.download = sub.name;
+                          link.click();
+                        }}
+                      >
+                        <Download />
+                      </button>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -261,7 +169,7 @@ const Documents = () => {
       </div>
       
       <div className="mt-6 pt-4 border-t border-gray-200 text-gray-600 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="text-sm">Showing 1 to {documents.length} of {documents.length} documents</div>
+        <div className="text-sm">Showing 1 to {submission?.length} of {submission?.length} documents</div>
         <div className="flex justify-end gap-4 mt-10">
          <button className={`${page === 0 ? 'text-gray-400 disabled:opacity-50' : 'text-black'} px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50`} onClick={() => {setPage(prev => Math.max(prev - 1, 0));}}disabled={page === 0}>Previous</button>
          <button  className="px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"  onClick={() => {setPage(prev => prev + 1);}}>Next</button>
