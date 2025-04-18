@@ -1,7 +1,6 @@
 import {useState, useEffect} from 'react';
-import {Search, Filter} from "lucide-react"
+import {Search, Eye, Filter, Clock, X, Check} from "lucide-react"
 import { supabase } from "../supabase";
-import { log } from 'console';
 
 const Documents = () => {
     const [filter, setFilter] = useState<"all" | "approved" | "missing" | "pending">("all");
@@ -121,23 +120,7 @@ const Documents = () => {
     }
   ];
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'Valid': return 'bg-green-100 text-green-800';
-      case 'Unclear': return 'bg-yellow-100 text-yellow-800';
-      case 'Not Reviewed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'Valid': return '✓';
-      case 'Unclear': return '?';
-      case 'Not Reviewed': return '!';
-      default: return '';
-    }
-  };
 
   return (
     <div className="p-4 md:p-8 container mx-auto min-h-screen overflow-y-hidden">
@@ -232,9 +215,32 @@ const Documents = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                   {new Date(doc.created_at).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric',})}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(doc.status)}`}>
-                    <span className="mr-1">{getStatusIcon(doc.status)}</span>
-                    {doc.status}
+                  <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        doc.status === "pending" ? "bg-yellow-100 text-yellow-800" : doc.status === "approved" ? "bg-green-100 text-green-800" : doc.status === "missing" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {doc.status === "pending" ? (
+                        <>
+                          <Clock className="w-3 h-3 mr-1" />
+                          Pending
+                        </>
+                      ) : doc.status === "approved" ? (
+                        <>
+                          <Check className="w-3 h-3 mr-1" />
+                          Approved
+                        </>
+                      ) : doc.status === "missing" ? (
+                        <>
+                          <Eye className="w-3 h-3 mr-1" />
+                          Missing
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-3 h-3 mr-1" />
+                          Rejected
+                        </>
+                      )}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
