@@ -513,7 +513,6 @@ export const Upload = () => {
 
   const verifiedCount = images.filter((img) => img.review_status === "verified")
   const pendingCount = images.filter((img) => img.review_status === "pending")
-  console.log("verifiedCount", verifiedCount, pendingCount);
 
   const ProgressBar = () => (
     <div className="space-y-3 mt-6">
