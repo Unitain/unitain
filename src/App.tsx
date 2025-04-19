@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from "../src/supabase";
 import Documents from './pages/Documents';
 import UserDetailsPage from './pages/UserDetailsPage';
+import Messages from './pages/Messages';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -97,6 +98,7 @@ const App = () => {
         <Route path="/user/:id" element={<UserDetailsPage />}/>
         {/* // <Route path="/messages" element={<MessagesPage />} />  */}
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />} />
+        <Route path="/messages" element={<Messages/>} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
     </BrowserRouter>
