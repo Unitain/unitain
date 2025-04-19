@@ -3,8 +3,6 @@ import { CarIcon, Check, EyeIcon, DownloadIcon, FolderCheck, CircleDot,  CircleA
 import { supabase } from "../lib/supabase";
 import axios from "axios";
 import { useTranslation } from "react-i18next"
-import { log } from "console";
-
 
 export const Upload = () => {
   const [images, setImages] = useState<File[]>([]);
