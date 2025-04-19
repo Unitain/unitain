@@ -116,7 +116,7 @@ export function ChatSupport() {
       <button onClick={() => setIsOpen(true)} className="fixed bottom-4 right-4 bg-primary-600 text-white rounded-full p-3 md:p-4 shadow-lg hover:bg-primary-700 transition-colors touch-manipulation" aria-label="Open chat support"><MessageCircle className="h-6 w-6" /></button>
 
       {isOpen && (
-        <div  ref={chatContainerRef} className="fixed inset-0 md:inset-auto md:bottom-20 md:right-4 md:w-96 bg-white shadow-xl flex flex-col md:rounded-lg z-50"
+        <div  ref={chatContainerRef} className="fixed inset-0 md:inset-auto md:bottom-20 md:right-4 md:w-96 bg-white shadow-xl flex flex-col md:rounded-lg z-50 h-96 overflow-auto"
           style={{ maxHeight: '100dvh' }} >
 
           {/* Header */}
