@@ -183,9 +183,9 @@ const UsersPage = () => {
               onChange={(e) => setFilter(e.target.value as any)}
             >
               <option value="all">All users</option>
-              <option value="approved">Only Fully Reviewed</option>
-              <option value="missing">With missing document</option>
-              <option value="pending">Not yet reviewed</option>
+                <option value="verified">Only Fully Verified</option>
+                <option value="unclear"> With Unclear document</option>
+                <option value="missing">With missing document</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
               <Filter className="h-5 w-5 text-gray-400" />
@@ -227,8 +227,8 @@ const UsersPage = () => {
       
           {/* Table Body */}
           <tbody className="bg-white divide-y divide-gray-200">
-            {submissions.length > 0 ? (
-              submissions.map((submission, index) => (
+            {filteredSubmissions.length > 0 ? (
+              filteredSubmissions.map((submission, index) => (
                 <tr key={submission.id} className="hover:bg-gray-50">
                   {/* Index */}
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-center w-8">
