@@ -302,7 +302,7 @@ const Messages = () => {
   const messagesEndRef = useRef(null);
   const [userList, setUserList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSidebar, setShowSidebar] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(true)
   useEffect(() => {
     const fetchUsers = async () => {
       // Get unique users with their latest message
