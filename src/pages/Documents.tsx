@@ -7,36 +7,42 @@ const Documents = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(0)
     const [submission ,setSubmissions] = useState(null)
-    console.log("🚀 ~ Documents ~ submission:", submission)
 
     const getPagination = (page, size) => {
       const limit = size ? +size : 3;
       const from = page * limit;
       const to = from + limit - 1;      
-    
       return { from, to };
     };
-    
-        const fetchSubmissions = async () => {
-          const { from, to } = getPagination(page, 10);
+  
+    const fetchSubmissions = async () => {
+        const { from, to } = getPagination(page, 10);
 
-            const { data, error } = await supabase
-            .from('submission')
-            .select('*')
-            .range(from, to)
-            .order('created_at', { ascending: false });
+          const { data, error } = await supabase
+          .from('submission')
+          .select('*')
+          .range(from, to)
+          .order('created_at', { ascending: false });
 
-            if(error){
-              console.log("error while fetching submissions");
-            }
-            setSubmissions(data);
-            console.log("🚀 ~ fetchSubmissions ~ data:", data)
-        };
+          if(error){
+            console.log("error while fetching submissions");
+          }
+          setSubmissions(data);
+          console.log("🚀 ~ fetchSubmissions ~ data:", data)
+      };
 
     useEffect(() => {
         fetchSubmissions();
       }, [page]);
 
+      const filteredSubmissions = submission?.filter((doc)=>{
+        const matchesSearch = doc.documents.some(file => file?.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        const matchesFilter = filter === "all" || doc.status === filter;
+        
+        const combineFilter = doc?.createdBy?.email.toLowerCase().includes(searchQuery.toLowerCase()) || matchesSearch
+        return combineFilter && matchesFilter;
+      })
+      
   return (
     <div className="p-4 md:p-8 container mx-auto min-h-screen overflow-y-hidden">
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-5">
@@ -117,9 +123,17 @@ const Documents = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {submission?.map((doc, index) => (
+            {filteredSubmissions?.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  No documents found.
+                </td>
+              </tr>
+            )}
+
+            {filteredSubmissions?.map((doc) => (
               doc?.documents?.map((sub) =>  (
-              <tr key={index} className="hover:bg-gray-50 transition-colors">
+              <tr key={`${doc.id}-${sub.name}`} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg mr-3">
