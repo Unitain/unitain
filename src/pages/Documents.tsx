@@ -1,7 +1,6 @@
 import {useState, useEffect} from 'react';
 import {Search,Download, Eye, Filter, Clock, X, Check} from "lucide-react"
 import { supabase } from "../supabase";
-import { log } from 'node:console';
 
 const Documents = () => {
     const [filter, setFilter] = useState<"all" | "approved" | "missing" | "pending">("all");
@@ -80,13 +79,15 @@ const Documents = () => {
             <select
               className="appearance-none bg-white pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 w-full"
               value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={(e) => setFilter(e.target.value as any)}
             >
-              <option value="all">All Status</option>
-              <option value="approved">Fully Reviewed</option>
-              <option value="missing">Missing Docs</option>
-              <option value="pending">Pending Review</option>
+                <option value="all">All users</option>
+                <option value="verified">Pending Documents</option>
+                <option value="verified">Verified Documents</option>
+                <option value="unclear"> Unclear document</option>
+                <option value="missing">Missing document</option>
             </select>
+
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
               <Filter className="h-5 w-5 text-gray-400" />
             </div>

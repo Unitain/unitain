@@ -79,7 +79,7 @@ const UsersPage = () => {
   const statusCounts = submissions.reduce((acc, submission) => {
     acc[submission.status] = (acc[submission.status] || 0) + 1;
     return acc;
-  }, { pending: 0, approved: 0, rejected: 0, missing: 0 });
+  }, { pending: 0, verified: 0, missing: 0, unclear: 0 });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -132,9 +132,9 @@ const UsersPage = () => {
               <h3 className="font-medium text-gray-800">Fully Reviewed</h3>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-2">
-              {statusCounts.approved}
+              {statusCounts.verified}
             </div>
-            <p className="text-sm text-gray-500">Documents approved</p>
+            <p className="text-sm text-gray-500">Verified Documents</p>
           </div>
 
           {/* Rejected Card */}
@@ -143,12 +143,12 @@ const UsersPage = () => {
               <div className="p-2 rounded-full bg-red-50">
                 <X className="w-5 h-5 text-red-600" />
               </div>
-              <h3 className="font-medium text-gray-800">Rejected</h3>
+              <h3 className="font-medium text-gray-800">Missing & Unclear</h3>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-2">
-              {statusCounts.rejected}
+              {statusCounts.missing + statusCounts.unclear} 
             </div>
-            <p className="text-sm text-gray-500">Documents rejected</p>
+            <p className="text-sm text-gray-500">Missing Documents</p>
           </div>
         </div>
       </div>
