@@ -118,8 +118,6 @@ const Documents = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {submission?.map((doc, index) => (
               doc?.documents?.map((sub) =>  (
-                console.log("sub", sub),
-                
               <tr key={index} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">

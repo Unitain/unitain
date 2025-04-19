@@ -27,6 +27,7 @@ const UsersPage = () => {
   };
   
     const fetchData = async () => {
+      console.log("fetching data");
       const { from, to } = getPagination(page, 10);
       try {
         setLoading(true);
@@ -39,6 +40,7 @@ const UsersPage = () => {
           .order('created_at', { ascending: false });
 
         // 2. Get all user IDs from submissions
+        console.log("submissions", submissions);
         const userIds = submissions.map(sub => sub.user_id);
         
         // 3. Get matching users
