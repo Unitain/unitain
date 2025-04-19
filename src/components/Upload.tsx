@@ -164,23 +164,117 @@ export const Upload = () => {
     setSelectedImage(url);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("🚀 ~ handleFileChange ~ event:", event)
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
     const files = event.target.files;
-    if (files && files.length > 0) {
-      const newImages = Array.from(files).map((file) => ({
-        id: `temp-${Date.now()}-${file.name}`,
-        url: URL.createObjectURL(file),
-        name: file.name,
-        review_status: 'unSubmitted',
-        file: file,
-      }));
-      const updatedImages = [...images, ...newImages];
-      setImages((prev) => [...prev, ...newImages]);
-      console.log("updatedImages", updatedImages);
-
-      sessionStorage.setItem("allImages", JSON.stringify(updatedImages));
+    if (!files || files.length === 0) return;
+  
+    const newFile = files[0];
+    if (replaceIndex !== undefined && images[replaceIndex]?.name === newFile.name) {
+      alert("You are trying to upload the same file again. Please choose a different file.");
+      return;
     }
+    
+    if (replaceIndex !== undefined && images[replaceIndex]?.url) {
+    try {
+      // If replacing an existing file, delete the old one first
+      if (replaceIndex !== undefined && images[replaceIndex]?.url) {
+        const oldFileUrl = images[replaceIndex].url;
+        const fileName = oldFileUrl.split('/').pop();
+        
+        if (fileName) {
+          const { error: deleteError } = await supabase.storage
+            .from("vehicle.uploads")
+            .remove([`${user.id}/${fileName}`]);
+          
+          if (deleteError) {
+            console.error("Error deleting old file:", deleteError);
+            return;
+          }
+        }
+      }
+  
+      // Upload new file
+      const safeFileName = sanitizeFileName(newFile.name);
+      const fileName = `${user.id}/${Date.now()}_${safeFileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("vehicle.uploads")
+        .upload(fileName, newFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+  
+      if (uploadError) throw uploadError;
+  
+      const { data: urlData } = supabase.storage
+        .from("vehicle.uploads")
+        .getPublicUrl(fileName);
+  
+      // Update state
+      setImages(prevImages => {
+        const newImage = {
+          id: `temp-${Date.now()}-${newFile.name}`,
+          url: urlData.publicUrl,
+          name: newFile.name,
+          review_status: 'pending',
+          file: undefined,
+          uploaded_at: new Date().toISOString()
+        };
+  
+        let updatedImages;
+        if (replaceIndex !== undefined && prevImages[replaceIndex]) {
+          updatedImages = [...prevImages];
+          updatedImages[replaceIndex] = newImage;
+        } else {
+          updatedImages = [...prevImages, newImage];
+        }
+  
+        sessionStorage.setItem("allImages", JSON.stringify(updatedImages));
+        return updatedImages;
+      });
+  
+      // Update submission in database
+      const { data: submission, error: fetchError } = await supabase
+        .from("submission")
+        .select("documents, id")
+        .eq("user_id", user?.id)
+        .maybeSingle();
+  
+      if (fetchError) throw fetchError;
+  
+      if (submission) {
+        const updatedDocuments = [...submission.documents];
+        if (replaceIndex !== undefined && updatedDocuments[replaceIndex]) {
+          updatedDocuments[replaceIndex] = {
+            ...updatedDocuments[replaceIndex],
+            url: urlData.publicUrl,
+            name: newFile.name,
+            review_status: 'pending',
+            uploaded_at: new Date().toISOString()
+          };
+        } else {
+          updatedDocuments.push({
+            id: `new-${Date.now()}`,
+            url: urlData.publicUrl,
+            name: newFile.name,
+            review_status: 'pending',
+            uploaded_at: new Date().toISOString()
+          });
+        }
+  
+        const { error: updateError } = await supabase
+          .from("submission")
+          .update({ documents: updatedDocuments })
+          .eq("id", submission.id);
+  
+        if (updateError) throw updateError;
+      }
+  
+    } catch (error) {
+      console.error("Error in file replacement:", error);
+      alert("Error replacing file. Please try again.");
+    }
+  }
   };
 
   const handleDelete = async (index: number) => {
@@ -280,10 +374,11 @@ export const Upload = () => {
         return;
       }
 
-      if (!imageToVerify.file || !user?.id) {
-        alert("Missing file data or user information");
-        return;
-      }
+      // if (!imageToVerify.file || !user?.id) {
+      //   alert("Missing file data or user information");
+      //   return;
+      // }
+      
       const safeFileName = sanitizeFileName(imageToVerify.name);
       const fileName = `${user.id}/${Date.now()}_${safeFileName}`;
       const { error: uploadError } = await supabase.storage
@@ -579,6 +674,35 @@ export const Upload = () => {
                         <a href={file.url} download>
                           <DownloadIcon className="h-5 w-5" />
                         </a>
+                        {file.review_status === 'unclear' || file.review_status === 'missing' ? (
+                        <button
+                        onClick={() => {
+                          const input = document.createElement("input");
+                          input.type = "file";
+                          input.accept = ".pdf,.jpeg,.png,.doc";
+                          input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (!file) return;
+                    
+                            const currentFile = images[index];
+                            if (
+                              currentFile &&
+                              currentFile.name === file.name &&
+                              currentFile.file?.size === file.size
+                            ) {
+                              alert("Same file selected. No upload needed.");
+                              return;
+                            }
+                            handleFileChange(e, index, () => handleVerify(index));
+                          };
+                          input.click();
+                        }}
+                        className="p-2 flex gap-2 border text-black border-black rounded-md hover:bg-gray-100 transition-colors"
+                        title="Re-upload"
+                      >
+                        <UploadIcon className="h-5 w-5" /> Re-upload
+                      </button>                      
+                        ) : (
                         <button
                           onClick={() => {
                               if (!file.verified) handleVerify(index);
@@ -591,6 +715,7 @@ export const Upload = () => {
                           >
                             <UploadIcon className="h-5 w-5" />
                           </button>
+                      )}
                         {file.review_status === 'pending' ? (
                           <button
                             onClick={() =>
