@@ -624,11 +624,11 @@ export const Upload = () => {
                 </p>
               </div>
             ) : (
-              <ul className="space-y-3 sm:space-y-4 w-full">
+              <ul className="space-y-3 sm:space-y-4 w-full overflow-auto">
                 {images.map((file, index) => (
                   <li
                     key={file.id}
-                    className="flex relative items-center justify-between px-2 py-2 sm:px-3 sm:py-3 md:px-5 border rounded-lg cursor-pointer w-full overscroll-contain"
+                    className="flex relative items-center justify-between px-2 py-2 sm:px-3 sm:py-3 md:px-5 border rounded-lg cursor-pointer w-full overflow-x-scroll"
                   >
                     <div className="flex gap-3 sm:gap-4 md:gap-6 items-center text-left">
                       <img
@@ -637,7 +637,7 @@ export const Upload = () => {
                         className="w-9 h-9 sm:w-11 sm:h-11 md:w-16 md:h-16 object-contain rounded-lg"
                         />
                       <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm md:text-base text-gray-800 truncate">
+                      <p className="text-xs sm:text-sm md:text-base text-gray-800 truncate line-clamp-2">
                         {file.name}
                       </p>
                     <div className="mt-1">
