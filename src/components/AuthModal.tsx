@@ -134,7 +134,7 @@ const handleAuth = async (e: React.FormEvent) => {
     if (!acceptedTerms) {
       throw new Error('Please accept the Terms of Use');
     }
-    const is_eligible = localStorage.getItem('is eligible')
+    const is_eligible = localStorage.getItem('is_eligible')
     if(is_eligible){
       const { data, error } = await supabase.auth.signUp({
         email,
