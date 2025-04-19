@@ -182,16 +182,19 @@ export const Upload = () => {
         const fileName = oldFileUrl.split('/').pop();
         
         if (fileName) {
-          const { error: deleteError } = await supabase.storage
+          console.log("deleting", fileName);
+          
+          const { data, error: deleteError } = await supabase.storage
             .from("vehicle.uploads")
             .remove([`${user.id}/${fileName}`]);
-          
+            console.log("data", data);
+            
           if (deleteError) {
             console.error("Error deleting old file:", deleteError);
             return;
           }
         }
-      }
+       }
   
       // Upload new file
       const safeFileName = sanitizeFileName(newFile.name);
