@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
-import { useFiles } from '../context/FileContext';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 
@@ -15,58 +14,10 @@ export function ChatSupport() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: t('chat.welcome1'),
-      sender: 'support',
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: '2',
-      text: t('chat.welcome2'),
-      sender: 'support',
-      timestamp: new Date().toISOString()
-    }
-  ]);
-
-  const { files } = useFiles();
-  const previousFilesRef = useRef<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const currentFileIds = files.map(f => f.id);
-    const previousFileIds = previousFilesRef.current;
-
-    // Check for new files
-    const newFiles = files.filter(f => !previousFileIds.includes(f.id));
-    if (newFiles.length > 0) {
-      newFiles.forEach(newFile => {
-        const supportMessage: Message = {
-          id: crypto.randomUUID(),
-          text: t('chat.fileUploaded', { file: newFile.name }),
-          sender: 'support',
-          timestamp: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, supportMessage]);
-      });
-    }
-
-    // Check for deleted files
-    const deletedFiles = previousFileIds.filter(id => !currentFileIds.includes(id));
-    if (deletedFiles.length > 0) {
-      const supportMessage: Message = {
-        id: crypto.randomUUID(),
-        text: "I notice you've removed some files. Let me know if you need help with uploading new documents.",
-        sender: 'support',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, supportMessage]);
-    }
-
-    previousFilesRef.current = currentFileIds;
-  }, [files]);
+  const user = JSON.parse(localStorage.getItem('userData') || '{}');
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -74,7 +25,6 @@ export function ChatSupport() {
     }
   }, [messages]);
 
-  // Handle mobile keyboard appearance
   useEffect(() => {
     if (isOpen) {
       const resizeHandler = () => {
@@ -92,77 +42,35 @@ export function ChatSupport() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (message.trim() === '') return;
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error("User is not authenticated.");
-      return; 
-    }
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      text: message,
-      sender: 'user',
-      timestamp: new Date().toISOString()
-    };
-
-      // Insert user message into Supabase
-      const { error } = await supabase.from('chats')
-      .insert([{
-        user_id: user.id,
-        message: message,  
-        sender: 'user', 
-        timestamp: new Date().toISOString()
-    }]);
-
-      if (error) {
-        console.error('Error sending message:', error);
-      } else {
-        setMessages((prev) => [...prev, userMessage]);
-      }
-    setMessage('');
-
-    setTimeout(() => {
-      const supportMessage: Message = {
-        id: crypto.randomUUID(),
-        text: 'Thank you for your message. Our team will review your request and get back to you shortly.',
-        sender: 'support',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, supportMessage]);
-    }, 1000);
+    console.log('messages', );
   };
+
+  const chatSuggestions = [
+    { id: 1, message: "Can you tell me more about your services?" },
+    { id: 2, message: "What are your pricing options?" },
+    { id: 3, message: "How do I get started with the tax exemption process?" },
+    { id: 4, message: "Can I schedule a free consultation?" },
+    { id: 5, message: "What documents do I need to prepare?" },
+    { id: 7, message: "How long does the process usually take?" },
+    { id: 8, message: "What vehicles are eligible for tax exemption?" },
+    { id: 9, message: "Do you handle everything, or do I need to visit any offices?" },
+  ];
+  
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 bg-primary-600 text-white rounded-full p-3 md:p-4 shadow-lg hover:bg-primary-700 transition-colors touch-manipulation"
-        aria-label="Open chat support"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </button>
+      <button onClick={() => setIsOpen(true)} className="fixed bottom-4 right-4 bg-primary-600 text-white rounded-full p-3 md:p-4 shadow-lg hover:bg-primary-700 transition-colors touch-manipulation" aria-label="Open chat support"><MessageCircle className="h-6 w-6" /></button>
 
       {isOpen && (
-        <div 
-          ref={chatContainerRef}
-          className="fixed inset-0 md:inset-auto md:bottom-20 md:right-4 md:w-96 bg-white shadow-xl flex flex-col md:rounded-lg z-50"
-          style={{ maxHeight: '100dvh' }}
-        >
+        <div  ref={chatContainerRef} className="fixed inset-0 md:inset-auto md:bottom-20 md:right-4 md:w-96 bg-white shadow-xl flex flex-col md:rounded-lg z-50"
+          style={{ maxHeight: '100dvh' }} >
+
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-white sticky top-0 z-10">
-          <h3 className="text-lg font-semibold">{t('chat.title')}</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-2 text-gray-400 hover:text-gray-600 touch-manipulation z-50"
-              aria-label="Close chat"
-              style={{
-                position: 'relative',
-                right: 0,
-                background: 'transparent'
-              }}
-            >
+            <h3 className="text-lg font-semibold">{t('chat.title')}</h3>
+            <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 touch-manipulation z-50" aria-label="Close chat" style={{position: 'relative', right: 0, background: 'transparent' }}>
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -170,53 +78,37 @@ export function ChatSupport() {
           {/* Messages */}
           <div className="flex-1 p-4 overflow-y-auto overscroll-contain space-y-4">
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-lg p-3 break-words ${
-                    msg.sender === 'user'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
+              <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`} >
+                <div className={`max-w-[85%] rounded-lg p-3 break-words ${msg.sender === 'user'? 'bg-primary-600 text-white': 'bg-gray-100 text-gray-700'}`}>
                   <p className="text-[15px] leading-relaxed">{msg.text}</p>
-                  <span className="text-xs opacity-75 mt-1 block">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </span>
+                  <span className="text-xs opacity-75 mt-1 block">{new Date(msg.timestamp).toLocaleTimeString()}</span>
                 </div>
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <form 
-            onSubmit={handleSendMessage} 
-            className="p-4 border-t bg-white sticky bottom-0"
-          >
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={t('chat.placeholder')}
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
-                style={{
-                  fontSize: '16px', // Prevents iOS zoom on focus
-                  WebkitAppearance: 'none' // Removes iOS styling
-                }}
-              />
+          <div className="flex flex-wrap bg-white justify-center items-center gap-2 m-5">
+            {chatSuggestions.map((item) => (
               <button
-                type="submit"
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors touch-manipulation"
-                aria-label="Send message"
+                key={item.id}
+                onClick={() => onSelect(item.message)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm rounded-xl transition w-full"
               >
+                {item.message}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSendMessage}  className="p-4 border-t bg-white sticky bottom-0">
+            <div className="flex space-x-2">
+              <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('chat.placeholder')} className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base" style={{ fontSize: '16px',  WebkitAppearance: 'none'}}/>
+              <button type="submit" className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors touch-manipulation"aria-label="Send message">
                 <Send className="h-5 w-5" />
               </button>
             </div>
           </form>
+
         </div>
       )}
     </>

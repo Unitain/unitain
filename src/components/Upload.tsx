@@ -544,15 +544,16 @@ export const Upload = () => {
 
 
   return (
-    <div className="grid grid-cols-1 items-baseline lg:grid-cols-12 gap-6 sm:gap-8">
-      <div className="lg:col-span-8 space-y-6 sm:space-y-8">
-        <div className="bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+    <div className="grid grid-cols-1 items-baseline lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+      <div className="lg:col-span-8 space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Upload Section */}
+        <div className="bg-white rounded-xl shadow-neu-flat p-4 sm:p-6 animate-slide-up">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
             {t("upload.title")}
           </h2>
 
           <label
-            className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out block ${
+            className={`border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 text-center cursor-pointer transition-all duration-300 ease-in-out block ${
               dragActive
                 ? "border-primary-500 bg-primary-50"
                 : "border-gray-300"
@@ -562,15 +563,15 @@ export const Upload = () => {
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <UploadIcon className="mx-auto h-10 sm:h-12 w-10 sm:w-12 transition-colors duration-300 text-primary-500" />
-            <p className="mt-4 text-sm sm:text-base text-gray-600">
+            <UploadIcon className="mx-auto h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 transition-colors duration-300 text-primary-500" />
+            <p className="mt-3 sm:mt-4 text-xs sm:text-sm md:text-base text-gray-600">
               <span className="hidden sm:inline">{t("upload.dragDrop")}</span>
               <span className="sm:hidden">{t("upload.tapUpload")}</span>
               <span className="text-primary-600 hover:text-primary-700 transition-colors duration-300">
                 {t("upload.browse")}
               </span>
             </p>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-1 sm:mt-2 text-xs text-gray-500">
               {t("upload.supportedFormats")}
             </p>
             <input
@@ -582,18 +583,19 @@ export const Upload = () => {
             />
           </label>
         </div>
-        {/* display images setion */}
+
+        {/* Files Display Section */}
         <div className="bg-white rounded-xl shadow-neu-flat animate-slide-up">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">{t("upload.filesTitle")}</h2>
-              <span className="text-sm text-gray-500">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{t("upload.filesTitle")}</h2>
+              <span className="text-xs sm:text-sm text-gray-500">
                 {images.length} {t("upload.filesCount")}
               </span>
             </div>
           </div>
 
-          <div className="flex text-white justify-center p-5 text-center max-h-[496px] overflow-y-auto no-scrollbar scrollbar-none">
+          <div className="flex text-white justify-center p-3 sm:p-4 md:p-5 text-center max-h-[400px] sm:max-h-[496px] overflow-y-auto no-scrollbar scrollbar-none">
             {images.length === 0 ? (
               <div>
                 <svg
@@ -606,7 +608,7 @@ export const Upload = () => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="lucide lucide-file-text mx-auto h-12 w-12 text-gray-400"
+                  className="lucide lucide-file-text mx-auto h-10 sm:h-12 w-10 sm:w-12 text-gray-400"
                 >
                   <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
                   <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
@@ -617,66 +619,65 @@ export const Upload = () => {
                 <h3 className="mt-2 text-sm font-medium text-gray-900">
                   {t("upload.noFilesTitle")}
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-xs sm:text-sm text-gray-500">
                   {t("upload.noFilesSubtitle")}
                 </p>
               </div>
             ) : (
-              <ul className="space-y-4 w-full">
+              <ul className="space-y-3 sm:space-y-4 w-full">
                 {images.map((file, index) => (
                   <li
                     key={file.id}
-                    className="flex relative items-center justify-between no-scrollbar px-3 py-3 md:px-5 border rounded-lg cursor-pointer w-full overscroll-contain"
+                    className="flex relative items-center justify-between px-2 py-2 sm:px-3 sm:py-3 md:px-5 border rounded-lg cursor-pointer w-full overscroll-contain"
                   >
-                    <div className="flex gap-6 md:w-auto items-center mt-4 text-left">
+                    <div className="flex gap-3 sm:gap-4 md:gap-6 items-center text-left">
                       <img
                         src={file.url}
                         alt="uploaded"
-                        className="md:w-16 md:h-16 w-11 h-11 object-contain rounded-lg"
+                        className="w-9 h-9 sm:w-11 sm:h-11 md:w-16 md:h-16 object-contain rounded-lg"
                         />
-                      <div>
-                      <span className="md:text-sm text-xs text-gray-800 mb-5">
+                      <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm md:text-base text-gray-800 truncate">
                         {file.name}
-                      </span>
-                      
-                      <div className="mt-1">
+                      </p>
+                    <div className="mt-1">
                       {file?.review_status === "verified" ? (
-                        <div className="text-green-700 flex text-xs gap-2 font-medium">
-                          <FolderCheck className="h-4 w-4"/> Verified
+                        <div className="text-green-700 flex text-xs gap-1 sm:gap-2 font-medium items-center">
+                          <FolderCheck className="h-3 w-3 sm:h-4 sm:w-4"/> Verified
                         </div>
                       ) : file?.review_status === "unclear" ? (
-                        <div className="text-amber-700 flex text-xs gap-2 font-medium">
-                          <ShieldBan className="h-4 w-4"/> Unclear
+                        <div className="text-amber-700 flex text-xs gap-1 sm:gap-2 font-medium items-center">
+                          <ShieldBan className="h-3 w-3 sm:h-4 sm:w-4"/> Unclear
                         </div>
                       ) : file?.review_status === "missing" ? (
-                        <div className="text-rose-700 flex text-xs gap-2 font-medium">
-                          <CircleOff className="h-4 w-4"/> Missing
+                        <div className="text-rose-700 flex text-xs gap-1 sm:gap-2 font-medium items-center">
+                          <CircleOff className="h-3 w-3 sm:h-4 sm:w-4"/> Missing
                         </div>
                       ) : file?.review_status === "pending" ? (
-                        <div className="text-blue-700 flex text-xs gap-2 font-medium">
-                          <CircleDot className="h-4 w-4"/> Pending
+                        <div className="text-blue-700 flex text-xs gap-1 sm:gap-2 font-medium items-center">
+                          <CircleDot className="h-3 w-3 sm:h-4 sm:w-4"/> Pending
                         </div>
                       ) : (
-                        <div className="text-slate-600 flex text-xs gap-2 font-medium">
-                          <CircleDot className="h-4 w-4"/> Unsubmitted
+                        <div className="text-slate-600 flex text-xs gap-1 sm:gap-2 font-medium items-center">
+                          <CircleDot className="h-3 w-3 sm:h-4 sm:w-4"/> Unsubmitted
                         </div>
                       )}
-                      </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-4 flex-col items-end">
-                      <div className="flex items-center gap-5 text-sm text-gray-500">
-                        <p className="md:block hidden">
+                    <div className="flex gap-2 sm:gap-3 md:gap-4 flex-col items-end">
+                      <div className="flex items-center gap-2 sm:gap-3 md:gap-5 text-xs sm:text-sm text-gray-500">
+                        <p className="hidden md:block">
                           {new Date().toLocaleDateString()}
                         </p>
-                        <button onClick={() => viewImage(file.url)}>
-                          <EyeIcon className="h-5 w-5" />
+                        <button onClick={() => viewImage(file.url)} className="p-1">
+                          <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
-                        <a href={file.url} download>
-                          <DownloadIcon className="h-5 w-5" />
+                        <a href={file.url} download className="p-1">
+                          <DownloadIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </a>
                         {file.review_status === 'unclear' || file.review_status === 'missing' ? (
-                        <button
+                          <button
                         onClick={() => {
                           const input = document.createElement("input");
                           input.type = "file";
@@ -698,23 +699,24 @@ export const Upload = () => {
                           };
                           input.click();
                         }}
-                        className="p-1.5 flex gap-2 border text-sm text-black border-black rounded-md hover:bg-gray-100 transition-colors"
+                        className="p-1 sm:p-1.5 flex gap-1 sm:gap-2 border text-xs sm:text-sm text-black border-black rounded-md hover:bg-gray-100 transition-colors"
                         title="Re-upload"
                       >
-                        <UploadIcon className="h-5 w-5" /> Reupload
+                        <UploadIcon className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" /> 
+                        <span className="hidden sm:inline">Reupload</span>
                       </button>                      
-                        ) : (
+                      ) : (
                         <button
                           onClick={() => {
                               if (!file.verified) handleVerify(index);
                             }}
                             disabled={file.review_status === 'pending'}
-                            className={`p-2 rounded-md ${
+                            className={`p-1 sm:p-2 rounded-md ${
                               file.review_status === 'pending' ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100 transition-colors"
                             }`}
                             title={file.review_status === 'pending' ? "Already uploaded" : "Upload"}
                           >
-                            <UploadIcon className="h-5 w-5" />
+                            <UploadIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                       )}
                         {file.review_status === 'pending' ? (
@@ -722,21 +724,21 @@ export const Upload = () => {
                             onClick={() =>
                               setDeleteIndex(index) || setWarning(true)
                             }
-                            className="text-gray-500 cursor-pointer"
+                            className="text-gray-500 cursor-pointer p-1"
                           >
-                            <TrashIcon className="h-5 w-5" />
+                            <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                         ) : (
                           <button
                             onClick={() => handleDelete(index)}
-                            className="text-red-500 cursor-pointer"
+                            className="text-red-500 cursor-pointer p-1"
                           >
-                            <TrashIcon className="h-5 w-5" />
+                            <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                         )}
                       </div>
-                      <div className="text-gray-600 absolute bottom-1 md:hidden">
-                        <p className="text-xs">
+                      <div className="text-gray-600 text-xs sm:hidden">
+                        <p>
                           {new Date().toLocaleDateString()}
                         </p>
                       </div>
@@ -749,17 +751,18 @@ export const Upload = () => {
         </div>
       </div>
 
-      {/* progres */}
-      <div className="lg:col-span-4 space-y-6 sm:space-y-8 bg-white rounded-xl shadow-neu-flat p-6 animate-slide-up">
-      <h2 className="text-xl font-semibold text-gray-900">{t("upload.progressTitle")}</h2>
+      {/* Progress Section */}
+      <div className="lg:col-span-4 space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="bg-white rounded-xl shadow-neu-flat p-4 sm:p-6 animate-slide-up">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{t("upload.progressTitle")}</h2>
         <ProgressBar/>
-        <div className="p-6 bg-gray-50 rounded-b-lg">
+        <div className="p-4 sm:p-6 bg-gray-50 rounded-b-lg">
           {verifiedFiles.filter(Boolean).length >= 4 ? (
-            <div className="text-center text-sm text-green-500 font-semibold mb-4">
+            <div className="text-center text-xs sm:text-sm text-green-500 font-semibold mb-3 sm:mb-4">
               {t("upload.allVerified")}
             </div>
           ) : (
-            <div className="text-center text-sm text-gray-500 mb-4">
+            <div className="text-center text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
               {verifiedFiles.filter(Boolean).length > 0 ? (
                 <span className="text-blue-600 font-medium">
                   {4 - verifiedFiles.filter(Boolean).length} {t("upload.moreToVerify")}
@@ -785,7 +788,7 @@ export const Upload = () => {
                 }
               }
             }}
-            className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 
+            className={`w-full py-2 sm:py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 
                 ${
                   verifiedFiles.filter(Boolean).length >= 4
                     ? "bg-green-600 text-white cursor-pointer hover:bg-green-700 focus:ring-green-500"
@@ -797,20 +800,21 @@ export const Upload = () => {
               : t("upload.startProcess")}
           </button>
         </div>
+        </div>
       </div>
 
       {/* Image Preview Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white p-3 sm:p-4 rounded-lg max-w-full">
             <img
               src={selectedImage}
               alt="Preview"
-              className="max-w-lg max-h-[80vh]"
+              className="max-w-full max-h-[70vh] sm:max-h-[80vh]"
             />
             <button
               onClick={() => setSelectedImage(null)}
-              className="block mx-auto mt-4 px-4 py-2 bg-red-500 text-white rounded"
+              className="block mx-auto mt-3 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-red-500 text-white rounded text-sm sm:text-base"
             >
               {t("common.close")}
             </button>
@@ -818,21 +822,22 @@ export const Upload = () => {
         </div>
       )}
 
+      {/* Payment Modal */}
       {paymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-10 rounded-lg">
-            <h1 className="text-xl font-semibold">{t("upload.modalTitle")}</h1>
-            <p>{t("upload.modalDescription")}</p>
-            <div className="flex justify-end mt-10 gap-5">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white p-6 sm:p-8 md:p-10 rounded-lg max-w-md w-full">
+            <h1 className="text-lg sm:text-xl font-semibold">{t("upload.modalTitle")}</h1>
+            <p className="text-sm sm:text-base mt-2">{t("upload.modalDescription")}</p>
+            <div className="flex justify-end mt-6 sm:mt-8 gap-3 sm:gap-4">
               <button
                 onClick={() => setPaymentModal(false)}
-                className="bg-gray-100 p-3 px-4 rounded-lg"
+                className="bg-gray-100 p-2 sm:p-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
               >
                 {t("common.cancel")}
               </button>
               <button
                 onClick={handleSubmit}
-                className="bg-primary-600 text-white px-4 p-3 rounded-lg"
+                className="bg-primary-600 text-white px-3 sm:px-4 p-2 sm:p-3 rounded-lg text-sm sm:text-base"
               >
                 {loading ? t("upload.loadingPay") : t("upload.startPay")}
               </button>
@@ -841,17 +846,18 @@ export const Upload = () => {
         </div>
       )}
 
+      {/* Warning Modal */}
       {warning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 w-full shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("upload.warningTitle")}
             </h3>
-            <p className="text-gray-600 mb-6">{t("upload.warningMessage")}</p>
-            <div className="flex justify-end space-x-3">
+            <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">{t("upload.warningMessage")}</p>
+            <div className="flex justify-end space-x-2 sm:space-x-3">
               <button
                 onClick={() => setWarning(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
                 {t("common.cancel")}
               </button>
@@ -863,7 +869,7 @@ export const Upload = () => {
                     setWarning(false);
                   }
                 }}
-                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
+                className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
               >
                 {t("common.delete")}
               </button>
@@ -872,23 +878,24 @@ export const Upload = () => {
         </div>
       )}
 
+      {/* Paid Confirmation Modal */}
       {isPaid && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-md overflow-hidden bg-white rounded-2xl shadow-2xl">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-            <div className="flex flex-col items-center px-8 pt-10 pb-8 text-center">
-              <div className="flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-lg shadow-green-200">
-                <Check className="w-10 h-10 text-white" strokeWidth={3} />
+          <div className="relative w-full max-w-md overflow-hidden bg-white rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 sm:h-1.5"></div>
+            <div className="flex flex-col items-center px-6 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-8 text-center">
+              <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-4 sm:mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-md sm:shadow-lg shadow-green-200">
+                <Check className="w-8 h-8 sm:w-10 sm:h-10 text-white" strokeWidth={3} />
               </div>
-              <h3 className="mb-4 text-2xl font-bold text-gray-900">
+              <h3 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold text-gray-900">
                 {t("upload.alreadyPaidTitle")}
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                 {t("upload.alreadyPaidMessage")}
               </p>
               <button
                 onClick={() => setIsPaid(false)}
-                className="px-8 py-3 text-white text-lg font-medium bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-6 sm:px-8 py-2 sm:py-3 text-white text-base sm:text-lg font-medium bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 {t("common.close")}
               </button>
@@ -897,23 +904,24 @@ export const Upload = () => {
         </div>
       )}
 
+      {/* Reload Warning Modal */}
       {showReloadWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 w-full shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("upload.reloadTitle")}
             </h3>
-            <p className="text-gray-600 mb-6">{t("upload.reloadMessage")}</p>
-            <div className="flex justify-end space-x-3">
+            <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">{t("upload.reloadMessage")}</p>
+            <div className="flex justify-end space-x-2 sm:space-x-3">
               <button
                 onClick={() => setShowReloadWarning(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               >
                 {t("common.cancel")}
               </button>
               <button
                 onClick={() => setShowReloadWarning(false)}
-                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
+                className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
               >
                 {t("upload.reloadAnyway")}
               </button>

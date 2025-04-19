@@ -3,7 +3,6 @@ import { useAuthStore } from "../lib/store";
 import { Upload } from "../components/Upload";
 import { Download } from "../components/Download";
 import { supabase } from "../lib/supabase";
-import { FileProvider } from '../context/FileContext';
 import { ChatSupport } from '../components/ChatSupport';
 import { NextSteps } from "../components/NextSteps";
 import {useSearchParams} from "react-router-dom"
@@ -47,7 +46,7 @@ export function DashboardChatGPT() {
   }, [searchParams]);
   
   return (
-    <FileProvider>
+    <>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
          <div className="bg-white/80 backdrop-blur-glass rounded-2xl shadow-glass p-6 sm:p-8 animate-fade-in">
@@ -114,10 +113,8 @@ export function DashboardChatGPT() {
       </div>
     </div>
   </div>
-)}
-
-
-    </FileProvider>
+ )}
+ </>
   );
 }
 
