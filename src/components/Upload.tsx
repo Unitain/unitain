@@ -698,10 +698,10 @@ export const Upload = () => {
                           };
                           input.click();
                         }}
-                        className="p-2 flex gap-2 border text-black border-black rounded-md hover:bg-gray-100 transition-colors"
+                        className="p-1.5 flex gap-2 border text-sm text-black border-black rounded-md hover:bg-gray-100 transition-colors"
                         title="Re-upload"
                       >
-                        <UploadIcon className="h-5 w-5" /> Re-upload
+                        <UploadIcon className="h-5 w-5" /> Reupload
                       </button>                      
                         ) : (
                         <button
