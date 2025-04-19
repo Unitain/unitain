@@ -469,7 +469,7 @@ const Messages = () => {
       </div>
   
       {/* Sidebar - responsive behavior */}
-      <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-full md:w-80 border-r border-gray-200 bg-white flex flex-col shadow-sm fixed md:relative inset-0 z-40`}>
+      <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-full md:w-80 border-r border-gray-200 bg-white flex flex-col shadow-sm fixed md:relative inset-0 z-10`}>
         {/* Close button for mobile */}
         <div className="md:hidden p-4 flex justify-end">
           <button 
